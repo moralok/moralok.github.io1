@@ -5,10 +5,10 @@
 # Site
 title: Moralok
 subtitle:
-description: "Moralok在 Github 上的个人博客"
+description: "Moralok 的个人博客"
 keywords:
 author: Moralok
-language:
+language: zh-CN
 timezone:
 
 # custom Site settings
@@ -83,7 +83,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: Anisina
+theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -92,6 +92,3 @@ deploy:
   repo: git@github.com:moralok/moralok.github.io.git
   branch: master
   message:
-
-use_livere: true
-livere_uid: MTAyMC8zOTc4OS8xNjMxNg==
