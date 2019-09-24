@@ -90,5 +90,5 @@ theme: next
 deploy:
   type: git
   repo: git@github.com:moralok/moralok.github.io.git
-  branch: master
+  branch: gh-pages
   message:
