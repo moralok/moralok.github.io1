@@ -7,8 +7,8 @@ branches:
   only:
     - master # build master branch only
 # 下载主题
-before_install:
-  - git clone https://github.com/theme-next/hexo-theme-next themes/next
+# before_install:
+#   - git clone https://github.com/theme-next/hexo-theme-next themes/next
 script:
   - hexo generate # generate static files
 deploy:
