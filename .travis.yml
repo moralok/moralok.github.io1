@@ -10,6 +10,7 @@ branches:
 # before_install:
 #   - git clone https://github.com/theme-next/hexo-theme-next themes/next
 script:
+  - hexo clean
   - hexo generate # generate static files
 deploy:
   provider: pages
