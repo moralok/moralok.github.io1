@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: node_js
 node_js:
   - 10 # use nodejs v10 LTS
@@ -9,6 +9,8 @@ branches:
 # 下载主题
 # before_install:
 #   - git clone https://github.com/theme-next/hexo-theme-next themes/next
+install:
+  - npm install
 script:
   - hexo clean
   - hexo generate # generate static files
