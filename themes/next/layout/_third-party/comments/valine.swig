@@ -5,7 +5,7 @@ NexT.utils.getScript('{{ valine_uri }}', () => {
   var GUEST = ['nick', 'mail', 'link'];
   var guest = '{{ theme.valine.guest_info }}';
   guest = guest.split(',').filter(item => {
-    return GUEST.includes(item);
+    return GUEST.indexOf(item) > -1;
   });
   new Valine({
     el: '#comments',

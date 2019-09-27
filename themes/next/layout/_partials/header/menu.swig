@@ -1,4 +1,4 @@
-{% import 'menu-item.swig' as menu_item %}
+{% import '../../_macro/menu/menu-item.swig' as menu_item %}
 
 {%- if theme.menu %}
   <ul id="menu" class="menu">

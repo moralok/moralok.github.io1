@@ -2,27 +2,31 @@
 
 var Affix = {
   init: function(element, options) {
-    this.element = element;
-    this.offset = options || 0;
-    this.affixed = null;
-    this.unpin = null;
-    this.pinnedOffset = null;
-    this.checkPosition();
+    this.options = Object.assign({
+      offset: 0
+    }, options);
     window.addEventListener('scroll', this.checkPosition.bind(this));
     window.addEventListener('click', this.checkPositionWithEventLoop.bind(this));
     window.matchMedia('(min-width: 992px)').addListener(event => {
       if (event.matches) {
-        this.offset = NexT.utils.getAffixParam();
+        this.options = {
+          offset: NexT.utils.getAffixParam()
+        };
         this.checkPosition();
       }
     });
+    this.element = element;
+    this.affixed = null;
+    this.unpin = null;
+    this.pinnedOffset = null;
+    this.checkPosition();
   },
   getState: function(scrollHeight, height, offsetTop, offsetBottom) {
     let scrollTop = window.scrollY;
     let targetHeight = window.innerHeight;
     if (offsetTop != null && this.affixed === 'top') return scrollTop < offsetTop ? 'top' : false;
     if (this.affixed === 'bottom') {
-      if (offsetTop != null) return this.unpin <= this.element.getBoundingClientRect().top ? false : 'bottom';
+      if (offsetTop != null) return scrollTop + this.unpin <= this.element.getBoundingClientRect().top + scrollTop ? false : 'bottom';
       return scrollTop + targetHeight <= scrollHeight - offsetBottom ? false : 'bottom';
     }
     let initializing = this.affixed === null;
@@ -44,7 +48,7 @@ var Affix = {
   checkPosition: function() {
     if (window.getComputedStyle(this.element).display === 'none') return;
     let height = this.element.offsetHeight - CONFIG.sidebarPadding;
-    let offset = this.offset;
+    let offset = this.options.offset;
     let offsetTop = offset.top;
     let offsetBottom = offset.bottom;
     let scrollHeight = document.body.scrollHeight;
@@ -82,5 +86,7 @@ NexT.utils.getAffixParam = function() {
 
 window.addEventListener('DOMContentLoaded', () => {
 
-  Affix.init(document.querySelector('.sidebar-inner'), NexT.utils.getAffixParam());
+  Affix.init(document.querySelector('.sidebar-inner'), {
+    offset: NexT.utils.getAffixParam()
+  });
 });

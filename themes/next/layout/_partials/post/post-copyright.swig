@@ -13,11 +13,11 @@
 <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>{{ __('post.copyright.author') + __('symbol.colon') }} </strong>{#
-  #}{{ post.author or author }}{#
+  #}{{ post.author || author }}{#
 #}</li>
   <li class="post-copyright-link">
     <strong>{{ __('post.copyright.link') + __('symbol.colon') }}</strong>
-    {%- set postURL = post.url or post.permalink %}
+    {%- set postURL = post.url || post.permalink %}
     {{ next_url(postURL, postURL, {title: post.title}) }}
   </li>
   <li class="post-copyright-license">
