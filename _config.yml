@@ -88,7 +88,4 @@ theme: next
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: git@github.com:moralok/moralok.github.io.git
-  branch: master
-  message:
+  type:
