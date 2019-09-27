@@ -3,16 +3,27 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: Moralok
 subtitle:
-description:
-author: John Doe
-language:
+description: "Moralok 的个人博客"
+keywords:
+author: Moralok
+language: zh-CN
 timezone:
+
+# custom Site settings
+# more detail check out docs
+SEOTitle: Moralok's blog 
+header-img: //o7bkkhiex.bkt.clouddn.com/lion-blur-bg.jpg
+email: moralok@163.com
+keyword: # seo key words
+
+favicon: # your favicon png
+# custom end
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: www.moralok.com
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -28,7 +39,7 @@ i18n_dir: :lang
 skip_render:
 
 # Writing
-new_post_name: :title.md # File name of new posts
+new_post_name: :year-:month-:day-:title.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
@@ -72,7 +83,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
