@@ -1,12 +1,14 @@
 ---
-title: 如何使用 Spring Security
+title: 如何使用 Spring Security
 date: 2019-10-17 14:37:01
 tags:
+- Spring
+- Spring Boot
 ---
 
 
 ### 在 pom.xml 中添加项目依赖
-``` xml
+```xml
 <!--SpringSecurity依赖配置-->
 <dependency>
     <groupId>org.springframework.boot</groupId>
