@@ -216,7 +216,7 @@
   
   
   <div class="post-block home">
-    <link itemprop="mainEntityOfPage" href="www.moralok.com/2019/10/21/hello-world/">
+    <link itemprop="mainEntityOfPage" href="www.moralok.com/2019/10/24/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Moralok">
@@ -230,7 +230,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
             
-            <a href="/2019/10/21/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
+            <a href="/2019/10/24/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
           
         </h1>
 
@@ -245,7 +245,7 @@
                 
               
 
-              <time title="创建时间：2019-10-21 01:34:19" itemprop="dateCreated datePublished" datetime="2019-10-21T01:34:19+00:00">2019-10-21</time>
+              <time title="创建时间：2019-10-24 09:18:08" itemprop="dateCreated datePublished" datetime="2019-10-24T09:18:08+00:00">2019-10-24</time>
             </span>
           
 
@@ -270,6 +270,92 @@
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
 
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </div>
+  
+  
+  
+  </article>
+
+    
+        <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block home">
+    <link itemprop="mainEntityOfPage" href="www.moralok.com/2019/10/17/How-to-use-Spring-Security/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok 的个人博客">
+      <meta itemprop="image" content="https://s.gravatar.com/avatar/7a68aa0fe46d70a5f92a97950d8504af?s=80">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2019/10/17/How-to-use-Spring-Security/" class="post-title-link" itemprop="url">如何使用 Spring Security</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-17 14:37:01" itemprop="dateCreated datePublished" datetime="2019-10-17T14:37:01+00:00">2019-10-17</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-24 09:18:08" itemprop="dateModified" datetime="2019-10-24T09:18:08+00:00">2019-10-24</time>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="在-pom-xml-中添加项目依赖"><a href="#在-pom-xml-中添加项目依赖" class="headerlink" title="在 pom.xml 中添加项目依赖"></a>在 pom.xml 中添加项目依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--SpringSecurity依赖配置--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-security<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="添加-Spring-Security-的配置类"><a href="#添加-Spring-Security-的配置类" class="headerlink" title="添加 Spring Security 的配置类"></a>添加 Spring Security 的配置类</h3><p>SecurityConfig 需要继承自 WebSecurityConfigurerAdapter，通过重写父类的方法，实现自定义的需求。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableWebSecurity</span></span><br><span class="line"><span class="meta">@EnableGlobalMethodSecurity</span>(prePostEnabled=<span class="keyword">true</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SecurityConfig</span> <span class="keyword">extends</span> <span class="title">WebSecurityConfigurerAdapter</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通常，我们会关注以下几个方法。</p>
+<h4 id="配置用户签名服务"><a href="#配置用户签名服务" class="headerlink" title="配置用户签名服务"></a>配置用户签名服务</h4><p>本方法用于配置用户信息，包括为用户配置角色。在 Spring Security 中默认是没有任何用户配置的。Spring Security 会自动地生成一个名称为 user、密码通过随机生成的用户，密码可以在日志中观察得到。显然，默认情况下存在各类的缺点，为了克服这些缺点，我们需要自定义用户签名服务。</p>
+<h5 id="使用内存签名服务"><a href="#使用内存签名服务" class="headerlink" title="使用内存签名服务"></a>使用内存签名服务</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(AuthenticationManagerBuilder auth)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    auth.inMe</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(AuthenticationManagerBuilder auth)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    auth.userDetailsService(userDetailsService())</span><br><span class="line">            .passwordEncoder(passwordEncoder());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
         
       
     </div>
@@ -333,7 +419,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-10-21 01:34:19" itemprop="dateModified" datetime="2019-10-21T01:34:19+00:00">2019-10-21</time>
+                <time title="修改时间：2019-10-24 09:18:08" itemprop="dateModified" datetime="2019-10-24T09:18:08+00:00">2019-10-24</time>
               </span>
             
           
@@ -457,7 +543,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-10-21 01:34:19" itemprop="dateModified" datetime="2019-10-21T01:34:19+00:00">2019-10-21</time>
+                <time title="修改时间：2019-10-24 09:18:08" itemprop="dateModified" datetime="2019-10-24T09:18:08+00:00">2019-10-24</time>
               </span>
             
           
@@ -569,7 +655,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
