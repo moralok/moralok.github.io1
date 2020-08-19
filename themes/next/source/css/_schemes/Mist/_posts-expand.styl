@@ -1,40 +1,30 @@
 // Post Expand
 // --------------------------------------------------
-.posts-expand .home {
-  .post-title, .post-meta {
-    text-align: $site-meta-text-align;
+.posts-expand {
+  &.index {
+    .post-title, .post-meta {
+      text-align: $site-meta-text-align;
 
-    +mobile() {
-      text-align: center;
+      +mobile() {
+        text-align: center;
+      }
+    }
+
+    .post-meta {
+      margin: 5px 0 20px 0;
     }
   }
-
-  .post-meta {
-    margin: 5px 0 20px 0;
-  }
-}
-
-.posts-expand {
-  padding-top: 0;
 
   .post-eof {
     display: none;
   }
 
-  article {
+  .post-block:not(:first-child) {
     margin-top: 120px;
-
-    &:first-child {
-      margin-top: 0;
-    }
   }
 
   .post-title, .post-meta {
     text-align: center;
-  }
-
-  .post-title-link::before {
-    background-color: $black-deep;
   }
 
   .post-body img {
@@ -48,10 +38,10 @@
       background: $whitesmoke;
       border-bottom: none;
       padding: 1px 5px;
-    }
 
-    a:hover {
-      background: $grey-light;
+      &:hover {
+        background: $grey-light;
+      }
     }
   }
 
@@ -64,17 +54,16 @@
   margin-top: 20px;
   text-align: left;
 
-  a {
+  .btn {
     // color: $grey-dim;
     background: none;
     border: 0;
-    border-bottom: 2px solid $grey-dim;
-    font-size: $font-size-small;
+    border-bottom: 2px solid var(--btn-default-border-color);
     padding: 0;
     transition-property: border;
 
     &:hover {
-      border-bottom-color: $black-deep;
+      border-bottom-color: var(--btn-default-hover-border-color);
     }
   }
 }
