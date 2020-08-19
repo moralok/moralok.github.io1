@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="原文:Spring Boot Overview 使用 Spring Boot 可以更便捷地创建独立的、可用于生产阶段的 Spring 应用，用户可以即刻运行。 我们对 Spring 平台和第三方库持有一个“自以为是”的观点，因此你可以伴随最小的麻烦开始使用。绝大部分 Spring Boot 应用仅需要非常少量的 Spring 配置。 特征 创建独立的 Spring 应用  直接嵌入 Tomcat，">
-<meta name="keywords" content="Spring,Spring Boot">
+  <meta name="description" content="Docker指令 查看 docker 程序是否正常工作 1docker info  运行容器并启动 bash 1docker run -i -t 镜像 /bin/bash   给容器命名 –name 容器 创建守护式容器（后台运行） -d 自动重启容器 –restart=always 指定端口映射 -p 宿主机端口:容器端口 （-p 127.0.0.1::80 随机）  获取 docker 命令列">
+<meta name="keywords" content="docker">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spring Boot 概述">
-<meta property="og:url" content="www.moralok.com/2019/10/15/Spring-Boot-Overview-Translation/index.html">
+<meta property="og:title" content="Docker 常用命令">
+<meta property="og:url" content="www.moralok.com/2020/08/19/Docker-常用命令/index.html">
 <meta property="og:site_name" content="Moralok">
-<meta property="og:description" content="原文:Spring Boot Overview 使用 Spring Boot 可以更便捷地创建独立的、可用于生产阶段的 Spring 应用，用户可以即刻运行。 我们对 Spring 平台和第三方库持有一个“自以为是”的观点，因此你可以伴随最小的麻烦开始使用。绝大部分 Spring Boot 应用仅需要非常少量的 Spring 配置。 特征 创建独立的 Spring 应用  直接嵌入 Tomcat，">
+<meta property="og:description" content="Docker指令 查看 docker 程序是否正常工作 1docker info  运行容器并启动 bash 1docker run -i -t 镜像 /bin/bash   给容器命名 –name 容器 创建守护式容器（后台运行） -d 自动重启容器 –restart=always 指定端口映射 -p 宿主机端口:容器端口 （-p 127.0.0.1::80 随机）  获取 docker 命令列">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2020-08-19T15:22:57.960Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Spring Boot 概述">
-<meta name="twitter:description" content="原文:Spring Boot Overview 使用 Spring Boot 可以更便捷地创建独立的、可用于生产阶段的 Spring 应用，用户可以即刻运行。 我们对 Spring 平台和第三方库持有一个“自以为是”的观点，因此你可以伴随最小的麻烦开始使用。绝大部分 Spring Boot 应用仅需要非常少量的 Spring 配置。 特征 创建独立的 Spring 应用  直接嵌入 Tomcat，">
-  <link rel="canonical" href="www.moralok.com/2019/10/15/Spring-Boot-Overview-Translation/">
+<meta name="twitter:title" content="Docker 常用命令">
+<meta name="twitter:description" content="Docker指令 查看 docker 程序是否正常工作 1docker info  运行容器并启动 bash 1docker run -i -t 镜像 /bin/bash   给容器命名 –name 容器 创建守护式容器（后台运行） -d 自动重启容器 –restart=always 指定端口映射 -p 宿主机端口:容器端口 （-p 127.0.0.1::80 随机）  获取 docker 命令列">
+  <link rel="canonical" href="www.moralok.com/2020/08/19/Docker-常用命令/">
 
 
 <script id="page-configurations">
@@ -81,7 +81,7 @@
   };
 </script>
 
-  <title>Spring Boot 概述 | Moralok</title>
+  <title>Docker 常用命令 | Moralok</title>
   <meta name="generator" content="Hexo 3.9.0">
   
 
@@ -219,7 +219,7 @@
   
   
   <div class="post-block post">
-    <link itemprop="mainEntityOfPage" href="www.moralok.com/2019/10/15/Spring-Boot-Overview-Translation/">
+    <link itemprop="mainEntityOfPage" href="www.moralok.com/2020/08/19/Docker-常用命令/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Moralok">
@@ -231,7 +231,7 @@
       <meta itemprop="name" content="Moralok">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">Spring Boot 概述
+        <h1 class="post-title" itemprop="name headline">Docker 常用命令
 
           
         </h1>
@@ -247,33 +247,12 @@
                 
               
 
-              <time title="创建时间：2019-10-15 14:00:32" itemprop="dateCreated datePublished" datetime="2019-10-15T14:00:32+00:00">2019-10-15</time>
+              <time title="创建时间：2020-08-19 22:33:24 / 修改时间：15:22:57" itemprop="dateCreated datePublished" datetime="2020-08-19T22:33:24+00:00">2020-08-19</time>
             </span>
           
             
 
             
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-19 15:22:57" itemprop="dateModified" datetime="2020-08-19T15:22:57+00:00">2020-08-19</time>
-              </span>
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Spring-Boot/" itemprop="url" rel="index"><span itemprop="name">Spring Boot</span></a></span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -287,37 +266,111 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><a href="https://spring.io/projects/spring-boot#overview" target="_blank" rel="noopener"><strong>原文:Spring Boot Overview</strong></a></p>
-<p>使用 <code>Spring Boot</code> 可以更便捷地创建独立的、可用于生产阶段的 <code>Spring</code> 应用，用户可以即刻运行。</p>
-<p>我们对 <code>Spring</code> 平台和第三方库持有一个“自以为是”的观点，因此你可以伴随最小的麻烦开始使用。绝大部分 <code>Spring Boot</code> 应用仅需要非常少量的 <code>Spring</code> 配置。</p>
-<h1 id="特征"><a href="#特征" class="headerlink" title="特征"></a>特征</h1><ul>
-<li><p>创建独立的 <code>Spring</code> 应用</p>
+        <h3 id="Docker指令"><a href="#Docker指令" class="headerlink" title="Docker指令"></a>Docker指令</h3><ol>
+<li><p>查看 docker 程序是否正常工作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>直接嵌入 Tomcat，Jetty 或者 Undertow（无需部署 war 文件）</p>
+<li><p>运行容器并启动 bash</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -i -t 镜像 /bin/bash</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>提供“自以为是”的“入门”依赖，以简化构建配置</p>
+</ol>
+<p>给容器命名 –name 容器</p>
+<p>创建守护式容器（后台运行） -d</p>
+<p>自动重启容器 –restart=always</p>
+<p>指定端口映射 -p 宿主机端口:容器端口 （-p 127.0.0.1::80 随机）</p>
+<ol start="3">
+<li><p>获取 docker 命令列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker help</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>尽可能自动配置 Spring 和第三方库</p>
+<li><p>查看容器列表（所有）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>提供生产就绪的功能，例如指标，运行状况检查和外部配置</p>
+</ol>
+<p>查看运行中 docker ps</p>
+<ol start="5">
+<li><p>重新启动已经停止的容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker start 容器</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>绝对没有代码生成，也不需要 XML 文件</p>
+<li><p>附着到容器上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker attach 容器</span><br></pre></td></tr></table></figure>
 </li>
-</ul>
-<p>你可以在 <a href="https://gitter.im/spring-projects/spring-boot" target="_blank" rel="noopener">Gitter 上加入 Spring Boot 社区</a>！</p>
-<h1 id="讲座和视频"><a href="#讲座和视频" class="headerlink" title="讲座和视频"></a>讲座和视频</h1><ul>
-<li><p>这是一种魔术：Spring Boot 幕后</p>
+<li><p>获取守护式容器的日志</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs 容器</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>Spring Boot 2.0 的新功能</p>
+<li><p>查看容器内的进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker top 容器</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>介绍 Spring Boot 2.0 的网络研讨会</p>
+<li><p>docker 统计信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stats 容器…</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>使用 Spring Boot 进行测试驱动的开发</p>
+<li><p>在容器内部运行进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec -d 容器 touch /etc/new_config_file</span><br><span class="line"></span><br><span class="line">docker exec -t -i 容器 /bin/bash</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>从零到精通 Spring Boot 2.0</p>
+<li><p>停止守护式容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stop 容器</span><br></pre></td></tr></table></figure>
 </li>
-</ul>
-<h1 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h1><p>使用 <a href="https://start.spring.io/" target="_blank" rel="noopener">Spring Initializr</a> 引导你的应用。</p>
+<li><p>获取容器信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker inspect</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>可以用来查看镜像信息</p>
+<ol start="13">
+<li><p>删除容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker rm 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看镜像列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>拉取镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull 镜像</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>标签，默认latest</p>
+<ol start="16">
+<li>查找镜像<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search 镜像名</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>仓库名、镜像描述、用户评价、是否官方、自动构建</p>
+<ol start="17">
+<li><p>创建镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -m &quot;评论&quot; -a &quot;作者&quot; 容器ID 用户名/仓库名:标签</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Dockerfile 构建</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t &quot;用户名/仓库名:标签&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>步步推进</p>
+<p>缓存</p>
+<ol start="19">
+<li>查看容器与宿主机映射关系<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker port 容器 容器端口号</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="Dockerfile指令"><a href="#Dockerfile指令" class="headerlink" title="Dockerfile指令"></a>Dockerfile指令</h3><ol>
+<li><p>CMD</p>
+</li>
+<li><p>ENTRYPOINT</p>
+</li>
+<li><p>WORKDIR</p>
+</li>
+<li><p>ENV</p>
+</li>
+<li><p>USER</p>
+</li>
+<li><p>VOLUME</p>
+</li>
+<li><p>ADD</p>
+</li>
+<li><p>COPY</p>
+</li>
+<li><p>LABEL</p>
+</li>
+<li><p>STOPSIGNAL</p>
+</li>
+<li><p>ARG</p>
+</li>
+<li><p>ONBUILD</p>
+</li>
+</ol>
 
     </div>
 
@@ -333,9 +386,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/Spring/" rel="tag"># Spring</a>
-            
-              <a href="/tags/Spring-Boot/" rel="tag"># Spring Boot</a>
+              <a href="/tags/docker/" rel="tag"># docker</a>
             
           </div>
         
@@ -345,8 +396,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/09/27/Continuous-integration-and-deployment-to-Github-Pages-of-Hexo-with-Travis-CI/" rel="next" title="使用 Travis CI 持续集成 Hexo 并部署到 Github Pages">
-                  <i class="fa fa-chevron-left"></i> 使用 Travis CI 持续集成 Hexo 并部署到 Github Pages
+                <a href="/2019/10/17/How-to-use-Spring-Security/" rel="next" title="如何使用 Spring Security">
+                  <i class="fa fa-chevron-left"></i> 如何使用 Spring Security
                 </a>
               
             </div>
@@ -354,10 +405,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/10/17/How-to-use-Spring-Security/" rel="prev" title="如何使用 Spring Security">
-                  如何使用 Spring Security <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -406,7 +453,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#特征"><span class="nav-number">1.</span> <span class="nav-text">特征</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#讲座和视频"><span class="nav-number">2.</span> <span class="nav-text">讲座和视频</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#快速开始"><span class="nav-number">3.</span> <span class="nav-text">快速开始</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker指令"><span class="nav-number">1.</span> <span class="nav-text">Docker指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dockerfile指令"><span class="nav-number">2.</span> <span class="nav-text">Dockerfile指令</span></a></li></ol></div>
         
       </div>
       <!--/noindex-->

@@ -216,6 +216,183 @@
   
   
   <div class="post-block home">
+    <link itemprop="mainEntityOfPage" href="www.moralok.com/2020/08/19/Docker-常用命令/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok 的个人博客">
+      <meta itemprop="image" content="https://s.gravatar.com/avatar/7a68aa0fe46d70a5f92a97950d8504af?s=80">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2020/08/19/Docker-常用命令/" class="post-title-link" itemprop="url">Docker 常用命令</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-08-19 22:33:24 / 修改时间：15:22:57" itemprop="dateCreated datePublished" datetime="2020-08-19T22:33:24+00:00">2020-08-19</time>
+            </span>
+          
+            
+
+            
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Docker指令"><a href="#Docker指令" class="headerlink" title="Docker指令"></a>Docker指令</h3><ol>
+<li><p>查看 docker 程序是否正常工作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>运行容器并启动 bash</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -i -t 镜像 /bin/bash</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>给容器命名 –name 容器</p>
+<p>创建守护式容器（后台运行） -d</p>
+<p>自动重启容器 –restart=always</p>
+<p>指定端口映射 -p 宿主机端口:容器端口 （-p 127.0.0.1::80 随机）</p>
+<ol start="3">
+<li><p>获取 docker 命令列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker help</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看容器列表（所有）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>查看运行中 docker ps</p>
+<ol start="5">
+<li><p>重新启动已经停止的容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker start 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>附着到容器上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker attach 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取守护式容器的日志</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看容器内的进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker top 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>docker 统计信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stats 容器…</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在容器内部运行进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec -d 容器 touch /etc/new_config_file</span><br><span class="line"></span><br><span class="line">docker exec -t -i 容器 /bin/bash</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>停止守护式容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stop 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取容器信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker inspect</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>可以用来查看镜像信息</p>
+<ol start="13">
+<li><p>删除容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker rm 容器</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看镜像列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>拉取镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull 镜像</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>标签，默认latest</p>
+<ol start="16">
+<li>查找镜像<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search 镜像名</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>仓库名、镜像描述、用户评价、是否官方、自动构建</p>
+<ol start="17">
+<li><p>创建镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -m &quot;评论&quot; -a &quot;作者&quot; 容器ID 用户名/仓库名:标签</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Dockerfile 构建</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t &quot;用户名/仓库名:标签&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>步步推进</p>
+<p>缓存</p>
+<ol start="19">
+<li>查看容器与宿主机映射关系<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker port 容器 容器端口号</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="Dockerfile指令"><a href="#Dockerfile指令" class="headerlink" title="Dockerfile指令"></a>Dockerfile指令</h3><ol>
+<li><p>CMD</p>
+</li>
+<li><p>ENTRYPOINT</p>
+</li>
+<li><p>WORKDIR</p>
+</li>
+<li><p>ENV</p>
+</li>
+<li><p>USER</p>
+</li>
+<li><p>VOLUME</p>
+</li>
+<li><p>ADD</p>
+</li>
+<li><p>COPY</p>
+</li>
+<li><p>LABEL</p>
+</li>
+<li><p>STOPSIGNAL</p>
+</li>
+<li><p>ARG</p>
+</li>
+<li><p>ONBUILD</p>
+</li>
+</ol>
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </div>
+  
+  
+  
+  </article>
+
+    
+        <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block home">
     <link itemprop="mainEntityOfPage" href="www.moralok.com/2019/10/17/How-to-use-Spring-Security/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -256,7 +433,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-19 14:32:49" itemprop="dateModified" datetime="2020-08-19T14:32:49+00:00">2020-08-19</time>
+                <time title="修改时间：2020-08-19 15:22:57" itemprop="dateModified" datetime="2020-08-19T15:22:57+00:00">2020-08-19</time>
               </span>
             
           
@@ -342,7 +519,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-19 14:32:49" itemprop="dateModified" datetime="2020-08-19T14:32:49+00:00">2020-08-19</time>
+                <time title="修改时间：2020-08-19 15:22:57" itemprop="dateModified" datetime="2020-08-19T15:22:57+00:00">2020-08-19</time>
               </span>
             
           
@@ -466,7 +643,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-19 14:32:49" itemprop="dateModified" datetime="2020-08-19T14:32:49+00:00">2020-08-19</time>
+                <time title="修改时间：2020-08-19 15:22:57" itemprop="dateModified" datetime="2020-08-19T15:22:57+00:00">2020-08-19</time>
               </span>
             
           
@@ -574,7 +751,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-19 14:32:49" itemprop="dateModified" datetime="2020-08-19T14:32:49+00:00">2020-08-19</time>
+                <time title="修改时间：2020-08-19 15:22:57" itemprop="dateModified" datetime="2020-08-19T15:22:57+00:00">2020-08-19</time>
               </span>
             
           
@@ -667,7 +844,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -699,7 +876,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span>
         
       </div>
