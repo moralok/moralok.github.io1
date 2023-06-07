@@ -118,9 +118,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
       </div>
   </nav>
 </div>
@@ -157,7 +161,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://www.moralok.top/2023/05/27/hello-world/">
+    <link itemprop="mainEntityOfPage" href="http://www.moralok.top/2023/06/07/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -175,7 +179,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/05/27/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
+          <a href="/2023/06/07/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
         </h2>
 
         <div class="post-meta-container">
@@ -186,7 +190,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-27 21:53:44" itemprop="dateCreated datePublished" datetime="2023-05-27T21:53:44+08:00">2023-05-27</time>
+      <time title="创建时间：2023-06-08 01:57:47" itemprop="dateCreated datePublished" datetime="2023-06-08T01:57:47+08:00">2023-06-08</time>
     </span>
 
   
@@ -212,6 +216,325 @@
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 
 <p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://www.moralok.top/2023/06/07/how-to-use-OpenVPN-to-access-home-network/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/07/how-to-use-OpenVPN-to-access-home-network/" class="post-title-link" itemprop="url">使用 OpenVPN 访问家庭内网</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-07 22:19:17" itemprop="dateCreated datePublished" datetime="2023-06-07T22:19:17+08:00">2023-06-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-08 01:57:47" itemprop="dateModified" datetime="2023-06-08T01:57:47+08:00">2023-06-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="网络概况"><a href="#网络概况" class="headerlink" title="网络概况"></a>网络概况</h2><p>宽带是电信宽带，分配了动态的公网 IP。<br>光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。<br>一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。<br>Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机，IP 192.168.46.128。Windows 10 主机在子网中的 IP 为 192.168.3.1。</p>
+<table>
+<thead>
+<tr>
+<th>子网</th>
+<th>Windows 10 主机</th>
+<th>Linux 主机</th>
+<th>客户端</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路由器 192.168.3.0&#x2F;24</td>
+<td>192.168.3.120</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Vmware NAT 192.168.46.0&#x2F;24</td>
+<td>192.168.46.1</td>
+<td>192.168.46.128</td>
+<td>-</td>
+</tr>
+<tr>
+<td>VPN 10.8.0.0&#x2F;24</td>
+<td>10.8.0.1</td>
+<td>-</td>
+<td>10.8.0.6</td>
+</tr>
+</tbody></table>
+<h2 id="目标和考虑因素"><a href="#目标和考虑因素" class="headerlink" title="目标和考虑因素"></a>目标和考虑因素</h2><ol>
+<li>能从公网访问家庭内网，包括 Windows 10 主机和虚拟机上的 Linux 主机。</li>
+<li>不想通过路由器的 NAT 功能直接将路由器局域网上的设备映射到公网。一是为了安全，二是为了避免运营商审查。</li>
+<li>已经尝试过使用 ZeroTier，将所需设备组建在一个局域网当中，可以作为备选方案。同时不想每次新增设备都安装 ZeroTier。</li>
+<li>想利用公网 IP 以及上行带宽尝尝鲜。</li>
+<li>想要能直连虚拟机上的 Linux 主机，而不是通过 Vmware 的 NAT 映射。不想每次新增服务都要设置 NAT，修改 Windows Defender 的规则。</li>
+</ol>
+<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="在-Windows-10-上安装-OpenVPN-服务器"><a href="#在-Windows-10-上安装-OpenVPN-服务器" class="headerlink" title="在 Windows 10 上安装 OpenVPN 服务器"></a>在 Windows 10 上安装 OpenVPN 服务器</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" title="在 Windows 10 上安装 OpenVPN 服务器">在 Windows 10 上安装 OpenVPN 服务器</a>。</p>
+<h3 id="在-iOS-和-macOS-上安装-OpenVPN-客户端"><a href="#在-iOS-和-macOS-上安装-OpenVPN-客户端" class="headerlink" title="在 iOS 和 macOS 上安装 OpenVPN 客户端"></a>在 iOS 和 macOS 上安装 OpenVPN 客户端</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" title="在 iOS 和 macOS 上安装 OpenVPN 客户端">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>。</p>
+<h3 id="客户端访问服务端其他的私有子网"><a href="#客户端访问服务端其他的私有子网" class="headerlink" title="客户端访问服务端其他的私有子网"></a>客户端访问服务端其他的私有子网</h3><p>如果在所需的每一个设备上都安装 OpenVPN，将它们连接在 VPN 的子网 10.8.0.0&#x2F;24 中，也是可以满足需求的，但是这和每个设备都安装 ZeroTier 差不多。</p>
+<h4 id="server-ovpn-新增配置"><a href="#server-ovpn-新增配置" class="headerlink" title="server.ovpn 新增配置"></a>server.ovpn 新增配置</h4><p>在 <code>server.ovpn</code> 配置文件中新增一行配置，这个配置的意思是将该路由配置统一推送给客户端，让它们可以访问服务端的其他私有子网。相当于将服务端的其他私有子网的情况告知客户端，这样客户端就知道发往 192.168.46.128 的 Packet 是发向哪里的。</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">push &quot;route 192.168.46.0 255.255.255.0&quot;</span><br></pre></td></tr></table></figure>
+
+<h4 id="打开-Windows-10-主机的路由转发功能"><a href="#打开-Windows-10-主机的路由转发功能" class="headerlink" title="打开 Windows 10 主机的路由转发功能"></a>打开 Windows 10 主机的路由转发功能</h4><ol>
+<li><code>Win + R</code> 输入 regedit 打开注册表。</li>
+<li>找到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters</code>，修改 <code>IPEnableRouter</code> 为 1。</li>
+<li>重启</li>
+</ol>
+<h4 id="为虚拟机上的-Linux-主机新增路由"><a href="#为虚拟机上的-Linux-主机新增路由" class="headerlink" title="为虚拟机上的 Linux 主机新增路由"></a>为虚拟机上的 Linux 主机新增路由</h4><p>在终端中输入命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route add -net 10.8.0.0/24 gw 192.168.46.1</span><br></pre></td></tr></table></figure>
+<p>这是为了让 OpenVPN 服务端的其他私有子网上的设备知道来自 10.8.0.0&#x2F;24 的 IP Packet 应该路由回 OpenVPN 服务端。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.51cto.com/richie/389636">透过openvpn来访问内网资源</a><br><a target="_blank" rel="noopener" href="https://limbo.moe/posts/2018/openvpn-routes">OpenVPN 路由详解</a><br><a target="_blank" rel="noopener" href="https://qastack.cn/superuser/865302/yet-another-routing-issue-in-openvpn-cannot-access-local-machines-while-on-vpn">OpenVPN中的另一个路由问题 - 在VPN上无法访问本地计算机</a><br><a target="_blank" rel="noopener" href="https://www.nixops.me/articles/openvpn-add-local-routing-table.html">openvpn添加本地路由表</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43615820/article/details/113660623">windows开启路由转发</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/snake-hand/p/3143041.html">linux route命令的使用详解</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/bcbobo21cn/article/details/52548923">Windows命令行route命令使用图解</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://www.moralok.top/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" class="post-title-link" itemprop="url">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-07 17:04:23" itemprop="dateCreated datePublished" datetime="2023-06-07T17:04:23+08:00">2023-06-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-08 01:57:47" itemprop="dateModified" datetime="2023-06-08T01:57:47+08:00">2023-06-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a target="_blank" rel="noopener" href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
+<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
+<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
+<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
+<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
+<p>将修改好的客户端配置文件导入到客户端中即可。</p>
+<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
+<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
+<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
+<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
+<blockquote>
+<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
+</blockquote>
+<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a target="_blank" rel="noopener" href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a target="_blank" rel="noopener" href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://www.moralok.top/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" class="post-title-link" itemprop="url">在 Windows 10 上安装 OpenVPN 服务器</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-07 15:18:02" itemprop="dateCreated datePublished" datetime="2023-06-07T15:18:02+08:00">2023-06-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-08 01:57:47" itemprop="dateModified" datetime="2023-06-08T01:57:47+08:00">2023-06-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装-OpenVPN-server"><a href="#安装-OpenVPN-server" class="headerlink" title="安装 OpenVPN server"></a>安装 OpenVPN server</h2><p>从 <a target="_blank" rel="noopener" href="https://openvpn.net/community-downloads/">OpenVPN 社区</a> 下载 Windows 64-bit MSI installer。本次安装的版本为 OpenVPN 2.6.4。</p>
+<blockquote>
+<p>注意事项：在选择安装类型时选择 Customize 而不要选择 Install Now。额外勾选 OpenVPN -&gt; OpenVPN Service -&gt; Entire feature will be installed on local hard drive 和 OpenSSL Utilities -&gt; EasyRSA 3 Certificate Management Scripts -&gt; Entire feature will be installed on local hard drive。</p>
+</blockquote>
+<p>安装完毕后，会弹出一条消息提示未找到可读的连接配置文件，暂时忽略。<br>此时在 控制面板\网络和 Internet\网络连接 中可以看到创建了两个新的网络适配器 OpenVPN TAP-Windows6 和 OpenVPN Wintun。</p>
+<h2 id="配置-OpenVPN-server"><a href="#配置-OpenVPN-server" class="headerlink" title="配置 OpenVPN server"></a>配置 OpenVPN server</h2><p>打开 Windows 10 终端程序。<br>进入 OpenVPN 默认安装目录中的 easy-rsa 目录。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd &#x27;C:\Program Files\OpenVPN\easy-rsa&#x27;</span><br></pre></td></tr></table></figure>
+<p>执行命令进入 Easy-RSA 3 Shell</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\EasyRSA-Start.bat</span><br></pre></td></tr></table></figure>
+<p>初始化公钥基础设施目录 pki</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa init-pki</span><br></pre></td></tr></table></figure>
+<p>构建证书颁发机构（CA）密钥，CA 根证书文件将在后续用于对其他证书和密钥进行签名。该命令要求输入 Common Name，输入主机名即可。创建的 ca.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki</code> 中，ca.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-ca nopass</span><br></pre></td></tr></table></figure>
+<p>构建服务器证书和密钥。创建的 server.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，server.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-server-full server nopass</span><br></pre></td></tr></table></figure>
+<p>构建客户端证书和密钥。创建的 client.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，client.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-client-full client nopass</span><br></pre></td></tr></table></figure>
+<p>生成 Diffie-Hellman 参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa gen-dh</span><br></pre></td></tr></table></figure>
+<p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制服务端配置文件模板 server.ovpn 到目录 <code>C：\Program Files\OpenVPN\config</code> 中，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">port 1194</span><br><span class="line">dh dh.pem</span><br><span class="line">duplicate-cn</span><br><span class="line"><span class="comment">;tls-auth ta.key 0</span></span><br></pre></td></tr></table></figure>
+<p>端口号按需修改，默认为1194，需要保证 OpenVPN 的网络流量可以通过防火墙，设置 Windows 10 Defender 允许 OpenVPN 通过即可。dh2048.pem 修改为生成的文件名 dh.pem。取消注释 duplicate-cn，让多个客户端使用同一个客户端证书。注释掉 tls-auth ta.key 0。复制 ca.crt，dh.pem，server.crt 和 server.key 到目录 C：\Program Files\OpenVPN\config 中。</p>
+<h2 id="启动与连接"><a href="#启动与连接" class="headerlink" title="启动与连接"></a>启动与连接</h2><p>启动 OpenVPN，点击连接，系统提示分配 IP 10.8.0.1。按配置，每次 OpenVPN server 都将为自己分配 10.8.0.1。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.eyyyye.com/article/39#menu_3">openvpn安装配置说明(windows系统)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/525197398">如何在Windows 10上安装和配置OpenVPN</a></p>
 
       
     </div>
@@ -266,9 +589,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-27 16:07:01 / 修改时间：21:53:44" itemprop="dateCreated datePublished" datetime="2023-05-27T16:07:01+08:00">2023-05-27</time>
+      <time title="创建时间：2023-05-27 16:07:01" itemprop="dateCreated datePublished" datetime="2023-05-27T16:07:01+08:00">2023-05-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-08 01:57:47" itemprop="dateModified" datetime="2023-06-08T01:57:47+08:00">2023-06-08</time>
     </span>
 
   
