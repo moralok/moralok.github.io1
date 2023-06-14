@@ -2,6 +2,8 @@
 title: 在 Ubuntu 上安装 Clash
 date: 2023-05-27 16:07:01
 tags:
+    - clash
+    - proxy
 ---
 
 ## 安装 Clash
