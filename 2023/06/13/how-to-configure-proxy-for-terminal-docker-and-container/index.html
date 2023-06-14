@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在 Ubuntu 上安装 Clash 后，Clash 通过监听本地的 7890 端口，提供代理服务。但是不同程序设置代理的方式不尽相同，并不是启动了 Clash 以及在某一处设置后，整个系统发出的 HTTP 请求都能经过代理。本文将介绍如何为终端、docker 和容器添加代理。 为终端设置代理有时候，我们需要在终端通过执行命令的方式访问网络和下载资源，比如使用 wget 和 curl。 设置 Sh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何为终端、docker 和容器设置代理">
+<meta property="og:url" content="http://www.moralok.com/2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="在 Ubuntu 上安装 Clash 后，Clash 通过监听本地的 7890 端口，提供代理服务。但是不同程序设置代理的方式不尽相同，并不是启动了 Clash 以及在某一处设置后，整个系统发出的 HTTP 请求都能经过代理。本文将介绍如何为终端、docker 和容器添加代理。 为终端设置代理有时候，我们需要在终端通过执行命令的方式访问网络和下载资源，比如使用 wget 和 curl。 设置 Sh">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-06-13T14:56:11.000Z">
+<meta property="article:modified_time" content="2023-06-14T06:06:29.244Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="proxy">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://www.moralok.com/2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://www.moralok.com/2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/","path":"2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/","title":"如何为终端、docker 和容器设置代理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>如何为终端、docker 和容器设置代理 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E7%BB%88%E7%AB%AF%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">为终端设置代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE-Shell-%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">1.1.</span> <span class="nav-text">设置 Shell 环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9-wget-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.</span> <span class="nav-text">修改 wget 配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA-docker-%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">为 docker 设置代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87-systemd-%E8%AE%BE%E7%BD%AE"><span class="nav-number">2.1.</span> <span class="nav-text">通过 systemd 设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9-dockerd-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">2.2.</span> <span class="nav-text">修改 dockerd 配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA-docker-%E5%AE%B9%E5%99%A8%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">为 docker 容器设置代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">3.1.</span> <span class="nav-text">修改配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E6%8C%87%E5%AE%9A%E5%AE%B9%E5%99%A8%E6%B7%BB%E5%8A%A0%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">3.2.</span> <span class="nav-text">为指定容器添加环境变量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.moralok.com/2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="如何为终端、docker 和容器设置代理 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何为终端、docker 和容器设置代理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-13 22:56:11" itemprop="dateCreated datePublished" datetime="2023-06-13T22:56:11+08:00">2023-06-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-14 14:06:29" itemprop="dateModified" datetime="2023-06-14T14:06:29+08:00">2023-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>在 <a href="/2023/05/27/how-to-install-clash-on-ubuntu/" title="在 Ubuntu 上安装 Clash">Ubuntu 上安装 Clash</a> 后，Clash 通过监听本地的 7890 端口，提供代理服务。但是不同程序设置代理的方式不尽相同，并不是启动了 Clash 以及在某一处设置后，整个系统发出的 HTTP 请求都能经过代理。本文将介绍如何为终端、docker 和容器添加代理。</p>
+<h2 id="为终端设置代理"><a href="#为终端设置代理" class="headerlink" title="为终端设置代理"></a>为终端设置代理</h2><p>有时候，我们需要在终端通过执行命令的方式访问网络和下载资源，比如使用 <code>wget</code> 和 <code>curl</code>。</p>
+<h3 id="设置-Shell-环境变量"><a href="#设置-Shell-环境变量" class="headerlink" title="设置 Shell 环境变量"></a>设置 Shell 环境变量</h3><p>这一类软件都是可以通过为 Shell 设置环境变量的方式来设置代理，涉及到的环境变量有 <code>http_proxy</code>、<code>https_proxy</code> 和 <code>no_proxy</code>。<br>仅为当前会话设置，执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=http://proxyAddress:port</span><br><span class="line">export https_proxy=http://proxyAddress:port</span><br><span class="line">export no_proxy=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>永久设置代理，在设置 Shell 环境变量的脚本中（不同 Shell 的配置文件不同，比如 <code>~/.bashrc</code> 或 <code>~/.zshrc</code>）添加：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=http://proxyAddress:port</span><br><span class="line">export https_proxy=http://proxyAddress:port</span><br><span class="line">export no_proxy=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>重新启动一个会话或者执行命令 <code>source ~/.bashrc</code> 使其在当前会话立即生效。</p>
+<h3 id="修改-wget-配置文件"><a href="#修改-wget-配置文件" class="headerlink" title="修改 wget 配置文件"></a>修改 wget 配置文件</h3><p>在搜索过程中发现还可以在 <code>wget</code> 的配置文件 <code>~/.wgetrc</code> 中添加:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">use_proxy = on</span><br><span class="line"></span><br><span class="line">http_proxy = http://proxyAddress:port</span><br><span class="line">https_proxy = http://proxyAddress:port</span><br></pre></td></tr></table></figure>
+
+<h2 id="为-docker-设置代理"><a href="#为-docker-设置代理" class="headerlink" title="为 docker 设置代理"></a>为 docker 设置代理</h2><p>如果你以为为终端设置代理后 docker 就会使用代理，那你就错了。在从官方的镜像仓库 pull 镜像反复出错后并收到类似 <code>Error response from daemon: Get &quot;https://registry-1.docker.io/v2/&quot;: read tcp 192.168.3.140:59460-&gt;44.205.64.79:443: read: connection reset by peer</code> 这样的报错信息后，我才开始怀疑我并没有真正给 docker 设置好代理。<br>在执行 <code>docker pull</code> 命令时，实际上命令是由守护进程 <code>docker daemon</code> 执行的。</p>
+<h3 id="通过-systemd-设置"><a href="#通过-systemd-设置" class="headerlink" title="通过 systemd 设置"></a>通过 systemd 设置</h3><p>如果你的 <code>docker daemon</code> 是通过 <code>systemd</code> 管理的，那么你可以通过设置 <code>docker.service</code> 服务的环境变量来设置代理。<br>执行命令查看 <code>docker.service</code> 信息，得知配置文件位置 <code>/lib/systemd/system/docker.service</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">~$ </span><span class="language-bash">systemctl status docker.service</span> </span><br><span class="line">● docker.service - Docker Application Container Engine</span><br><span class="line">     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)</span><br><span class="line">     Active: active (running) since Tue 2023-06-13 00:52:54 CST; 22h ago</span><br><span class="line">TriggeredBy: ● docker.socket</span><br><span class="line">       Docs: https://docs.docker.com</span><br><span class="line">   Main PID: 387690 (dockerd)</span><br><span class="line">      Tasks: 139</span><br><span class="line">     Memory: 89.6M</span><br><span class="line">        CPU: 1min 26.512s</span><br><span class="line">     CGroup: /system.slice/docker.service</span><br></pre></td></tr></table></figure>
+<p>在 <code>docker.service</code> 的 <code>[Service]</code> 模块添加：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Environment=HTTP_PROXY=http://proxyAddress:port</span><br><span class="line">Environment=HTTPS_PROXY=http://proxyAddress:port</span><br><span class="line">Environment=NO_PROXY=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>重新加载配置文件并重启服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker.service</span><br></pre></td></tr></table></figure>
+
+<h3 id="修改-dockerd-配置文件"><a href="#修改-dockerd-配置文件" class="headerlink" title="修改 dockerd 配置文件"></a>修改 dockerd 配置文件</h3><p>还可以修改 <code>dockerd</code> 配置文件，添加：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=&quot;http://proxyAddress:port&quot;</span><br></pre></td></tr></table></figure>
+<p>然后重启 <code>docker daemon</code> 即可。</p>
+<blockquote>
+<p>国内的镜像仓库在绝大多数时候都可以满足条件，但是存在个别镜像同步不及时的情况，如果使用 latest 标签拉取到的镜像并非近期的镜像，因此有时候需要直接从官方镜像仓库拉取镜像。</p>
+</blockquote>
+<h2 id="为-docker-容器设置代理"><a href="#为-docker-容器设置代理" class="headerlink" title="为 docker 容器设置代理"></a>为 docker 容器设置代理</h2><p>为 <code>docker daemon</code> 进程设置代理和为 docker 容器设置代理是有区别的。比如使用 docker 启动媒体服务器 jellyfin 后，jellyfin 的刮削功能就需要代理才能正常使用，这时候不要因为在很多地方设置过代理就以为容器内部已经在使用代理了。</p>
+<h3 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h3><p>创建或修改 <code>~/.docker/config.json</code>，添加：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;proxies&quot;</span><span class="punctuation">:</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;default&quot;</span><span class="punctuation">:</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;httpProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://proxyAddress:port&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;httpsProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://proxyAddress:port&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;noProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;localhost,127.0.0.1&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>此后创建的新容器，会自动设置环境变量来使用代理。</p>
+<h3 id="为指定容器添加环境变量"><a href="#为指定容器添加环境变量" class="headerlink" title="为指定容器添加环境变量"></a>为指定容器添加环境变量</h3><p>在启动容器时使用 <code>-e</code> 手动注入环境变量 <code>http_proxy</code>。这意味着进入容器使用 <code>export</code> 设置环境变量的方式也是可行的。</p>
+<blockquote>
+<p>注意：如果代理是使用宿主机的代理，当网络为 <code>bridge</code> 模式，proxyAddress 需要填写宿主机的 IP；如果使用 <code>host</code> 模式，proxyAddress 可以填写 127.0.0.1。</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>不要因为在很多地方设置过代理，就想当然地以为当前的访问也是经过代理的。每个软件设置代理的方式不尽相同，但是大体上可以归结为：</p>
+<ol>
+<li>使用系统的环境变量</li>
+<li>修改软件的配置文件</li>
+<li>执行时注入参数</li>
+</ol>
+<p>举一反三，像 <code>apt</code> 和 <code>git</code> 这类软件也是有其设置代理的方法。当你的代理稳定但是相应的访问失败时，大胆假设你的代理没有设置成功。要理清楚，当前的访问是谁发起的，才能正确地使用关键词搜索到正确的设置方式。</p>
+<blockquote>
+<p>原本我在 docker 相关的使用中，有关代理的设置方式是通过修改配置文件，实现永久、全局的代理配置。但是在后续的使用中，发现代理在一些场景（比如使用 cloudflare tunnel）中会引起不易排查的问题，决定采用临时、局部的配置方式。</p>
+</blockquote>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/46973701">Linux 让终端走代理的几种方法</a><br><a target="_blank" rel="noopener" href="https://blog.51cto.com/u_14814563/5415887">Linux ❀ wget设置代理</a><br><a target="_blank" rel="noopener" href="https://cloud-atlas.readthedocs.io/zh_CN/latest/docker/network/docker_proxy.html#docker-server-proxy">配置Docker使用代理</a><br><a target="_blank" rel="noopener" href="https://note.qidong.name/2020/05/docker-proxy/">Docker的三种网络代理配置</a><br><a target="_blank" rel="noopener" href="https://neucrack.com/p/286">docker 设置代理，以及国内加速镜像设置</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/proxy/" rel="tag"># proxy</a>
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/06/07/how-to-use-OpenVPN-to-access-home-network/" rel="prev" title="使用 OpenVPN 访问家庭内网">
+                  <i class="fa fa-chevron-left"></i> 使用 OpenVPN 访问家庭内网
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
