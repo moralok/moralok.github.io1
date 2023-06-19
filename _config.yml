@@ -13,7 +13,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://www.moralok.com
+url: https://moralok.com
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -103,3 +103,28 @@ theme: next
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: ''
+
+
+
+# hexo-word-counter
+symbols_count_time:
+  symbols: true # 文章字数统计
+  time: true # 文章阅读时长
+  total_symbols: true # 站点总字数统计
+  total_time: true # 站点总阅读时长
+  exclude_codeblock: false # 排除代码字数统计
+  wpm: 300 # 每分钟阅读数
+  suffix: "mins."
+
+# hexo-generator-searchdb
+search:
+  path: search.xml
+  field: post
+  content: true
+  format: html
+
+# hexo-leancloud-counter-security
+leancloud_counter_security:
+  enable_sync: true
+  app_id: 3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI
+  app_key: KKBQicvLunsmAfgH3DJJXvng

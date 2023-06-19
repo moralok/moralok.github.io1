@@ -1,0 +1,25 @@
+# 菜单
+menu:
+  home: / || fa fa-home
+  tags: /tags/ || fa fa-tags
+
+# hexo-word-counter
+post_meta:
+  item_text: true # 是否显示文字
+
+symbols_count_time:
+  separated_meta: true # 是否另起一行
+  item_text_total: false # 页面底部统计数量前是否显示文字描述
+
+# hexo-generator-searchdb
+local_search:
+  enable: true
+  # Show top n results per article, show all results by setting to -1
+  top_n_per_article: 1
+
+# leancloud_counter_security
+leancloud_visitors:
+  enable: true
+  app_id: 3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI
+  app_key: KKBQicvLunsmAfgH3DJJXvng
+  security: false
