@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Docker 常用命令列表</title>
+    <url>/2020/08/19/docker-frequently-used-commands/</url>
+    <content><![CDATA[<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><p>从 Docker 官方命令行参考中按顺序选取常用的命令和用法。</p>
+<h3 id="docker-attach"><a href="#docker-attach" class="headerlink" title="docker attach"></a>docker attach</h3><p>将本地标准输入、输出和错误流附加到一个正在运行的容器。</p>
+<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker attach [OPTIONS] CONTAINER</span><br></pre></td></tr></table></figure>
+
+<h4 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h4><p>使用 <code>docker attach</code> 通过容器 ID 或名称将终端的标准输入、输出和错误附加到正在运行的容器。这允许你查看其正在进行的输出或以交互方式控制它，就好像命令直接在你的终端中运行一样。</p>
+<p>如果 <code>docker run</code> 同时指定 <code>-it</code> 选项，使用 <code>CTRL-p CTRL-q</code> 退出 <code>docker attach</code> 时，不影响容器继续运行。</p>
+<h4 id="选项"><a href="#选项" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--detach-keys</code></td>
+<td></td>
+<td>覆盖用于从容器分离的键序列</td>
+</tr>
+<tr>
+<td><code>--sig-proxy</code></td>
+<td>true</td>
+<td>代理转发所有收到的信号给进程</td>
+</tr>
+</tbody></table>
+<h3 id="docker-exec"><a href="#docker-exec" class="headerlink" title="docker exec"></a>docker exec</h3><p>在正在运行中的容器里执行命令。</p>
+<h4 id="用法-1"><a href="#用法-1" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker exec [OPTIONS] CONTAINER COMMAND [ARG...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-1"><a href="#选项-1" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--detach</code>,<code>-d</code></td>
+<td>分离模式：在后台运行命令</td>
+</tr>
+<tr>
+<td><code>--env</code>,<code>-e</code></td>
+<td>设置环境变量</td>
+</tr>
+<tr>
+<td><code>--interactive</code>,<code>-i</code></td>
+<td>即使未附加也保持 STDIN 打开</td>
+</tr>
+<tr>
+<td><code>--tty</code>,<code>-t</code></td>
+<td>分配伪 TTY</td>
+</tr>
+<tr>
+<td><code>--workdir</code>,<code>-w</code></td>
+<td>容器内的工作目录</td>
+</tr>
+</tbody></table>
+<h3 id="docker-images"><a href="#docker-images" class="headerlink" title="docker images"></a>docker images</h3><p>列出镜像。</p>
+<h4 id="用法-2"><a href="#用法-2" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker images [OPTIONS] [REPOSITORY[:TAG]]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-2"><a href="#选项-2" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--all</code>,<code>-a</code></td>
+<td>展示所有镜像</td>
+</tr>
+</tbody></table>
+<h3 id="docker-info"><a href="#docker-info" class="headerlink" title="docker info"></a>docker info</h3><p>展示系统范围的信息。</p>
+<h4 id="用法-3"><a href="#用法-3" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker info [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-3"><a href="#选项-3" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--format</code>,<code>-f</code></td>
+<td>使用指定模板格式化输出</td>
+</tr>
+</tbody></table>
+<h3 id="docker-inspect"><a href="#docker-inspect" class="headerlink" title="docker inspect"></a>docker inspect</h3><p>返回有关 Docker 对象的低级信息。</p>
+<h4 id="用法-4"><a href="#用法-4" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker inspect [OPTIONS] NAME|ID [NAME|ID...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-4"><a href="#选项-4" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--format</code>,<code>-f</code></td>
+<td>使用指定模板格式化输出</td>
+</tr>
+</tbody></table>
+<h3 id="docker-logs"><a href="#docker-logs" class="headerlink" title="docker logs"></a>docker logs</h3><p>获取容器的日志。</p>
+<h4 id="用法-5"><a href="#用法-5" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker logs [OPTIONS] CONTAINER</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-5"><a href="#选项-5" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--follow</code>,<code>-f</code></td>
+<td>按照日志输出</td>
+</tr>
+<tr>
+<td><code>--since</code></td>
+<td>显示指定时间戳（2013-01-02T13:23:37Z）或相对时间（42m）后的日志</td>
+</tr>
+<tr>
+<td><code>--tail</code>,<code>-n</code></td>
+<td>从日志末尾开始显示的行数</td>
+</tr>
+<tr>
+<td><code>--timestamps</code>,<code>-t</code></td>
+<td>显示时间戳</td>
+</tr>
+<tr>
+<td><code>--until</code></td>
+<td>显示指定时间戳（2013-01-02T13:23:37Z）或相对时间（42m）前的日志</td>
+</tr>
+</tbody></table>
+<h3 id="docker-network"><a href="#docker-network" class="headerlink" title="docker network"></a>docker network</h3><p>管理网络。</p>
+<h4 id="用法-6"><a href="#用法-6" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network COMMAND</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-network-connect"><a href="#docker-network-connect" class="headerlink" title="docker network connect"></a>docker network connect</h4><p>将容器连接到网络。</p>
+<h5 id="用法-7"><a href="#用法-7" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network connect [OPTIONS] NETWORK CONTAINER</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-network-create"><a href="#docker-network-create" class="headerlink" title="docker network create"></a>docker network create</h4><p>创建网络。</p>
+<h5 id="用法-8"><a href="#用法-8" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network create [OPTIONS] NETWORK</span><br></pre></td></tr></table></figure>
+
+<h5 id="选项-6"><a href="#选项-6" class="headerlink" title="选项"></a>选项</h5><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--driver</code>,<code>-d</code></td>
+<td>bridge</td>
+<td>按照日志输出</td>
+</tr>
+</tbody></table>
+<h4 id="docker-network-disconnect"><a href="#docker-network-disconnect" class="headerlink" title="docker network disconnect"></a>docker network disconnect</h4><p>断开容器与网络的连接。</p>
+<h5 id="用法-9"><a href="#用法-9" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network create [OPTIONS] NETWORK</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-network-inspect"><a href="#docker-network-inspect" class="headerlink" title="docker network inspect"></a>docker network inspect</h4><p>显示一个或多个网络的详细信息。</p>
+<h5 id="用法-10"><a href="#用法-10" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network inspect [OPTIONS] NETWORK [NETWORK...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-network-ls"><a href="#docker-network-ls" class="headerlink" title="docker network ls"></a>docker network ls</h4><p>列出网络。</p>
+<h5 id="用法-11"><a href="#用法-11" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network ls [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<h5 id="选项-7"><a href="#选项-7" class="headerlink" title="选项"></a>选项</h5><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--filter</code>,<code>-f</code></td>
+<td>提供过滤值（例如 driver&#x3D;bridge）</td>
+<td></td>
+</tr>
+</tbody></table>
+<h4 id="docker-network-rm"><a href="#docker-network-rm" class="headerlink" title="docker network rm"></a>docker network rm</h4><p>删除一个或多个网络。</p>
+<h5 id="用法-12"><a href="#用法-12" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker network rm NETWORK [NETWORK...]</span><br></pre></td></tr></table></figure>
+
+<h5 id="选项-8"><a href="#选项-8" class="headerlink" title="选项"></a>选项</h5><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--filter</code>,<code>-f</code></td>
+<td>提供过滤值（例如 driver&#x3D;bridge）</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="docker-port"><a href="#docker-port" class="headerlink" title="docker port"></a>docker port</h3><p>列出容器的端口映射或特定映射。</p>
+<h4 id="用法-13"><a href="#用法-13" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker port CONTAINER [PRIVATE_PORT[/PROTO]]</span><br></pre></td></tr></table></figure>
+
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker ps</span><br><span class="line"></span><br><span class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                                            NAMES</span><br><span class="line">b650456536c7        busybox:latest      top                 54 minutes ago      Up 54 minutes       0.0.0.0:1234-&gt;9876/tcp, 0.0.0.0:4321-&gt;7890/tcp   test</span><br><span class="line">docker port test</span><br><span class="line"></span><br><span class="line">7890/tcp -&gt; 0.0.0.0:4321</span><br><span class="line">9876/tcp -&gt; 0.0.0.0:1234</span><br><span class="line">docker port test 7890/tcp</span><br><span class="line"></span><br><span class="line">0.0.0.0:4321</span><br><span class="line">docker port test 7890/udp</span><br><span class="line"></span><br><span class="line">2014/06/24 11:53:36 Error: No public port &#x27;7890/udp&#x27; published for test</span><br><span class="line">docker port test 7890</span><br><span class="line"></span><br><span class="line">0.0.0.0:4321</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-ps"><a href="#docker-ps" class="headerlink" title="docker ps"></a>docker ps</h3><p>列出容器。</p>
+<h4 id="用法-14"><a href="#用法-14" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker ps [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-9"><a href="#选项-9" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--all</code>,<code>-a</code></td>
+<td>显示所有容器（默认只显示运行中的容器）</td>
+</tr>
+<tr>
+<td><code>--filter</code>,<code>-f</code></td>
+<td>根据提供的条件过滤输出</td>
+</tr>
+</tbody></table>
+<h3 id="docker-pull"><a href="#docker-pull" class="headerlink" title="docker pull"></a>docker pull</h3><p>从仓库下载镜像。</p>
+<h4 id="用法-15"><a href="#用法-15" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull [OPTIONS] NAME[:TAG|@DIGEST]</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-rename"><a href="#docker-rename" class="headerlink" title="docker rename"></a>docker rename</h3><p>重命名容器。</p>
+<h4 id="用法-16"><a href="#用法-16" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker rename CONTAINER NEW_NAME</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-restart"><a href="#docker-restart" class="headerlink" title="docker restart"></a>docker restart</h3><p>重启一个或多个容器。</p>
+<h4 id="用法-17"><a href="#用法-17" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker restart [OPTIONS] CONTAINER [CONTAINER...]</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-rm"><a href="#docker-rm" class="headerlink" title="docker rm"></a>docker rm</h3><p>移除一个或多个容器。</p>
+<h4 id="用法-18"><a href="#用法-18" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker rm [OPTIONS] CONTAINER [CONTAINER...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-10"><a href="#选项-10" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--force</code>,<code>-f</code></td>
+<td>强制删除正在运行的容器（使用 SIGKILL）</td>
+</tr>
+</tbody></table>
+<h3 id="docker-rmi"><a href="#docker-rmi" class="headerlink" title="docker rmi"></a>docker rmi</h3><p>删除一个或多个镜像。</p>
+<h4 id="用法-19"><a href="#用法-19" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker rmi [OPTIONS] IMAGE [IMAGE...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-11"><a href="#选项-11" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--force</code>,<code>-f</code></td>
+<td>强制删除镜像（当其正在被容器使用中）</td>
+</tr>
+</tbody></table>
+<h3 id="docker-run"><a href="#docker-run" class="headerlink" title="docker run"></a>docker run</h3><p>从镜像创建并运行新容器。</p>
+<h4 id="用法-20"><a href="#用法-20" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-12"><a href="#选项-12" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--attach</code>,<code>-a</code></td>
+<td></td>
+<td>附加到 STDIN、STDOUT 或 STDERR</td>
+</tr>
+<tr>
+<td><code>--detach</code>,<code>-d</code></td>
+<td></td>
+<td>在后台运行容器并打印容器 ID</td>
+</tr>
+<tr>
+<td><code>--env</code>,<code>-e</code></td>
+<td></td>
+<td>设置环境变量</td>
+</tr>
+<tr>
+<td><code>--expose</code></td>
+<td></td>
+<td>公开一个端口或一系列端口</td>
+</tr>
+<tr>
+<td><code>--interactive</code>,<code>-i</code></td>
+<td></td>
+<td>即使未附加，也要保持 STDIN 打开</td>
+</tr>
+<tr>
+<td><code>--name</code></td>
+<td></td>
+<td>为容器命名</td>
+</tr>
+<tr>
+<td><code>--network</code></td>
+<td></td>
+<td>将容器连接到网络</td>
+</tr>
+<tr>
+<td><code>--publish</code>,<code>-p</code></td>
+<td></td>
+<td>将容器的端口发布到主机</td>
+</tr>
+<tr>
+<td><code>--restart</code></td>
+<td>no</td>
+<td>容器退出时应用的重启策略</td>
+</tr>
+<tr>
+<td><code>--tty</code>,<code>-t</code></td>
+<td></td>
+<td>分配伪 TTY</td>
+</tr>
+<tr>
+<td><code>--volume</code>,<code>-v</code></td>
+<td></td>
+<td>绑定挂载卷</td>
+</tr>
+</tbody></table>
+<h3 id="docker-search"><a href="#docker-search" class="headerlink" title="docker search"></a>docker search</h3><p>在 Docker Hub 中搜索镜像。</p>
+<h4 id="用法-21"><a href="#用法-21" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker search [OPTIONS] TERM</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-13"><a href="#选项-13" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--filter</code>,<code>-f</code></td>
+<td>根据提供的条件过滤输出</td>
+</tr>
+<tr>
+<td><code>--limit</code></td>
+<td>最大搜索结果数量</td>
+</tr>
+</tbody></table>
+<h3 id="docker-start"><a href="#docker-start" class="headerlink" title="docker start"></a>docker start</h3><p>启动一个或多个容器。</p>
+<h4 id="用法-22"><a href="#用法-22" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker start [OPTIONS] CONTAINER [CONTAINER...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-14"><a href="#选项-14" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--attach</code>,<code>-a</code></td>
+<td>附加 STDOUT&#x2F;STDERR 和转发信号</td>
+</tr>
+<tr>
+<td><code>--interactive</code>,<code>-i</code></td>
+<td>附加容器的 STDIN</td>
+</tr>
+</tbody></table>
+<h3 id="docker-stats"><a href="#docker-stats" class="headerlink" title="docker stats"></a>docker stats</h3><p>显示容器资源使用统计的实时流。</p>
+<h4 id="用法-23"><a href="#用法-23" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker stats [OPTIONS] [CONTAINER...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="选项-15"><a href="#选项-15" class="headerlink" title="选项"></a>选项</h4><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--all</code>,<code>-a</code></td>
+<td>显示所有容器（默认只显示运行中的容器）</td>
+</tr>
+</tbody></table>
+<h4 id="例子-1"><a href="#例子-1" class="headerlink" title="例子"></a>例子</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker stats</span><br><span class="line">CONTAINER ID   NAME                 CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS</span><br><span class="line">3d2180bad26e   zoo1                 0.05%     34.98MiB / 15.59GiB   0.22%     38.6MB / 0B       5.39MB / 656MB    39</span><br><span class="line">828987756ee6   zoo3                 0.04%     80.3MiB / 15.59GiB    0.50%     38.6MB / 0B       20.9MB / 522MB    32</span><br><span class="line">d6e23f304046   zoo2                 0.04%     78.84MiB / 15.59GiB   0.49%     38.6MB / 0B       19.8MB / 883MB    32</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-stop"><a href="#docker-stop" class="headerlink" title="docker stop"></a>docker stop</h3><p>停止一个或多个正在运行的容器。</p>
+<h4 id="用法-24"><a href="#用法-24" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker stop [OPTIONS] CONTAINER [CONTAINER...]</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-top"><a href="#docker-top" class="headerlink" title="docker top"></a>docker top</h3><p>显示容器中的运行进程。</p>
+<h4 id="用法-25"><a href="#用法-25" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker top CONTAINER [ps OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<h4 id="例子-2"><a href="#例子-2" class="headerlink" title="例子"></a>例子</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker top jellyfin</span><br><span class="line">UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD</span><br><span class="line">root                652954              652845              0                   6月16                ?                   00:00:00            /package/admin/s6/command/s6-svscan -d4 -- /run/service</span><br><span class="line">root                653039              652954              0                   6月16                ?                   00:00:00            s6-supervise s6-linux-init-shutdownd</span><br><span class="line">root                653040              653039              0                   6月16                ?                   00:00:00            /package/admin/s6-linux-init/command/s6-linux-init-shutdownd -c /run/s6/basedir -g 3000 -C -B</span><br><span class="line">root                653071              652954              0                   6月16                ?                   00:00:00            s6-supervise s6rc-fdholder</span><br><span class="line">root                653072              652954              0                   6月16                ?                   00:00:00            s6-supervise svc-jellyfin</span><br><span class="line">root                653073              652954              0                   6月16                ?                   00:00:00            s6-supervise s6rc-oneshot-runner</span><br><span class="line">root                653081              653073              0                   6月16                ?                   00:00:00            /package/admin/s6/command/s6-ipcserverd -1 -- /package/admin/s6/command/s6-ipcserver-access -v0 -E -l0 -i data/rules -- /package/admin/s6/command/s6-sudod -t 30000 -- /package/admin/s6-rc/command/s6-rc-oneshot-run -l ../.. --</span><br><span class="line">user                653197              653072              0                   6月16                ?                   00:11:38            /usr/bin/jellyfin --ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-version"><a href="#docker-version" class="headerlink" title="docker version"></a>docker version</h3><p>显示 Docker 版本信息。</p>
+<h4 id="用法-26"><a href="#用法-26" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker version [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="docker-volume"><a href="#docker-volume" class="headerlink" title="docker volume"></a>docker volume</h3><p>管理卷。</p>
+<h4 id="用法-27"><a href="#用法-27" class="headerlink" title="用法"></a>用法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume COMMAND</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-volume-create"><a href="#docker-volume-create" class="headerlink" title="docker volume create"></a>docker volume create</h4><p>创建卷。</p>
+<h5 id="用法-28"><a href="#用法-28" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume create [OPTIONS] [VOLUME]</span><br></pre></td></tr></table></figure>
+
+<h5 id="选项-16"><a href="#选项-16" class="headerlink" title="选项"></a>选项</h5><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--driver</code>,<code>-d</code></td>
+<td>local</td>
+<td>指定卷驱动程序名称</td>
+</tr>
+</tbody></table>
+<h4 id="docker-volume-inspect"><a href="#docker-volume-inspect" class="headerlink" title="docker volume inspect"></a>docker volume inspect</h4><p>显示一个或多个卷的详细信息。</p>
+<h5 id="用法-29"><a href="#用法-29" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume inspect [OPTIONS] VOLUME [VOLUME...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="docker-volume-ls"><a href="#docker-volume-ls" class="headerlink" title="docker volume ls"></a>docker volume ls</h4><p>列出卷。</p>
+<h5 id="用法-30"><a href="#用法-30" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume ls [OPTIONS]</span><br></pre></td></tr></table></figure>
+
+<h5 id="选项-17"><a href="#选项-17" class="headerlink" title="选项"></a>选项</h5><table>
+<thead>
+<tr>
+<th>名称和缩写</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--filter</code>,<code>-f</code></td>
+<td>local</td>
+<td>提供过滤值（例如 dangling&#x3D;true）</td>
+</tr>
+</tbody></table>
+<h4 id="docker-volume-rm"><a href="#docker-volume-rm" class="headerlink" title="docker volume rm"></a>docker volume rm</h4><p>删除一个或多个卷。</p>
+<h5 id="用法-31"><a href="#用法-31" class="headerlink" title="用法"></a>用法</h5><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume rm [OPTIONS] VOLUME [VOLUME...]</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://docs.docker.com/engine/reference/run/">Docker 命令行参考</a><br><a href="https://www.cnblogs.com/doujianli/p/10048707.html">深入探究docker attach的退出方式</a></p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在 Ubuntu 上安装 Clash</title>
+    <url>/2023/05/27/how-to-install-clash-on-ubuntu/</url>
+    <content><![CDATA[<h2 id="安装-Clash"><a href="#安装-Clash" class="headerlink" title="安装 Clash"></a>安装 Clash</h2><p>从 <a href="https://github.com/Dreamacro/clash/releases">GitHub</a> 下载预构建的二进制文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ wget https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz</span><br></pre></td></tr></table></figure>
+
+<p>使用 gzip 解压压缩包 clash-linux-amd64-v1.16.0.gz 得到 clash-linux-amd64-v1.16.0。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ gzip -d clash-linux-amd64-v1.16.0.gz </span><br><span class="line">gzip: clash-linux-amd64-v1.16.0: Value too large for defined data type</span><br></pre></td></tr></table></figure>
+<p>忽略提示。</p>
+<p>移动二进制文件到目录 <code>/usr/local/bin</code> 并且重命名为 clash。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ sudo mv clash-linux-amd64-v1.16.0 /usr/local/bin/clash</span><br><span class="line">[sudo] password for wrmao:</span><br></pre></td></tr></table></figure>
+
+<p>现在可以通过 <code>clash -v</code> 查看 Clash 的版本信息。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash -v</span><br><span class="line">Clash v1.16.0 linux amd64 with go1.20.4 Fri May 19 13:57:32 UTC 2023</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用-Clash"><a href="#使用-Clash" class="headerlink" title="使用 Clash"></a>使用 Clash</h2><p>使用命令 <code>clash</code> 启动，可以看到日志。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash</span><br><span class="line">INFO[0000] Can&#x27;t find config, create a initial config file </span><br><span class="line">INFO[0000] Can&#x27;t find MMDB, start download              </span><br><span class="line">INFO[0003] Mixed(http+socks) proxy listening at: 127.0.0.1:7890</span><br></pre></td></tr></table></figure>
+
+<p>在第一次启动 Clash 时，Clash 会在 <code>~/.config</code> 下创建目录 clash，并在其中创建 3 个文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ ls</span><br><span class="line">cache.db  config.yaml  Country.mmdb</span><br></pre></td></tr></table></figure>
+<p>其中 config.yaml 是 Clash 的配置文件，Country.mmdb 是全球 IP 库，可以实现各个国家的 IP 信息解析和地理定位。<br>config.yaml 的内容直接从已有的配置文件复制过来。</p>
+<p>可以浏览器访问 <a href="http://clash.razord.top/#/proxies">http://clash.razord.top/#/proxies</a> 选择代理服务器。</p>
+<h2 id="设置-Clash-为后台服务"><a href="#设置-Clash-为后台服务" class="headerlink" title="设置 Clash 为后台服务"></a>设置 Clash 为后台服务</h2><p>参考官方文档 <a href="https://dreamacro.github.io/clash/introduction/service.html">Clash as a service</a>。</p>
+<p>拷贝配置文件到 <code>/etc/clash</code>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ sudo cp config.yaml /etc/clash/</span><br><span class="line">:~/.config/clash$ sudo cp Country.mmdb /etc/clash/</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>/etc/systemd/system/clash.service</code> 创建 systemd 配置文件：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Clash daemon, A rule-based proxy in Go.</span><br><span class="line">After=network-online.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">Restart=always </span><br><span class="line">ExecStart=/usr/local/bin/clash -d /etc/clash</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<p>之后重载 systemd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<p>设置系统开机时启动 clashd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl enable clash</span><br></pre></td></tr></table></figure>
+
+<p>马上启动 clashd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl start clash</span><br></pre></td></tr></table></figure>
+
+<p>检查 Clash 的健康状态和日志：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl status clash</span><br><span class="line">journalctl -xe</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>clash</tag>
+        <tag>proxy</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在 iOS 和 macOS 上安装 OpenVPN 客户端</title>
+    <url>/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/</url>
+    <content><![CDATA[<h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
+<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
+<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
+<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
+<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
+<p>将修改好的客户端配置文件导入到客户端中即可。</p>
+<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
+<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
+<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
+<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
+<blockquote>
+<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
+</blockquote>
+<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
+]]></content>
+      <tags>
+        <tag>OpenVPN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在 Windows 10 上安装 OpenVPN 服务器</title>
+    <url>/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/</url>
+    <content><![CDATA[<h2 id="安装-OpenVPN-server"><a href="#安装-OpenVPN-server" class="headerlink" title="安装 OpenVPN server"></a>安装 OpenVPN server</h2><p>从 <a href="https://openvpn.net/community-downloads/">OpenVPN 社区</a> 下载 Windows 64-bit MSI installer。本次安装的版本为 OpenVPN 2.6.4。</p>
+<blockquote>
+<p>注意事项：在选择安装类型时选择 Customize 而不要选择 Install Now。额外勾选 OpenVPN -&gt; OpenVPN Service -&gt; Entire feature will be installed on local hard drive 和 OpenSSL Utilities -&gt; EasyRSA 3 Certificate Management Scripts -&gt; Entire feature will be installed on local hard drive。</p>
+</blockquote>
+<p>安装完毕后，会弹出一条消息提示未找到可读的连接配置文件，暂时忽略。<br>此时在 控制面板\网络和 Internet\网络连接 中可以看到创建了两个新的网络适配器 OpenVPN TAP-Windows6 和 OpenVPN Wintun。</p>
+<h2 id="配置-OpenVPN-server"><a href="#配置-OpenVPN-server" class="headerlink" title="配置 OpenVPN server"></a>配置 OpenVPN server</h2><p>打开 Windows 10 终端程序。<br>进入 OpenVPN 默认安装目录中的 easy-rsa 目录。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd &#x27;C:\Program Files\OpenVPN\easy-rsa&#x27;</span><br></pre></td></tr></table></figure>
+<p>执行命令进入 Easy-RSA 3 Shell</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">.\EasyRSA-Start.bat</span><br></pre></td></tr></table></figure>
+<p>初始化公钥基础设施目录 pki</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa init-pki</span><br></pre></td></tr></table></figure>
+<p>构建证书颁发机构（CA）密钥，CA 根证书文件将在后续用于对其他证书和密钥进行签名。该命令要求输入 Common Name，输入主机名即可。创建的 ca.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki</code> 中，ca.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa build-ca nopass</span><br></pre></td></tr></table></figure>
+<p>构建服务器证书和密钥。创建的 server.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，server.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa build-server-full server nopass</span><br></pre></td></tr></table></figure>
+<p>构建客户端证书和密钥。创建的 client.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，client.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa build-client-full client nopass</span><br></pre></td></tr></table></figure>
+<p>生成 Diffie-Hellman 参数</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa gen-dh</span><br></pre></td></tr></table></figure>
+<p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制服务端配置文件模板 server.ovpn 到目录 <code>C：\Program Files\OpenVPN\config</code> 中，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">port 1194</span><br><span class="line">dh dh.pem</span><br><span class="line">duplicate-cn</span><br><span class="line"><span class="comment">;tls-auth ta.key 0</span></span><br></pre></td></tr></table></figure>
+<p>端口号按需修改，默认为1194，需要保证 OpenVPN 的网络流量可以通过防火墙，设置 Windows 10 Defender 允许 OpenVPN 通过即可。dh2048.pem 修改为生成的文件名 dh.pem。取消注释 duplicate-cn，让多个客户端使用同一个客户端证书。注释掉 tls-auth ta.key 0。复制 ca.crt，dh.pem，server.crt 和 server.key 到目录 C：\Program Files\OpenVPN\config 中。</p>
+<h2 id="启动与连接"><a href="#启动与连接" class="headerlink" title="启动与连接"></a>启动与连接</h2><p>启动 OpenVPN，点击连接，系统提示分配 IP 10.8.0.1。按配置，每次 OpenVPN server 都将为自己分配 10.8.0.1。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://blog.eyyyye.com/article/39#menu_3">openvpn安装配置说明(windows系统)</a><br><a href="https://zhuanlan.zhihu.com/p/525197398">如何在Windows 10上安装和配置OpenVPN</a></p>
+]]></content>
+      <tags>
+        <tag>OpenVPN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 OpenVPN 访问家庭内网</title>
+    <url>/2023/06/07/how-to-use-OpenVPN-to-access-home-network/</url>
+    <content><![CDATA[<h2 id="网络概况"><a href="#网络概况" class="headerlink" title="网络概况"></a>网络概况</h2><p>宽带是电信宽带，分配了动态的公网 IP。<br>光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。<br>一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。<br>Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机，IP 192.168.46.128。Windows 10 主机在子网中的 IP 为 192.168.3.1。</p>
+<table>
+<thead>
+<tr>
+<th>子网</th>
+<th>Windows 10 主机</th>
+<th>Linux 主机</th>
+<th>客户端</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路由器 192.168.3.0&#x2F;24</td>
+<td>192.168.3.120</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Vmware NAT 192.168.46.0&#x2F;24</td>
+<td>192.168.46.1</td>
+<td>192.168.46.128</td>
+<td>-</td>
+</tr>
+<tr>
+<td>VPN 10.8.0.0&#x2F;24</td>
+<td>10.8.0.1</td>
+<td>-</td>
+<td>10.8.0.6</td>
+</tr>
+</tbody></table>
+<h2 id="目标和考虑因素"><a href="#目标和考虑因素" class="headerlink" title="目标和考虑因素"></a>目标和考虑因素</h2><ol>
+<li>能从公网访问家庭内网，包括 Windows 10 主机和虚拟机上的 Linux 主机。</li>
+<li>不想通过路由器的 NAT 功能直接将路由器局域网上的设备映射到公网。一是为了安全，二是为了避免运营商审查。</li>
+<li>已经尝试过使用 ZeroTier，将所需设备组建在一个局域网当中，可以作为备选方案。同时不想每次新增设备都安装 ZeroTier。</li>
+<li>想利用公网 IP 以及上行带宽尝尝鲜。</li>
+<li>想要能直连虚拟机上的 Linux 主机，而不是通过 Vmware 的 NAT 映射。不想每次新增服务都要设置 NAT，修改 Windows Defender 的规则。</li>
+</ol>
+<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="在-Windows-10-上安装-OpenVPN-服务器"><a href="#在-Windows-10-上安装-OpenVPN-服务器" class="headerlink" title="在 Windows 10 上安装 OpenVPN 服务器"></a>在 Windows 10 上安装 OpenVPN 服务器</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" title="在 Windows 10 上安装 OpenVPN 服务器">在 Windows 10 上安装 OpenVPN 服务器</a>。</p>
+<h3 id="在-iOS-和-macOS-上安装-OpenVPN-客户端"><a href="#在-iOS-和-macOS-上安装-OpenVPN-客户端" class="headerlink" title="在 iOS 和 macOS 上安装 OpenVPN 客户端"></a>在 iOS 和 macOS 上安装 OpenVPN 客户端</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" title="在 iOS 和 macOS 上安装 OpenVPN 客户端">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>。</p>
+<h3 id="客户端访问服务端其他的私有子网"><a href="#客户端访问服务端其他的私有子网" class="headerlink" title="客户端访问服务端其他的私有子网"></a>客户端访问服务端其他的私有子网</h3><p>如果在所需的每一个设备上都安装 OpenVPN，将它们连接在 VPN 的子网 10.8.0.0&#x2F;24 中，也是可以满足需求的，但是这和每个设备都安装 ZeroTier 差不多。</p>
+<h4 id="server-ovpn-新增配置"><a href="#server-ovpn-新增配置" class="headerlink" title="server.ovpn 新增配置"></a>server.ovpn 新增配置</h4><p>在 <code>server.ovpn</code> 配置文件中新增一行配置，这个配置的意思是将该路由配置统一推送给客户端，让它们可以访问服务端的其他私有子网。相当于将服务端的其他私有子网的情况告知客户端，这样客户端就知道发往 192.168.46.128 的 Packet 是发向哪里的。</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">push &quot;route 192.168.46.0 255.255.255.0&quot;</span><br></pre></td></tr></table></figure>
+
+<h4 id="打开-Windows-10-主机的路由转发功能"><a href="#打开-Windows-10-主机的路由转发功能" class="headerlink" title="打开 Windows 10 主机的路由转发功能"></a>打开 Windows 10 主机的路由转发功能</h4><ol>
+<li><code>Win + R</code> 输入 regedit 打开注册表。</li>
+<li>找到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters</code>，修改 <code>IPEnableRouter</code> 为 1。</li>
+<li>重启</li>
+</ol>
+<h4 id="为虚拟机上的-Linux-主机新增路由"><a href="#为虚拟机上的-Linux-主机新增路由" class="headerlink" title="为虚拟机上的 Linux 主机新增路由"></a>为虚拟机上的 Linux 主机新增路由</h4><p>在终端中输入命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">route add -net 10.8.0.0/24 gw 192.168.46.1</span><br></pre></td></tr></table></figure>
+<p>这是为了让 OpenVPN 服务端的其他私有子网上的设备知道来自 10.8.0.0&#x2F;24 的 IP Packet 应该路由回 OpenVPN 服务端。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://blog.51cto.com/richie/389636">透过openvpn来访问内网资源</a><br><a href="https://limbo.moe/posts/2018/openvpn-routes">OpenVPN 路由详解</a><br><a href="https://qastack.cn/superuser/865302/yet-another-routing-issue-in-openvpn-cannot-access-local-machines-while-on-vpn">OpenVPN中的另一个路由问题 - 在VPN上无法访问本地计算机</a><br><a href="https://www.nixops.me/articles/openvpn-add-local-routing-table.html">openvpn添加本地路由表</a><br><a href="https://blog.csdn.net/qq_43615820/article/details/113660623">windows开启路由转发</a><br><a href="https://www.cnblogs.com/snake-hand/p/3143041.html">linux route命令的使用详解</a><br><a href="https://blog.csdn.net/bcbobo21cn/article/details/52548923">Windows命令行route命令使用图解</a></p>
+]]></content>
+      <tags>
+        <tag>OpenVPN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何为终端、docker 和容器设置代理</title>
+    <url>/2023/06/13/how-to-configure-proxy-for-terminal-docker-and-container/</url>
+    <content><![CDATA[<p>在 <a href="/2023/05/27/how-to-install-clash-on-ubuntu/" title="在 Ubuntu 上安装 Clash">Ubuntu 上安装 Clash</a> 后，Clash 通过监听本地的 7890 端口，提供代理服务。但是不同程序设置代理的方式不尽相同，并不是启动了 Clash 以及在某一处设置后，整个系统发出的 HTTP 请求都能经过代理。本文将介绍如何为终端、docker 和容器添加代理。</p>
+<h2 id="为终端设置代理"><a href="#为终端设置代理" class="headerlink" title="为终端设置代理"></a>为终端设置代理</h2><p>有时候，我们需要在终端通过执行命令的方式访问网络和下载资源，比如使用 <code>wget</code> 和 <code>curl</code>。</p>
+<h3 id="设置-Shell-环境变量"><a href="#设置-Shell-环境变量" class="headerlink" title="设置 Shell 环境变量"></a>设置 Shell 环境变量</h3><p>这一类软件都是可以通过为 Shell 设置环境变量的方式来设置代理，涉及到的环境变量有 <code>http_proxy</code>、<code>https_proxy</code> 和 <code>no_proxy</code>。<br>仅为当前会话设置，执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export http_proxy=http://proxyAddress:port</span><br><span class="line">export https_proxy=http://proxyAddress:port</span><br><span class="line">export no_proxy=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>永久设置代理，在设置 Shell 环境变量的脚本中（不同 Shell 的配置文件不同，比如 <code>~/.bashrc</code> 或 <code>~/.zshrc</code>）添加：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export http_proxy=http://proxyAddress:port</span><br><span class="line">export https_proxy=http://proxyAddress:port</span><br><span class="line">export no_proxy=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>重新启动一个会话或者执行命令 <code>source ~/.bashrc</code> 使其在当前会话立即生效。</p>
+<h3 id="修改-wget-配置文件"><a href="#修改-wget-配置文件" class="headerlink" title="修改 wget 配置文件"></a>修改 wget 配置文件</h3><p>在搜索过程中发现还可以在 <code>wget</code> 的配置文件 <code>~/.wgetrc</code> 中添加:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">use_proxy = on</span><br><span class="line"></span><br><span class="line">http_proxy = http://proxyAddress:port</span><br><span class="line">https_proxy = http://proxyAddress:port</span><br></pre></td></tr></table></figure>
+
+<h2 id="为-docker-设置代理"><a href="#为-docker-设置代理" class="headerlink" title="为 docker 设置代理"></a>为 docker 设置代理</h2><p>如果你以为为终端设置代理后 docker 就会使用代理，那你就错了。在从官方的镜像仓库 pull 镜像反复出错后并收到类似 <code>Error response from daemon: Get &quot;https://registry-1.docker.io/v2/&quot;: read tcp 192.168.3.140:59460-&gt;44.205.64.79:443: read: connection reset by peer</code> 这样的报错信息后，我才开始怀疑我并没有真正给 docker 设置好代理。<br>在执行 <code>docker pull</code> 命令时，实际上命令是由守护进程 <code>docker daemon</code> 执行的。</p>
+<h3 id="通过-systemd-设置"><a href="#通过-systemd-设置" class="headerlink" title="通过 systemd 设置"></a>通过 systemd 设置</h3><p>如果你的 <code>docker daemon</code> 是通过 <code>systemd</code> 管理的，那么你可以通过设置 <code>docker.service</code> 服务的环境变量来设置代理。<br>执行命令查看 <code>docker.service</code> 信息，得知配置文件位置 <code>/lib/systemd/system/docker.service</code>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">~$ </span><span class="language-bash">systemctl status docker.service</span> </span><br><span class="line">● docker.service - Docker Application Container Engine</span><br><span class="line">     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)</span><br><span class="line">     Active: active (running) since Tue 2023-06-13 00:52:54 CST; 22h ago</span><br><span class="line">TriggeredBy: ● docker.socket</span><br><span class="line">       Docs: https://docs.docker.com</span><br><span class="line">   Main PID: 387690 (dockerd)</span><br><span class="line">      Tasks: 139</span><br><span class="line">     Memory: 89.6M</span><br><span class="line">        CPU: 1min 26.512s</span><br><span class="line">     CGroup: /system.slice/docker.service</span><br></pre></td></tr></table></figure>
+<p>在 <code>docker.service</code> 的 <code>[Service]</code> 模块添加：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Environment=HTTP_PROXY=http://proxyAddress:port</span><br><span class="line">Environment=HTTPS_PROXY=http://proxyAddress:port</span><br><span class="line">Environment=NO_PROXY=localhost,127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>重新加载配置文件并重启服务：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker.service</span><br></pre></td></tr></table></figure>
+
+<h3 id="修改-dockerd-配置文件"><a href="#修改-dockerd-配置文件" class="headerlink" title="修改 dockerd 配置文件"></a>修改 dockerd 配置文件</h3><p>还可以修改 <code>dockerd</code> 配置文件，添加：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export http_proxy=&quot;http://proxyAddress:port&quot;</span><br></pre></td></tr></table></figure>
+<p>然后重启 <code>docker daemon</code> 即可。</p>
+<blockquote>
+<p>国内的镜像仓库在绝大多数时候都可以满足条件，但是存在个别镜像同步不及时的情况，如果使用 latest 标签拉取到的镜像并非近期的镜像，因此有时候需要直接从官方镜像仓库拉取镜像。</p>
+</blockquote>
+<h2 id="为-docker-容器设置代理"><a href="#为-docker-容器设置代理" class="headerlink" title="为 docker 容器设置代理"></a>为 docker 容器设置代理</h2><p>为 <code>docker daemon</code> 进程设置代理和为 docker 容器设置代理是有区别的。比如使用 docker 启动媒体服务器 jellyfin 后，jellyfin 的刮削功能就需要代理才能正常使用，这时候不要因为在很多地方设置过代理就以为容器内部已经在使用代理了。</p>
+<h3 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h3><p>创建或修改 <code>~/.docker/config.json</code>，添加：</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;proxies&quot;</span><span class="punctuation">:</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;default&quot;</span><span class="punctuation">:</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;httpProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://proxyAddress:port&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;httpsProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://proxyAddress:port&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;noProxy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;localhost,127.0.0.1&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>此后创建的新容器，会自动设置环境变量来使用代理。</p>
+<h3 id="为指定容器添加环境变量"><a href="#为指定容器添加环境变量" class="headerlink" title="为指定容器添加环境变量"></a>为指定容器添加环境变量</h3><p>在启动容器时使用 <code>-e</code> 手动注入环境变量 <code>http_proxy</code>。这意味着进入容器使用 <code>export</code> 设置环境变量的方式也是可行的。</p>
+<blockquote>
+<p>注意：如果代理是使用宿主机的代理，当网络为 <code>bridge</code> 模式，proxyAddress 需要填写宿主机的 IP；如果使用 <code>host</code> 模式，proxyAddress 可以填写 127.0.0.1。</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>不要因为在很多地方设置过代理，就想当然地以为当前的访问也是经过代理的。每个软件设置代理的方式不尽相同，但是大体上可以归结为：</p>
+<ol>
+<li>使用系统的环境变量</li>
+<li>修改软件的配置文件</li>
+<li>执行时注入参数</li>
+</ol>
+<p>举一反三，像 <code>apt</code> 和 <code>git</code> 这类软件也是有其设置代理的方法。当你的代理稳定但是相应的访问失败时，大胆假设你的代理没有设置成功。要理清楚，当前的访问是谁发起的，才能正确地使用关键词搜索到正确的设置方式。</p>
+<blockquote>
+<p>原本我在 docker 相关的使用中，有关代理的设置方式是通过修改配置文件，实现永久、全局的代理配置。但是在后续的使用中，发现代理在一些场景（比如使用 cloudflare tunnel）中会引起不易排查的问题，决定采用临时、局部的配置方式。</p>
+</blockquote>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://zhuanlan.zhihu.com/p/46973701">Linux 让终端走代理的几种方法</a><br><a href="https://blog.51cto.com/u_14814563/5415887">Linux ❀ wget设置代理</a><br><a href="https://cloud-atlas.readthedocs.io/zh_CN/latest/docker/network/docker_proxy.html#docker-server-proxy">配置Docker使用代理</a><br><a href="https://note.qidong.name/2020/05/docker-proxy/">Docker的三种网络代理配置</a><br><a href="https://neucrack.com/p/286">docker 设置代理，以及国内加速镜像设置</a></p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+        <tag>proxy</tag>
+      </tags>
+  </entry>
+</search>
