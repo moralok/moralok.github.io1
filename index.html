@@ -152,7 +152,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,111 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/24/Ubuntu-server-20-04-not-all-disk-space-was-allocated-after-installation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/24/Ubuntu-server-20-04-not-all-disk-space-was-allocated-after-installation/" class="post-title-link" itemprop="url">Ubuntu server 20.04 安装后没有分配全部磁盘空间</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-06-25 00:04:43 / 修改时间：02:16:09" itemprop="dateCreated datePublished" datetime="2023-06-25T00:04:43+08:00">2023-06-25</time>
+    </span>
+
+  
+    <span id="/2023/06/24/Ubuntu-server-20-04-not-all-disk-space-was-allocated-after-installation/" class="post-meta-item leancloud_visitors" data-flag-title="Ubuntu server 20.04 安装后没有分配全部磁盘空间" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>519</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>最近在本地测试 Kubesphere 和 Minikube，使用 Ubuntu server 20.04 搭建了多个虚拟机，磁盘空间紧张。注意到安装后，磁盘空间仅占据分配的一半左右。<br>如果 Ubuntu server 20.04 安装时使用默认的 lvm 选项，就会出现这种情况。</p>
+<p>分配了 40GB 磁盘空间，可用仅 19GB。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">df</span> -h</span></span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">udev                               3.9G     0  3.9G   0% /dev</span><br><span class="line">tmpfs                              792M  7.5M  785M   1% /run</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv   19G   17G  995M  95% /</span><br><span class="line">tmpfs                              3.9G     0  3.9G   0% /dev/shm</span><br><span class="line">tmpfs                              5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs                              3.9G     0  3.9G   0% /sys/fs/cgroup</span><br><span class="line">/dev/sda2                          2.0G  108M  1.7G   6% /boot</span><br><span class="line">/dev/loop0                          64M   64M     0 100% /snap/core20/1828</span><br><span class="line">/dev/loop2                          50M   50M     0 100% /snap/snapd/18357</span><br><span class="line">/dev/loop1                          92M   92M     0 100% /snap/lxd/24061</span><br><span class="line">tmpfs                              792M     0  792M   0% /run/user/1000</span><br><span class="line">/dev/loop3                          54M   54M     0 100% /snap/snapd/19457</span><br></pre></td></tr></table></figure>
+
+<p>查看发现 Free  PE &#x2F; Size 还有 19GB。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo vgdisplay</span></span><br><span class="line">  --- Volume group ---</span><br><span class="line">  VG Name               ubuntu-vg</span><br><span class="line">  System ID             </span><br><span class="line">  Format                lvm2</span><br><span class="line">  Metadata Areas        1</span><br><span class="line">  Metadata Sequence No  2</span><br><span class="line">  VG Access             read/write</span><br><span class="line">  VG Status             resizable</span><br><span class="line">  MAX LV                0</span><br><span class="line">  Cur LV                1</span><br><span class="line">  Open LV               1</span><br><span class="line">  Max PV                0</span><br><span class="line">  Cur PV                1</span><br><span class="line">  Act PV                1</span><br><span class="line">  VG Size               &lt;38.00 GiB</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              9727</span><br><span class="line">  Alloc PE / Size       4863 / &lt;19.00 GiB</span><br><span class="line">  Free  PE / Size       4864 / 19.00 GiB</span><br><span class="line">  VG UUID               NuEjzH-CKXm-W6lA-gqzj-4bds-IR1Y-dTZ8IP</span><br></pre></td></tr></table></figure>
+
+<p>重新分配空间。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv</span></span><br><span class="line">Size of logical volume ubuntu-vg/ubuntu-lv changed from &lt;19.00 GiB (4863 extents) to &lt;38.00 GiB (9727 extents).</span><br><span class="line">Logical volume ubuntu-vg/ubuntu-lv successfully resized.</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv</span></span><br><span class="line">resize2fs 1.45.5 (07-Jan-2020)</span><br><span class="line">Filesystem at /dev/mapper/ubuntu--vg-ubuntu--lv is mounted on /; on-line resizing required</span><br><span class="line">old_desc_blocks = 3, new_desc_blocks = 5</span><br><span class="line">The filesystem on /dev/mapper/ubuntu--vg-ubuntu--lv is now 9960448 (4k) blocks long.</span><br></pre></td></tr></table></figure>
+
+<p>再次查看。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">udev                               3.9G     0  3.9G   0% /dev</span><br><span class="line">tmpfs                              792M  7.5M  785M   1% /run</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv   38G   17G   19G  47% /</span><br><span class="line">tmpfs                              3.9G     0  3.9G   0% /dev/shm</span><br><span class="line">tmpfs                              5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs                              3.9G     0  3.9G   0% /sys/fs/cgroup</span><br><span class="line">/dev/sda2                          2.0G  108M  1.7G   6% /boot</span><br><span class="line">/dev/loop0                          64M   64M     0 100% /snap/core20/1828</span><br><span class="line">/dev/loop2                          50M   50M     0 100% /snap/snapd/18357</span><br><span class="line">/dev/loop1                          92M   92M     0 100% /snap/lxd/24061</span><br><span class="line">tmpfs                              792M     0  792M   0% /run/user/1000</span><br><span class="line">/dev/loop3                          54M   54M     0 100% /snap/snapd/19457</span><br><span class="line">/dev/loop4                          64M   64M     0 100% /snap/core20/1950</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43302340/article/details/120341241">ubuntu20.04 server 安装后磁盘空间只有一半的处理</a><br><a target="_blank" rel="noopener" href="https://askubuntu.com/questions/1269493/ubuntu-server-20-04-1-lts-not-all-disk-space-was-allocated-during-installation">Ubuntu Server 20.04.1 LTS, not all disk space was allocated during installation?</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +337,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -249,14 +354,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>1.9k</span>
+      <span>2k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>6 分钟</span>
+      <span>7 分钟</span>
     </span>
 </div>
 
@@ -310,11 +415,16 @@
 <h4 id="使用过程中下载镜像失败"><a href="#使用过程中下载镜像失败" class="headerlink" title="使用过程中下载镜像失败"></a>使用过程中下载镜像失败</h4><h5 id="从其他镜像仓库下载代替"><a href="#从其他镜像仓库下载代替" class="headerlink" title="从其他镜像仓库下载代替"></a>从其他镜像仓库下载代替</h5><p>一般是在需要从 <code>gcr.io</code> 镜像仓库下载时发生，比如官方教程中需要执行以下命令，会发现 <code>deployment</code> 和 <code>pod</code> 迟迟不能达到目标状态。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl get deployments</span></span><br><span class="line">NAME         READY   UP-TO-DATE   AVAILABLE   AGE</span><br><span class="line">hello-node   0/1     1            0           19s</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl get pods</span></span><br><span class="line">NAME                          READY   STATUS             RESTARTS   AGE</span><br><span class="line">hello-node-7b87cd5f68-zwd4g   0/1     ImagePullBackOff   0          38s</span><br></pre></td></tr></table></figure>
 <p>仅作为测试用途，可以从 Docker 官方仓库搜索镜像，找到排名靠前，版本相同或相近的可靠镜像代替。</p>
-<h5 id="配置代理"><a href="#配置代理" class="headerlink" title="配置代理"></a>配置代理</h5><p>对于这类网络连接不通的情况，配置代理是通用的解决方案。<br>刚开始我以为给 Ubuntu 上的 <code>dockerd</code> 配置代理帮助加速 <code>docker pull</code> 即可，后来发现仍然下载失败。即使我通过 <code>docker pull</code> 先下载镜像到本地，配置 <code>imagePullPolicy</code> 为 <code>Never</code> 或者 <code>IfNotPresent</code>，minikube 还是不能识别到本地已有的镜像。猜测 minikube 的机制和我想象的是不同的，需要直接为 minikube 容器配置代理。搜索到以下命令满足需求：</p>
+<h5 id="配置代理"><a href="#配置代理" class="headerlink" title="配置代理"></a>配置代理</h5><p>对于这类网络连接不通的情况，配置代理是通用的解决方案。开始使用后发现从其他镜像仓库下载代替的方法有点麻烦，于是决定设置代理。<br>刚开始我以为给 Ubuntu 上的 <code>dockerd</code> 配置代理帮助加速 <code>docker pull</code> 即可，后来发现仍然下载失败。即使我通过 <code>docker pull</code> 先下载镜像到本地，配置 <code>imagePullPolicy</code> 为 <code>Never</code> 或者 <code>IfNotPresent</code>，minikube 还是不能识别到本地已有的镜像。猜测 minikube 的机制和我想象的是不同的，需要直接为 minikube 容器配置代理。搜索到以下命令满足需求：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start --docker-env http_proxy=http://proxyAddress:port --docker-env https_proxy=http://proxyAddress:port --docker-env no_proxy=localhost,127.0.0.1,your-virtual-machine-ip/24</span><br></pre></td></tr></table></figure>
 
+<h4 id="需要使用自定义镜像"><a href="#需要使用自定义镜像" class="headerlink" title="需要使用自定义镜像"></a>需要使用自定义镜像</h4><p>测试过程中遇到需要使用自定义镜像的场景。在上一个问题中，我们已经发现 Minikube 不能直接使用本地已有的镜像，但是有两种方法可以解决该问题。</p>
+<h5 id="minikube-image-load"><a href="#minikube-image-load" class="headerlink" title="minikube image load"></a>minikube image load</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube image load &lt;IMAGE_NAME&gt;</span><br></pre></td></tr></table></figure>
 
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://docs.docker.com/engine/install/ubuntu/">Install Docker Engine on Ubuntu</a><br><a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">minikube start</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/429690423">k8s的迷你版——minikube+docker的安装</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68984450/minikube-why-the-docker-driver-should-not-be-used-with-root-privileges">minikube - Why The “docker” driver should not be used with root privileges</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/pack27/p/12202687.html">安装Minikube无法访问k8s.gcr.io的简单解决办法</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liyuanhong/p/13799404.html">让其他电脑访问minikube dashboard</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43762191/article/details/122709763">【问题解决】This container is having trouble accessing https://k8s.gcr.io | 如何解决从k8s.gcr.io拉取镜像失败问题？</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/Leo_wl/p/15775077.html">K8S(kubernetes)镜像源</a></p>
+<h5 id="minikube-image-build"><a href="#minikube-image-build" class="headerlink" title="minikube image build"></a>minikube image build</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube image build -t &lt;IMAGE_NAME&gt; .</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://docs.docker.com/engine/install/ubuntu/">Install Docker Engine on Ubuntu</a><br><a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">minikube start</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/429690423">k8s的迷你版——minikube+docker的安装</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68984450/minikube-why-the-docker-driver-should-not-be-used-with-root-privileges">minikube - Why The “docker” driver should not be used with root privileges</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/pack27/p/12202687.html">安装Minikube无法访问k8s.gcr.io的简单解决办法</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liyuanhong/p/13799404.html">让其他电脑访问minikube dashboard</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43762191/article/details/122709763">【问题解决】This container is having trouble accessing https://k8s.gcr.io | 如何解决从k8s.gcr.io拉取镜像失败问题？</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/Leo_wl/p/15775077.html">K8S(kubernetes)镜像源</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/goerzh/p/12827588.html">minikube 设置代理</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/486384757">两种在Minikube中运行本地Docker镜像的简单方式</a></p>
 
       
     </div>
@@ -377,7 +487,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -517,7 +627,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -665,7 +775,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -781,7 +891,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -902,7 +1012,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -1035,7 +1145,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-06-24 23:56:54" itemprop="dateModified" datetime="2023-06-24T23:56:54+08:00">2023-06-24</time>
+      <time title="修改时间：2023-06-25 02:16:09" itemprop="dateModified" datetime="2023-06-25T02:16:09+08:00">2023-06-25</time>
     </span>
 
   
@@ -1553,13 +1663,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">7k</span>
+    <span title="站点总字数">8k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">25 分钟</span>
+    <span title="站点阅读时长">27 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
