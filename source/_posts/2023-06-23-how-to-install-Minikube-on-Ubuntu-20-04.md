@@ -167,6 +167,8 @@ kubectl proxy --port=your-port --address='your-virtual-machine-ip' --accept-host
 ```
 
 #### 使用过程中下载镜像失败
+
+##### 从其他镜像仓库下载代替
 一般是在需要从 `gcr.io` 镜像仓库下载时发生，比如官方教程中需要执行以下命令，会发现 `deployment` 和 `pod` 迟迟不能达到目标状态。
 ```shell
 $ kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080
@@ -180,6 +182,13 @@ NAME                          READY   STATUS             RESTARTS   AGE
 hello-node-7b87cd5f68-zwd4g   0/1     ImagePullBackOff   0          38s
 ```
 仅作为测试用途，可以从 Docker 官方仓库搜索镜像，找到排名靠前，版本相同或相近的可靠镜像代替。
+
+##### 配置代理
+对于这类网络连接不通的情况，配置代理是通用的解决方案。
+刚开始我以为给 Ubuntu 上的 `dockerd` 配置代理帮助加速 `docker pull` 即可，后来发现仍然下载失败。即使我通过 `docker pull` 先下载镜像到本地，配置 `imagePullPolicy` 为 `Never` 或者 `IfNotPresent`，minikube 还是不能识别到本地已有的镜像。猜测 minikube 的机制和我想象的是不同的，需要直接为 minikube 容器配置代理。搜索到以下命令满足需求：
+```shell
+minikube start --docker-env http_proxy=http://proxyAddress:port --docker-env https_proxy=http://proxyAddress:port --docker-env no_proxy=localhost,127.0.0.1,your-virtual-machine-ip/24
+```
 
 
 ## 参考链接
