@@ -3,7 +3,6 @@ title: 如何在 Ubuntu 20.04 上安装 Minikube
 date: 2023-06-23 21:04:20
 tags:
     - minikube
-    - kubernetes
 ---
 
 ## 环境搭建
@@ -184,10 +183,23 @@ hello-node-7b87cd5f68-zwd4g   0/1     ImagePullBackOff   0          38s
 仅作为测试用途，可以从 Docker 官方仓库搜索镜像，找到排名靠前，版本相同或相近的可靠镜像代替。
 
 ##### 配置代理
-对于这类网络连接不通的情况，配置代理是通用的解决方案。
+对于这类网络连接不通的情况，配置代理是通用的解决方案。开始使用后发现从其他镜像仓库下载代替的方法有点麻烦，于是决定设置代理。
 刚开始我以为给 Ubuntu 上的 `dockerd` 配置代理帮助加速 `docker pull` 即可，后来发现仍然下载失败。即使我通过 `docker pull` 先下载镜像到本地，配置 `imagePullPolicy` 为 `Never` 或者 `IfNotPresent`，minikube 还是不能识别到本地已有的镜像。猜测 minikube 的机制和我想象的是不同的，需要直接为 minikube 容器配置代理。搜索到以下命令满足需求：
 ```shell
 minikube start --docker-env http_proxy=http://proxyAddress:port --docker-env https_proxy=http://proxyAddress:port --docker-env no_proxy=localhost,127.0.0.1,your-virtual-machine-ip/24
+```
+
+#### 需要使用自定义镜像
+测试过程中遇到需要使用自定义镜像的场景。在上一个问题中，我们已经发现 Minikube 不能直接使用本地已有的镜像，但是有两种方法可以解决该问题。
+
+##### minikube image load
+```shell
+minikube image load <IMAGE_NAME>
+```
+
+##### minikube image build
+```shell
+minikube image build -t <IMAGE_NAME> .
 ```
 
 
@@ -200,4 +212,6 @@ minikube start --docker-env http_proxy=http://proxyAddress:port --docker-env htt
 [让其他电脑访问minikube dashboard](https://www.cnblogs.com/liyuanhong/p/13799404.html)
 [【问题解决】This container is having trouble accessing https://k8s.gcr.io | 如何解决从k8s.gcr.io拉取镜像失败问题？](https://blog.csdn.net/qq_43762191/article/details/122709763)
 [K8S(kubernetes)镜像源](https://www.cnblogs.com/Leo_wl/p/15775077.html)
+[minikube 设置代理](https://www.cnblogs.com/goerzh/p/12827588.html)
+[两种在Minikube中运行本地Docker镜像的简单方式](https://zhuanlan.zhihu.com/p/486384757)
 
