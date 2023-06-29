@@ -795,4 +795,69 @@
         <tag>ssh</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Tmux 常用命令和快捷键</title>
+    <url>/2023/06/29/tmux-frequently-used-commands/</url>
+    <content><![CDATA[<h2 id="Tmux-是什么"><a href="#Tmux-是什么" class="headerlink" title="Tmux 是什么"></a>Tmux 是什么</h2><p>Tmux 是一个终端复用器（Terminal Multiplexer），它可以将终端的会话和窗口解绑分离，达到窗口关闭，会话不终止，并且还能使用窗口再次绑定目标会话的效果，从而避免因为网络中断或者窗口关闭导致会话中运行的进程终止。</p>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>Ubuntu server 20.04 默认已安装 Tmux。如果没有，可以通过以下命令安装：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo apt-get install tmux</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="会话管理"><a href="#会话管理" class="headerlink" title="会话管理"></a>会话管理</h3><h4 id="新建会话"><a href="#新建会话" class="headerlink" title="新建会话"></a>新建会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux new -s &lt;session-name&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="分离会话"><a href="#分离会话" class="headerlink" title="分离会话"></a>分离会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux detach</span></span><br></pre></td></tr></table></figure>
+<h4 id="查看会话列表"><a href="#查看会话列表" class="headerlink" title="查看会话列表"></a>查看会话列表</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux <span class="built_in">ls</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="接入会话"><a href="#接入会话" class="headerlink" title="接入会话"></a>接入会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux attach -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux attach -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="杀死会话"><a href="#杀死会话" class="headerlink" title="杀死会话"></a>杀死会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-session -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-session -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="切换会话"><a href="#切换会话" class="headerlink" title="切换会话"></a>切换会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux switch -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux switch -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="重命名会话"><a href="#重命名会话" class="headerlink" title="重命名会话"></a>重命名会话</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-session -t &lt;old&gt; &lt;new&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-session &lt;new&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="会话快捷键"><a href="#会话快捷键" class="headerlink" title="会话快捷键"></a>会话快捷键</h4><ul>
+<li><strong><code>Ctrl+b d</code>：分离当前会话，猜测 detach</strong></li>
+<li><strong><code>Ctrl+b s</code>：查看会话列表并选择，session</strong></li>
+<li><strong><code>Ctrl+b $</code>：重命名当前会话名称</strong></li>
+<li><strong><code>Ctrl+d</code>：关闭当前会话</strong></li>
+</ul>
+<h3 id="窗口管理"><a href="#窗口管理" class="headerlink" title="窗口管理"></a>窗口管理</h3><h4 id="新建窗口"><a href="#新建窗口" class="headerlink" title="新建窗口"></a>新建窗口</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux new-window -n &lt;window-name&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="关闭窗口"><a href="#关闭窗口" class="headerlink" title="关闭窗口"></a>关闭窗口</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-window -t &lt;window-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-window</span></span><br></pre></td></tr></table></figure>
+<h4 id="切换窗口"><a href="#切换窗口" class="headerlink" title="切换窗口"></a>切换窗口</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-window -t &lt;window-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-window -t &lt;window-id&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="重命名窗口"><a href="#重命名窗口" class="headerlink" title="重命名窗口"></a>重命名窗口</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-window -t &lt;old&gt; &lt;new&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-window &lt;new&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="窗口快捷键"><a href="#窗口快捷键" class="headerlink" title="窗口快捷键"></a>窗口快捷键</h4><ul>
+<li><strong><code>Ctrl+b c</code>：创建一个新窗口，状态栏会显示窗口信息</strong></li>
+<li><code>Ctrl+b p</code>：切换到上一个窗口，prev</li>
+<li><code>Ctrl+b n</code>：切换到下一个窗口，next</li>
+<li><code>Ctrl+b &lt;number&gt;</code>：切换到指定编号的窗口</li>
+<li><strong><code>Ctrl+b w</code>：查看窗口列表并选择，window</strong></li>
+<li><strong><code>Ctrl+b ,</code>：重命名当前窗口</strong></li>
+<li><strong><code>Ctrl+b &amp;</code>：关闭当前窗口</strong></li>
+</ul>
+<h3 id="窗格管理"><a href="#窗格管理" class="headerlink" title="窗格管理"></a>窗格管理</h3><h4 id="划分窗格"><a href="#划分窗格" class="headerlink" title="划分窗格"></a>划分窗格</h4><p>猜测 vertical，horizontal。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux split-window [-v]</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux split-window -h</span></span><br></pre></td></tr></table></figure>
+<h4 id="移动光标"><a href="#移动光标" class="headerlink" title="移动光标"></a>移动光标</h4><p>猜测 upper，down，left，right。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -U</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -D</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -L</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -R</span></span><br></pre></td></tr></table></figure>
+<h4 id="交换窗格"><a href="#交换窗格" class="headerlink" title="交换窗格"></a>交换窗格</h4><p>当前窗格和上一个或下一个窗格交换位置。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux swap-pane -U</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux swap-pane -D</span></span><br></pre></td></tr></table></figure>
+<h4 id="窗格快捷键"><a href="#窗格快捷键" class="headerlink" title="窗格快捷键"></a>窗格快捷键</h4><ul>
+<li><strong><code>Ctrl+b &quot;</code>：上下划分窗格</strong></li>
+<li><strong><code>Ctrl+b %</code>：左右划分窗格</strong></li>
+<li><strong><code>Ctrl+b &lt;arrow key&gt;</code>：使用方向键切换窗格</strong></li>
+<li><code>Ctrl+b ;</code>：光标切换到上一个窗格</li>
+<li><code>Ctrl+b o</code>：光标切换到下一个窗格</li>
+<li><code>Ctrl+b &#123;</code>：当前窗格和上一个窗格交换位置</li>
+<li><code>Ctrl+b &#125;</code>：当前窗格和下一个窗格交换位置</li>
+<li><strong><code>Ctrl+b x</code>：关闭当前窗格</strong></li>
+<li><code>Ctrl+b !</code>：将当前窗格拆分为一个独立窗口</li>
+<li><code>Ctrl+b z</code>：当前窗格全屏显示，再使用一次会变回原来大小，状态栏会有大写的 Z 标识</li>
+<li><code>Ctrl+b q</code>：显示窗格编号</li>
+</ul>
+<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="进入翻页模式"><a href="#进入翻页模式" class="headerlink" title="进入翻页模式"></a>进入翻页模式</h4><ul>
+<li><strong><code>Ctrl+b [</code>：进入翻页模式</strong></li>
+<li><code>q</code>：退出翻页模式</li>
+</ul>
+<h4 id="列出所有快捷键，及其对应的-Tmux-命令"><a href="#列出所有快捷键，及其对应的-Tmux-命令" class="headerlink" title="列出所有快捷键，及其对应的 Tmux 命令"></a>列出所有快捷键，及其对应的 Tmux 命令</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux list-keys</span></span><br></pre></td></tr></table></figure>
+<h4 id="列出所有-Tmux-命令及其参数"><a href="#列出所有-Tmux-命令及其参数" class="headerlink" title="列出所有 Tmux 命令及其参数"></a>列出所有 Tmux 命令及其参数</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux list-commands</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://www.ruanyifeng.com/blog/2019/10/tmux.html">Tmux 使用教程</a><br><a href="https://blog.csdn.net/weixin_51311218/article/details/122172339">Tmux 学习</a></p>
+]]></content>
+      <tags>
+        <tag>tmux</tag>
+      </tags>
+  </entry>
 </search>
