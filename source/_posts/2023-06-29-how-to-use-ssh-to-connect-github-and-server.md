@@ -31,6 +31,7 @@ $ ssh-keygen -t ed25519 -C "your_email@example.com"
 Generating public/private ed25519 key pair.
 Enter file in which to save the key (/home/your-user/.ssh/id_ed25519):
 ```
+
 ### 上传 SSH 密钥
 将 SSH 公钥复制到剪贴板，在 Github 上的 `Settings` - `Access` - `SSH and GPG keys` - `New SSH key`，粘贴即可。
 ```shell
@@ -43,7 +44,9 @@ $ git config --global user.name "moralok"
 $ git config --global user.email "wrmao.public@outlook.com"
 ```
 
+
 ## SSH 的原理
+
 ### 关于 SSH
 使用 SSH 协议可以连接远程服务器和服务并向它们验证，而无需在每次访问时都提供用户名和密码，Github 还可以使用 SSH 密钥对提交进行签名。
 
@@ -79,8 +82,10 @@ Hi ${username}! You've successfully authenticated, but GitHub does not provide s
 Server 需要在其网站上公示其公钥的指纹，Github 的公钥指纹[在这里](https://docs.github.com/zh/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)。
 确认匹配后，客户端会在 `~/.ssh/known_hosts` 中记录，下次登录不再警告。
 
+
 ## 使用 SSH 免密登录服务器
 使用现成的密钥，将 `~/.ssh/id_ed25519.pub` 的内容追加到自己服务端的 `~/.ssh/authorized_keys` 中，使用 `ssh user@host` 成功免密登录。
+这样一来，使用 VScode 远程连接服务器和使用 Remote Explorer 打开文件夹时，不用每次都输入密码了。
 
 
 ## 参考链接
