@@ -152,13 +152,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -196,6 +196,203 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/04/testing-and-analysis-of-jvm-memory-area/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/04/testing-and-analysis-of-jvm-memory-area/" class="post-title-link" itemprop="url">JVM 内存区域的测试和分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-11-04 19:21:25 / 修改时间：21:02:33" itemprop="dateCreated datePublished" datetime="2023-11-04T19:21:25+08:00">2023-11-04</time>
+    </span>
+
+  
+    <span id="/2023/11/04/testing-and-analysis-of-jvm-memory-area/" class="post-meta-item leancloud_visitors" data-flag-title="JVM 内存区域的测试和分析" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="内存区域"><a href="#内存区域" class="headerlink" title="内存区域"></a>内存区域</h2><p>JVM 内存区域划分为：</p>
+<ul>
+<li>程序计数器</li>
+<li>虚拟机栈</li>
+<li>本地方法栈</li>
+<li>堆</li>
+<li>方法区</li>
+</ul>
+<img src="/2023/11/04/testing-and-analysis-of-jvm-memory-area/Pasted%20image%2020231102215652.png" class="" title="内存区域划分">
+
+<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><h2 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h2><p>Java 虚拟机栈（Java Virtual Machine Stack），线程私有，生命周期与线程相同。虚拟机栈描述的是 Java 方法执行的线程内存模型。每个方法被执行的时候，Java虚拟机都会同步创建一个栈帧（Stack Frame）用于存储局部变量表、操作数栈、动态连接、方法出口等信息。</p>
+<p>可以使用 <code>-Xss1024k</code> 设置虚拟机栈的大小。默认情况下都是 1024k，只有 Windows 中取决于虚拟内存。</p>
+<h3 id="栈内存溢出"><a href="#栈内存溢出" class="headerlink" title="栈内存溢出"></a>栈内存溢出</h3><ol>
+<li>栈帧过多导致栈内存溢出</li>
+<li>栈帧过大导致栈内存溢出（难复现）</li>
+</ol>
+<h4 id="不正确的递归调用"><a href="#不正确的递归调用" class="headerlink" title="不正确的递归调用"></a>不正确的递归调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StackTest_4</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 改变栈的大小限制 -Xss256k，观察调用次数的变化</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            method1();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            t.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 默认情况下经过 20000+ 次，改变参数后 3000+ 次</span></span><br><span class="line">            System.out.println(count);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">method1</span><span class="params">()</span> &#123;</span><br><span class="line">        count++;</span><br><span class="line">        method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="循环引用导致-JSON-解析无限循环"><a href="#循环引用导致-JSON-解析无限循环" class="headerlink" title="循环引用导致 JSON 解析无限循环"></a>循环引用导致 JSON 解析无限循环</h4><p>并非只有自己写的递归方法可能引发栈内存溢出，有可能第三方库也会引发栈内存溢出。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StackTest_5</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> JsonProcessingException &#123;</span><br><span class="line">        <span class="type">Department</span> <span class="variable">department</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Department</span>();</span><br><span class="line">        department.setName(<span class="string">&quot;Tech&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">Employee</span> <span class="variable">employee1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Employee</span>();</span><br><span class="line">        employee1.setName(<span class="string">&quot;Tom&quot;</span>);</span><br><span class="line">        employee1.setDepartment(department);</span><br><span class="line"></span><br><span class="line">        <span class="type">Employee</span> <span class="variable">employee2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Employee</span>();</span><br><span class="line">        employee2.setName(<span class="string">&quot;Tim&quot;</span>);</span><br><span class="line">        employee2.setDepartment(department);</span><br><span class="line"></span><br><span class="line">        department.setEmployees(Arrays.asList(employee1, employee2));</span><br><span class="line"></span><br><span class="line">        <span class="type">ObjectMapper</span> <span class="variable">objectMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>();</span><br><span class="line">        System.out.println(objectMapper.writeValueAsString(department));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Department</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String name;</span><br><span class="line">        <span class="keyword">private</span> List&lt;Employee&gt; employees;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> name;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.name = name;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> List&lt;Employee&gt; <span class="title function_">getEmployees</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> employees;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setEmployees</span><span class="params">(List&lt;Employee&gt; employees)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.employees = employees;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Employee</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String name;</span><br><span class="line">        <span class="keyword">private</span> Department department;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> name;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.name = name;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Department <span class="title function_">getDepartment</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> department;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDepartment</span><span class="params">(Department department)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.department = department;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="局部变量的线程安全问题"><a href="#局部变量的线程安全问题" class="headerlink" title="局部变量的线程安全问题"></a>局部变量的线程安全问题</h3><ol>
+<li>局部变量如果未逃离方法的作用范围，就是线程安全的。</li>
+<li>局部变量如果是引用类型且逃离了方法的作用范围，就是线程不安全的。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StackTest_3</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        method1();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 线程安全</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">method1</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        sb.append(<span class="number">1</span>);</span><br><span class="line">        sb.append(<span class="number">2</span>);</span><br><span class="line">        sb.append(<span class="number">3</span>);</span><br><span class="line">        System.out.println(sb);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 线程不安全</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">method2</span><span class="params">(StringBuilder sb)</span> &#123;</span><br><span class="line">        sb.append(<span class="number">1</span>);</span><br><span class="line">        sb.append(<span class="number">2</span>);</span><br><span class="line">        sb.append(<span class="number">3</span>);</span><br><span class="line">        System.out.println(sb);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 线程不安全，看到一个说法：发生指令重排，sb 的 append 操作发生在返回之后（有待确认）</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> StringBuilder <span class="title function_">method3</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        sb.append(<span class="number">1</span>);</span><br><span class="line">        sb.append(<span class="number">2</span>);</span><br><span class="line">        sb.append(<span class="number">3</span>);</span><br><span class="line">        <span class="keyword">return</span> sb;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程问题排查"><a href="#线程问题排查" class="headerlink" title="线程问题排查"></a>线程问题排查</h3><h4 id="CPU-占用率居高不下"><a href="#CPU-占用率居高不下" class="headerlink" title="CPU 占用率居高不下"></a>CPU 占用率居高不下</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadTest_1</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="literal">null</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;t1...&quot;</span>);</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;thread1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="literal">null</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;t2...&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">1000</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;thread2&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="literal">null</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;t3...&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">1000</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;thread3&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当发现 CPU 占用率居高不下时，可以尝试以下步骤：</p>
+<ol>
+<li><code>top</code>，定位 cpu 占用高的进程 id。</li>
+<li><code>ps H -eo pid,tid,%cpu | grep pid</code>，进一步定位引起 cpu 占用高的线程 id。</li>
+<li><code>jstack pid</code>，根据线程 id 换算成 16进制的 nid 找到对应线程，进一步定位到问题的源码行号。</li>
+</ol>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;thread1&quot; #8 prio=5 os_prio=0 tid=0x00007f9bd0162800 nid=0x1061ad runnable [0x00007f9bd56eb000]</span><br><span class="line">   java.lang.Thread.State: RUNNABLE</span><br><span class="line">	at com.moralok.jvm.thread.ThreadTest_1.lambda$main$0(ThreadTest_1.java:10)</span><br><span class="line">	at com.moralok.jvm.thread.ThreadTest_1$$Lambda$1/250421012.run(Unknown Source)</span><br><span class="line">	at java.lang.Thread.run(Thread.java:750)</span><br></pre></td></tr></table></figure>
+
+<h4 id="死锁，迟迟未返回结果"><a href="#死锁，迟迟未返回结果" class="headerlink" title="死锁，迟迟未返回结果"></a>死锁，迟迟未返回结果</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadTest_2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">A</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">B</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="literal">null</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;t1...&quot;</span>);</span><br><span class="line">            <span class="keyword">synchronized</span> (A) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get A&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (B) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get B&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;thread1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="literal">null</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;t2...&quot;</span>);</span><br><span class="line">            <span class="keyword">synchronized</span> (B) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get B&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (A) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get A&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;thread2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>jstack pid</code>，会显示找到死锁，以及死锁涉及的线程,，并各自持有的锁还有等待的锁。</li>
+<li>其他工具如 jconsole 也具有检测死锁的功能。</li>
+</ol>
+<h2 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h2><h2 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h2><p>堆（Heap）的特点：</p>
+<ol>
+<li>线程共享，需要考虑线程安全问题。</li>
+<li>存在垃圾回收机制。</li>
+<li>使用 -Xmx8m 设置大小。</li>
+</ol>
+<h3 id="堆内存溢出"><a href="#堆内存溢出" class="headerlink" title="堆内存溢出"></a>堆内存溢出</h3><p>既然堆有垃圾回收机制，为什么还会发生内存溢出呢？最开始的时候，我也有这样的困惑。<br>后来我才认识到，还在使用中的对象是不能被强制回收的，不再使用的对象不是立刻回收的。当创建对象却没有足够的内存空间时，如果清理掉那些不再使用的对象就有足够的内存空间，就不会发生内存溢出，程序只是表现为卡顿。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HeapTest_1</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// -Xmx8m  </span></span><br><span class="line">    <span class="comment">// 不设置可能不提示 Java heap space，出错地方不同，报错信息不同  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();  </span><br><span class="line">            <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;  </span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;  </span><br><span class="line">                list.add(s);  </span><br><span class="line">                s = s + s;  </span><br><span class="line">                i++;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;  </span><br><span class="line">            t.printStackTrace();  </span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;  </span><br><span class="line">            System.out.println(<span class="string">&quot;运行次数 &quot;</span> + i);  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">	at java.util.Arrays.copyOf(Arrays.java:3332)</span><br><span class="line">	at java.lang.AbstractStringBuilder.ensureCapacityInternal(AbstractStringBuilder.java:124)</span><br><span class="line">	at java.lang.AbstractStringBuilder.append(AbstractStringBuilder.java:448)</span><br><span class="line">	at java.lang.StringBuilder.append(StringBuilder.java:141)</span><br><span class="line">	at com.moralok.jvm.memory.heap.HeapTest_1.main(HeapTest_1.java:21)</span><br><span class="line">运行次数 17</span><br></pre></td></tr></table></figure>
+
+<p>堆内存溢出的发生往往需要长时间的运行，因此在排查相关问题时，可以适当调小堆内存。</p>
+<h3 id="监测堆内存"><a href="#监测堆内存" class="headerlink" title="监测堆内存"></a>监测堆内存</h3><ol>
+<li>使用 jps 查看 Java 进程列表</li>
+<li>使用 <code>jmap -heap pid</code> 查看堆内存信息</li>
+<li>还可以使用 jconsole 观察堆内存变化曲线</li>
+<li>还可以使用 VisualVM 查看堆信息</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HeapTest_2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;1...&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">30</span>);</span><br><span class="line">        <span class="comment">// 堆空间占用上升 10MB</span></span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span> * <span class="number">1024</span> * <span class="number">10</span>];</span><br><span class="line">        System.out.println(<span class="string">&quot;2...&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">30</span>);</span><br><span class="line">        bytes = <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 堆空间占用下降</span></span><br><span class="line">        System.gc();</span><br><span class="line">        System.out.println(<span class="string">&quot;3...&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">3000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>jmap -heap pid</code> 查看堆内存信息：</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Eden Space:</span><br><span class="line">   capacity = 268435456 (256.0MB)</span><br><span class="line">   used     = 32212360 (30.72010040283203MB)</span><br><span class="line"></span><br><span class="line">   used     = 42698136 (40.720115661621094MB)</span><br><span class="line"></span><br><span class="line">   used     = 5368728 (5.120018005371094MB)</span><br></pre></td></tr></table></figure>
+
+<p>使用 jconsole 查看堆内存信息：</p>
+<img src="/2023/11/04/testing-and-analysis-of-jvm-memory-area/Pasted%20image%2020231104200411.png" class="" title="jconsole 观察堆内存占用">
+
+<h3 id="堆内存占用居高不下"><a href="#堆内存占用居高不下" class="headerlink" title="堆内存占用居高不下"></a>堆内存占用居高不下</h3><p>当你发现堆内存占用居高不下，经过 GC，下降也不明显，如果你想查看一下堆内的具体情况，可以将其 dump 查看。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HeapTest_3</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// jps 查进程，jmap 看堆内存，jconsole 执行GC，堆内存占用没有明显下降  </span></span><br><span class="line">    <span class="comment">// 使用 VisualVM 的堆 dump 功能，观察大对象  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;  </span><br><span class="line">        List&lt;Student&gt; students = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();  </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">200</span>; i++) &#123;  </span><br><span class="line">            students.add(<span class="keyword">new</span> <span class="title class_">Student</span>());  </span><br><span class="line">        &#125;  </span><br><span class="line">        System.in.read();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Student</span> &#123;  </span><br><span class="line">        <span class="keyword">private</span> <span class="type">byte</span>[] score = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span> * <span class="number">1024</span>];  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可使用 VisualVM 的 Heap Dump 功能：</p>
+<img src="/2023/11/04/testing-and-analysis-of-jvm-memory-area/Pasted%20image%2020231104201139.png" class="" title="VisualVM 观察堆中的大对象">
+
+<p>也可使用 <code>jmap -dump:format=b,file=filename.hprof pid</code>，需要其他分析工具搭配。</p>
+<h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h2><p>根据《Java虚拟机规范》，方法区在逻辑上是堆的一部分，但是在具体实现上，各个虚拟机厂商并不相同。对于 Hotspot 而言：</p>
+<ul>
+<li>JDK 8 之前，方法区的具体实现为永久代，使用堆内存，使用 -XX:MaxPermSize&#x3D;10m 设置大小。</li>
+<li>JDK 8 开始，方法区的具体实现为元空间，使用直接内存，使用 -XX:MaxMetaspaceSize&#x3D;10m 设置大小。</li>
+</ul>
+<h3 id="方法区溢出"><a href="#方法区溢出" class="headerlink" title="方法区溢出"></a>方法区溢出</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MethodAreaTest_1</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -XX:MaxMetaspaceSize=8m MaxMetaspaceSize is too small.</span></span><br><span class="line">    <span class="comment">// -XX:MaxMetaspaceSize=10m java.lang.OutOfMemoryError: Compressed class space</span></span><br><span class="line">    <span class="comment">// 不是 Metaspace 应该是某个参数设置的问题</span></span><br><span class="line">    <span class="comment">// JDK 6: -XX:MaxPermSize=8m PermGen space</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">MethodAreaTest_1</span> <span class="variable">methodAreaTest1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MethodAreaTest_1</span>();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">20000</span>; i++, j++) &#123;</span><br><span class="line">                <span class="type">ClassWriter</span> <span class="variable">classWriter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassWriter</span>(<span class="number">0</span>);</span><br><span class="line">                <span class="comment">// 版本号，public，类名，包名，父类，接口</span></span><br><span class="line">                classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, <span class="string">&quot;Class&quot;</span> + i, <span class="literal">null</span>, <span class="string">&quot;java/lang/Object&quot;</span>, <span class="literal">null</span>);</span><br><span class="line">                <span class="comment">// 返回二进制字节码</span></span><br><span class="line">                <span class="type">byte</span>[] code = classWriter.toByteArray();</span><br><span class="line">                <span class="comment">// 加载类</span></span><br><span class="line">                methodAreaTest1.defineClass(<span class="string">&quot;Class&quot;</span> + i, code, <span class="number">0</span>, code.length);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassFormatError e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;次数 &quot;</span> + j);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>当设置的值太小时 -XX:MaxMetaspaceSize&#x3D;8m，提示 MaxMetaspaceSize is too small。</li>
+<li>实验中抛出 java.lang.OutOfMemoryError: Compressed class space。</li>
+<li>添加参数 -XX:-UseCompressedClassPointers 后，抛出 java.lang.OutOfMemoryError: Metaspace。</li>
+<li>JDK 6 设置 -XX:MaxPermSize&#x3D;8m，抛出 java.lang.OutOfMemoryError: PermGen space。</li>
+</ol>
+<p>不要认为自己不会写动态生成字节码相关的代码就忽略这方面的问题，如今很多框架使用字节码技术大量地动态生成类。</p>
+<h2 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h2><p>二进制字节码文件主要包含三类信息：</p>
+<ol>
+<li>类的基本信息</li>
+<li>类的常量池（Constant Pool）</li>
+<li>类的方法信息</li>
+</ol>
+<h3 id="使用-javap-反编译"><a href="#使用-javap-反编译" class="headerlink" title="使用 javap 反编译"></a>使用 javap 反编译</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MethodAreaTest_2</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        System.out.println(<span class="string">&quot;hello world&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">Classfile /C:/Users/username/Documents/github/jvm-study/target/classes/com/moralok/jvm/memory/methodarea/MethodAreaTest_2.class</span><br><span class="line">  Last modified 2023-11-4; size 619 bytes</span><br><span class="line">  MD5 checksum 0ed10a8f0a03be54fd4159958ee7446c</span><br><span class="line">  Compiled from &quot;MethodAreaTest_2.java&quot;</span><br><span class="line">public class com.moralok.jvm.memory.methodarea.MethodAreaTest_2</span><br><span class="line">  minor version: 0</span><br><span class="line">  major version: 52</span><br><span class="line">  flags: ACC_PUBLIC, ACC_SUPER</span><br><span class="line">Constant pool:</span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">1 = Methodref          <span class="comment">#6.#20         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">2 = Fieldref           <span class="comment">#21.#22        // java/lang/System.out:Ljava/io/PrintStream;</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">3 = String             <span class="comment">#23            // hello world</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">4 = Methodref          <span class="comment">#24.#25        // java/io/PrintStream.println:(Ljava/lang/String;)V</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">5 = Class              <span class="comment">#26            // com/moralok/jvm/memory/methodarea/MethodAreaTest_2</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">6 = Class              <span class="comment">#27            // java/lang/Object</span></span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">7 = Utf8               &lt;init&gt;</span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">8 = Utf8               ()V</span></span><br><span class="line"><span class="meta prompt_">   #</span><span class="language-bash">9 = Utf8               Code</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">10 = Utf8               LineNumberTable</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">11 = Utf8               LocalVariableTable</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">12 = Utf8               this</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">13 = Utf8               Lcom/moralok/jvm/memory/methodarea/MethodAreaTest_2;</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">14 = Utf8               main</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">15 = Utf8               ([Ljava/lang/String;)V</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">16 = Utf8               args</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">17 = Utf8               [Ljava/lang/String;</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">18 = Utf8               SourceFile</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">19 = Utf8               MethodAreaTest_2.java</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">20 = NameAndType        <span class="comment">#7:#8          // &quot;&lt;init&gt;&quot;:()V</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">21 = Class              <span class="comment">#28            // java/lang/System</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">22 = NameAndType        <span class="comment">#29:#30        // out:Ljava/io/PrintStream;</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">23 = Utf8               hello world</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">24 = Class              <span class="comment">#31            // java/io/PrintStream</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">25 = NameAndType        <span class="comment">#32:#33        // println:(Ljava/lang/String;)V</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">26 = Utf8               com/moralok/jvm/memory/methodarea/MethodAreaTest_2</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">27 = Utf8               java/lang/Object</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">28 = Utf8               java/lang/System</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">29 = Utf8               out</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">30 = Utf8               Ljava/io/PrintStream;</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">31 = Utf8               java/io/PrintStream</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">32 = Utf8               println</span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash">33 = Utf8               (Ljava/lang/String;)V</span></span><br><span class="line">&#123;</span><br><span class="line">  public com.moralok.jvm.memory.methodarea.MethodAreaTest_2();</span><br><span class="line">    descriptor: ()V</span><br><span class="line">    flags: ACC_PUBLIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=1, locals=1, args_size=1</span><br><span class="line">         0: aload_0</span><br><span class="line">         1: invokespecial #1                  // Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">         4: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 3: 0</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0       5     0  this   Lcom/moralok/jvm/memory/methodarea/MethodAreaTest_2;</span><br><span class="line"></span><br><span class="line">  public static void main(java.lang.String[]);</span><br><span class="line">    descriptor: ([Ljava/lang/String;)V</span><br><span class="line">    flags: ACC_PUBLIC, ACC_STATIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=2, locals=1, args_size=1</span><br><span class="line">         0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">         3: ldc           #3                  // String hello world</span><br><span class="line">         5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">         8: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 6: 0</span><br><span class="line">        line 7: 8</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0       9     0  args   [Ljava/lang/String;</span><br><span class="line">&#125;</span><br><span class="line">SourceFile: &quot;MethodAreaTest_2.java&quot;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>Class 文件的常量池就是一张表，虚拟机根据索引去查找类名、字段名及其类型，方法名及其参数类型和字面量等。</li>
+<li>当类被加载到虚拟机之后，Class 文件中的常量池中的信息就进入到了运行时常量池。</li>
+<li>这个过程其实就是信息从文件进入了内存。</li>
+</ol>
+<p>虚拟机解释器（interpreter）需要解释的字节码指令如下：</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0: getstatic     #2</span><br><span class="line">3: ldc           #3</span><br><span class="line">5: invokevirtual #4</span><br></pre></td></tr></table></figure>
+<p>索引 <code>#2</code> 的意思就是去常量表里查找对应项代表的事物。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/03/testing-and-analysis-of-StringTable/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -224,9 +421,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-11-03 15:57:47 / 修改时间：21:24:06" itemprop="dateCreated datePublished" datetime="2023-11-03T15:57:47+08:00">2023-11-03</time>
+      <time title="创建时间：2023-11-03 15:57:47" itemprop="dateCreated datePublished" datetime="2023-11-03T15:57:47+08:00">2023-11-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -426,7 +629,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -585,7 +788,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -871,7 +1074,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1025,7 +1228,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1159,7 +1362,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1270,7 +1473,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1420,7 +1623,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1560,7 +1763,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
+      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
     </span>
 
   
@@ -1664,122 +1867,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Moralok">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Moralok">
-      <meta itemprop="description" content="Moralok's blog">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Moralok">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" class="post-title-link" itemprop="url">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-06-07 17:04:23" itemprop="dateCreated datePublished" datetime="2023-06-07T17:04:23+08:00">2023-06-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-03 21:24:06" itemprop="dateModified" datetime="2023-11-03T21:24:06+08:00">2023-11-03</time>
-    </span>
-
-  
-    <span id="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" class="post-meta-item leancloud_visitors" data-flag-title="在 iOS 和 macOS 上安装 OpenVPN 客户端" title="阅读次数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">阅读次数：</span>
-      <span class="leancloud-visitors-count"></span>
-    </span>
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>645</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a target="_blank" rel="noopener" href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
-<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
-<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
-<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
-<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
-<p>将修改好的客户端配置文件导入到客户端中即可。</p>
-<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
-<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
-<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
-<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
-<blockquote>
-<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
-</blockquote>
-<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a target="_blank" rel="noopener" href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a target="_blank" rel="noopener" href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1804,13 +1891,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">24k</span>
+    <span title="站点总字数">26k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:19</span>
+    <span title="站点阅读时长">1:27</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
