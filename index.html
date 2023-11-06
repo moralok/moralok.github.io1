@@ -224,9 +224,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-11-04 19:21:25 / 修改时间：21:02:33" itemprop="dateCreated datePublished" datetime="2023-11-04T19:21:25+08:00">2023-11-04</time>
+      <time title="创建时间：2023-11-04 19:21:25" itemprop="dateCreated datePublished" datetime="2023-11-04T19:21:25+08:00">2023-11-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -243,14 +249,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>2.5k</span>
+      <span>3.2k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
+      <span>11 分钟</span>
     </span>
 </div>
 
@@ -367,6 +373,36 @@
 <p>虚拟机解释器（interpreter）需要解释的字节码指令如下：</p>
 <figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0: getstatic     #2</span><br><span class="line">3: ldc           #3</span><br><span class="line">5: invokevirtual #4</span><br></pre></td></tr></table></figure>
 <p>索引 <code>#2</code> 的意思就是去常量表里查找对应项代表的事物。</p>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><ul>
+<li>常见于 NIO 操作中的数据缓冲区。</li>
+<li>分配和回收的成本较高，但读写性能更高。</li>
+<li>不由 JVM 进行内存释放</li>
+</ul>
+<h3 id="NIO-和-IO-的拷贝性能"><a href="#NIO-和-IO-的拷贝性能" class="headerlink" title="NIO 和 IO 的拷贝性能"></a>NIO 和 IO 的拷贝性能</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirectMemoryTest_1</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">FROM</span> <span class="operator">=</span> <span class="string">&quot;C:\\Users\\username\\Videos\\jellyfin\\media\\movies\\Harry Potter and the Chamber of Secrets (2002) [1080p]\\Harry.Potter.and.the.Chamber.of.Secrets.2002.1080p.BrRip.x264.YIFY.mp4&quot;</span>;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TO</span> <span class="operator">=</span> <span class="string">&quot;C:\\Users\\username\\Videos\\jellyfin\\media\\movies\\Harry Potter and the Chamber of Secrets (2002) [1080p]\\Harry.Potter.and.the.Chamber.of.Secrets.2002.1080p.BrRip.x264.YIFY-copy.mp4&quot;</span>;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1Mb</span> <span class="operator">=</span> <span class="number">1024</span> * <span class="number">1024</span>;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        io();  </span><br><span class="line">        directBuffer();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">directBuffer</span><span class="params">()</span> &#123;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        <span class="keyword">try</span> (<span class="type">FileChannel</span> <span class="variable">from</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(FROM).getChannel();  </span><br><span class="line">             <span class="type">FileChannel</span> <span class="variable">to</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(TO).getChannel()) &#123;  </span><br><span class="line">            <span class="type">ByteBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span> ByteBuffer.allocateDirect(_1Mb);  </span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;  </span><br><span class="line">                <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> from.read(buffer);  </span><br><span class="line">                <span class="keyword">if</span> (len == -<span class="number">1</span>) &#123;  </span><br><span class="line">                    <span class="keyword">break</span>;  </span><br><span class="line">                &#125;  </span><br><span class="line">                buffer.flip();  </span><br><span class="line">                to.write(buffer);  </span><br><span class="line">                buffer.clear();  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        System.out.println(<span class="string">&quot;directBuffer 用时 &quot;</span> + (end - start) / <span class="number">1000_000.0</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">io</span><span class="params">()</span> &#123;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">from</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(FROM);  </span><br><span class="line">             <span class="type">FileOutputStream</span> <span class="variable">to</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(TO)) &#123;  </span><br><span class="line">            <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[_1Mb];  </span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;  </span><br><span class="line">                <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> from.read(buffer);  </span><br><span class="line">                <span class="keyword">if</span> (len == -<span class="number">1</span>) &#123;  </span><br><span class="line">                    <span class="keyword">break</span>;  </span><br><span class="line">                &#125;  </span><br><span class="line">                to.write(buffer);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        System.out.println(<span class="string">&quot;io 用时 &quot;</span> + (end - start) / <span class="number">1000_000.0</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">io 用时 1676.9797</span><br><span class="line">directBuffer 用时 836.4796</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/11/04/testing-and-analysis-of-jvm-memory-area/Pasted%20image%2020231104235546.png" class="" title="普通的 IO 拷贝">
+
+<img src="/2023/11/04/testing-and-analysis-of-jvm-memory-area/Pasted%20image%2020231104235846.png" class="" title="NIO 拷贝">
+
+
+<h3 id="直接内存溢出"><a href="#直接内存溢出" class="headerlink" title="直接内存溢出"></a>直接内存溢出</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirectMemoryTest_2</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_100Mb</span> <span class="operator">=</span> <span class="number">1024</span> * <span class="number">1024</span> * <span class="number">100</span>;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        List&lt;ByteBuffer&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();  </span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;  </span><br><span class="line">                <span class="type">ByteBuffer</span> <span class="variable">byteBuffer</span> <span class="operator">=</span> ByteBuffer.allocateDirect(_100Mb);  </span><br><span class="line">                list.add(byteBuffer);  </span><br><span class="line">                i++;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;  </span><br><span class="line">            t.printStackTrace();  </span><br><span class="line">        &#125; System.out.println(i);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">java.lang.OutOfMemoryError: Direct buffer memory</span><br><span class="line">	at java.nio.Bits.reserveMemory(Bits.java:695)</span><br><span class="line">	at java.nio.DirectByteBuffer.&lt;init&gt;(DirectByteBuffer.java:123)</span><br><span class="line">	at java.nio.ByteBuffer.allocateDirect(ByteBuffer.java:311)</span><br><span class="line">	at com.moralok.jvm.memory.direct.DirectMemoryTest_2.main(DirectMemoryTest_2.java:16)</span><br><span class="line">145</span><br></pre></td></tr></table></figure>
+
+<p>这似乎是代码中抛出的异常，而不是真正的直接内存溢出？</p>
+<h3 id="直接内存释放的原理"><a href="#直接内存释放的原理" class="headerlink" title="直接内存释放的原理"></a>直接内存释放的原理</h3><h4 id="演示直接内存的释放受-GC-影响"><a href="#演示直接内存的释放受-GC-影响" class="headerlink" title="演示直接内存的释放受 GC 影响"></a>演示直接内存的释放受 GC 影响</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirectMemoryTest_3</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1GB</span> <span class="operator">=</span> <span class="number">1024</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">byteBuffer</span> <span class="operator">=</span> ByteBuffer.allocateDirect(_1GB);</span><br><span class="line">        System.out.println(<span class="string">&quot;分配完毕&quot;</span>);</span><br><span class="line">        System.in.read();</span><br><span class="line">        System.out.println(<span class="string">&quot;开始释放&quot;</span>);</span><br><span class="line">        byteBuffer = <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 随着 ByteBuffer 的释放，从任务管理器界面看到程序的内存的占用迅速下降 1GB。</span></span><br><span class="line">        System.gc();</span><br><span class="line">        System.in.read();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="手动进行直接内存的分配和释放"><a href="#手动进行直接内存的分配和释放" class="headerlink" title="手动进行直接内存的分配和释放"></a>手动进行直接内存的分配和释放</h4><p>在代码中实现手动进行直接内存的分配和释放。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirectMemoryTest_4</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1GB</span> <span class="operator">=</span> <span class="number">1024</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> getUnsafe();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 分配内存</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">base</span> <span class="operator">=</span> unsafe.allocateMemory(_1GB);</span><br><span class="line">        unsafe.setMemory(base, _1GB, (<span class="type">byte</span>) <span class="number">0</span>);</span><br><span class="line">        System.in.read();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 释放内存</span></span><br><span class="line">        unsafe.freeMemory(base);</span><br><span class="line">        System.in.read();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Unsafe <span class="title function_">getUnsafe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Field</span> <span class="variable">f</span> <span class="operator">=</span> Unsafe.class.getDeclaredField(<span class="string">&quot;theUnsafe&quot;</span>);</span><br><span class="line">            f.setAccessible(<span class="literal">true</span>);</span><br><span class="line">            <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> (Unsafe) f.get(<span class="literal">null</span>);</span><br><span class="line">            <span class="keyword">return</span> unsafe;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchFieldException | IllegalAccessException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何将-GC-和直接内存的分配和释放关联"><a href="#如何将-GC-和直接内存的分配和释放关联" class="headerlink" title="如何将 GC 和直接内存的分配和释放关联"></a>如何将 GC 和直接内存的分配和释放关联</h4><p>本质上，直接内存的自动释放是利用了虚引用的机制，间接调用了 unsafe 的分配和释放直接内存的方法。</p>
+<p>DirectByteBuffer 就是使用 unsafe.allocateMemory(size) 分配直接内存。DirectByteBuffer 对象以及一个 Deallocator 对象（Runnable 类型）一起用于创建了一个虚引用类型的 Cleaner 对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">DirectByteBuffer(<span class="type">int</span> cap) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 省略</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        base = unsafe.allocateMemory(size);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (OutOfMemoryError x) &#123;</span><br><span class="line">        Bits.unreserveMemory(size, cap);</span><br><span class="line">        <span class="keyword">throw</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 省略</span></span><br><span class="line">    cleaner = Cleaner.create(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">Deallocator</span>(base, size, cap));</span><br><span class="line">    att = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据虚引用的机制，如果 DirectByteBuffer 对象被回收，虚引用对象会被加入到 Cleanner 的引用队列，ReferenceHandler 线程会处理引用队列中的 Cleaner 对象，进而调用 Deallocator 对象的 run 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (address == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// Paranoia</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    unsafe.freeMemory(address);</span><br><span class="line">    address = <span class="number">0</span>;</span><br><span class="line">    Bits.unreserveMemory(size, capacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -429,7 +465,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -629,7 +665,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -788,7 +824,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1074,7 +1110,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1228,7 +1264,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1362,7 +1398,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1473,7 +1509,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1623,7 +1659,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1763,7 +1799,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-04 21:02:33" itemprop="dateModified" datetime="2023-11-04T21:02:33+08:00">2023-11-04</time>
+      <time title="修改时间：2023-11-06 12:36:47" itemprop="dateModified" datetime="2023-11-06T12:36:47+08:00">2023-11-06</time>
     </span>
 
   
@@ -1891,13 +1927,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">26k</span>
+    <span title="站点总字数">27k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:27</span>
+    <span title="站点阅读时长">1:30</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
