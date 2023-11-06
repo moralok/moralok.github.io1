@@ -513,3 +513,194 @@ SourceFile: "MethodAreaTest_2.java"
  5: invokevirtual #4
 ```
 索引 `#2` 的意思就是去常量表里查找对应项代表的事物。
+
+## 直接内存
+- 常见于 NIO 操作中的数据缓冲区。
+- 分配和回收的成本较高，但读写性能更高。
+- 不由 JVM 进行内存释放
+
+### NIO 和 IO 的拷贝性能
+```java
+public class DirectMemoryTest_1 {  
+  
+    private static final String FROM = "C:\\Users\\username\\Videos\\jellyfin\\media\\movies\\Harry Potter and the Chamber of Secrets (2002) [1080p]\\Harry.Potter.and.the.Chamber.of.Secrets.2002.1080p.BrRip.x264.YIFY.mp4";  
+    private static final String TO = "C:\\Users\\username\\Videos\\jellyfin\\media\\movies\\Harry Potter and the Chamber of Secrets (2002) [1080p]\\Harry.Potter.and.the.Chamber.of.Secrets.2002.1080p.BrRip.x264.YIFY-copy.mp4";  
+    private static final int _1Mb = 1024 * 1024;  
+  
+    public static void main(String[] args) {  
+        io();  
+        directBuffer();  
+    }  
+  
+    private static void directBuffer() {  
+        long start = System.nanoTime();  
+        try (FileChannel from = new FileInputStream(FROM).getChannel();  
+             FileChannel to = new FileOutputStream(TO).getChannel()) {  
+            ByteBuffer buffer = ByteBuffer.allocateDirect(_1Mb);  
+            while (true) {  
+                int len = from.read(buffer);  
+                if (len == -1) {  
+                    break;  
+                }  
+                buffer.flip();  
+                to.write(buffer);  
+                buffer.clear();  
+            }  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }  
+        long end = System.nanoTime();  
+        System.out.println("directBuffer 用时 " + (end - start) / 1000_000.0);  
+    }  
+  
+    private static void io() {  
+        long start = System.nanoTime();  
+        try (FileInputStream from = new FileInputStream(FROM);  
+             FileOutputStream to = new FileOutputStream(TO)) {  
+            byte[] buffer = new byte[_1Mb];  
+            while (true) {  
+                int len = from.read(buffer);  
+                if (len == -1) {  
+                    break;  
+                }  
+                to.write(buffer);  
+            }  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }  
+        long end = System.nanoTime();  
+        System.out.println("io 用时 " + (end - start) / 1000_000.0);  
+    }  
+}
+```
+
+```console
+io 用时 1676.9797
+directBuffer 用时 836.4796
+```
+
+{% asset_img "Pasted image 20231104235546.png" 普通的 IO 拷贝 %}
+
+{% asset_img "Pasted image 20231104235846.png" NIO 拷贝 %}
+
+
+### 直接内存溢出
+
+```java
+public class DirectMemoryTest_2 {  
+  
+    private static final int _100Mb = 1024 * 1024 * 100;  
+  
+    public static void main(String[] args) {  
+        List<ByteBuffer> list = new ArrayList<>();  
+        int i = 0;  
+        try {  
+            while (true) {  
+                ByteBuffer byteBuffer = ByteBuffer.allocateDirect(_100Mb);  
+                list.add(byteBuffer);  
+                i++;  
+            }  
+        } catch (Throwable t) {  
+            t.printStackTrace();  
+        } System.out.println(i);  
+    }  
+}
+```
+
+```console
+java.lang.OutOfMemoryError: Direct buffer memory
+	at java.nio.Bits.reserveMemory(Bits.java:695)
+	at java.nio.DirectByteBuffer.<init>(DirectByteBuffer.java:123)
+	at java.nio.ByteBuffer.allocateDirect(ByteBuffer.java:311)
+	at com.moralok.jvm.memory.direct.DirectMemoryTest_2.main(DirectMemoryTest_2.java:16)
+145
+```
+
+这似乎是代码中抛出的异常，而不是真正的直接内存溢出？
+
+### 直接内存释放的原理
+#### 演示直接内存的释放受 GC 影响
+```java
+public class DirectMemoryTest_3 {
+
+    private static final int _1GB = 1024 * 1024 * 1024;
+
+    public static void main(String[] args) throws IOException {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(_1GB);
+        System.out.println("分配完毕");
+        System.in.read();
+        System.out.println("开始释放");
+        byteBuffer = null;
+        // 随着 ByteBuffer 的释放，从任务管理器界面看到程序的内存的占用迅速下降 1GB。
+        System.gc();
+        System.in.read();
+    }
+}
+```
+
+#### 手动进行直接内存的分配和释放
+在代码中实现手动进行直接内存的分配和释放。
+```java
+public class DirectMemoryTest_4 {
+
+    private static final int _1GB = 1024 * 1024 * 1024;
+
+    public static void main(String[] args) throws IOException {
+        Unsafe unsafe = getUnsafe();
+
+        // 分配内存
+        long base = unsafe.allocateMemory(_1GB);
+        unsafe.setMemory(base, _1GB, (byte) 0);
+        System.in.read();
+
+        // 释放内存
+        unsafe.freeMemory(base);
+        System.in.read();
+    }
+
+    private static Unsafe getUnsafe() {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            Unsafe unsafe = (Unsafe) f.get(null);
+            return unsafe;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+#### 如何将 GC 和直接内存的分配和释放关联
+
+本质上，直接内存的自动释放是利用了虚引用的机制，间接调用了 unsafe 的分配和释放直接内存的方法。
+
+DirectByteBuffer 就是使用 unsafe.allocateMemory(size) 分配直接内存。DirectByteBuffer 对象以及一个 Deallocator 对象（Runnable 类型）一起用于创建了一个虚引用类型的 Cleaner 对象。
+```java
+DirectByteBuffer(int cap) {
+
+    // 省略
+    try {
+        base = unsafe.allocateMemory(size);
+    } catch (OutOfMemoryError x) {
+        Bits.unreserveMemory(size, cap);
+        throw x;
+    }
+    // 省略
+    cleaner = Cleaner.create(this, new Deallocator(base, size, cap));
+    att = null;
+}
+```
+
+根据虚引用的机制，如果 DirectByteBuffer 对象被回收，虚引用对象会被加入到 Cleanner 的引用队列，ReferenceHandler 线程会处理引用队列中的 Cleaner 对象，进而调用 Deallocator 对象的 run 方法。
+```java
+public void run() {
+    if (address == 0) {
+        // Paranoia
+        return;
+    }
+    unsafe.freeMemory(address);
+    address = 0;
+    Bits.unreserveMemory(size, capacity);
+}
+```
