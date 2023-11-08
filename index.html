@@ -152,7 +152,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,386 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/07/garbage-collection-in-Java/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/07/garbage-collection-in-Java/" class="post-title-link" itemprop="url">Java 垃圾收集</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-11-08 00:44:21 / 修改时间：23:58:43" itemprop="dateCreated datePublished" datetime="2023-11-08T00:44:21+08:00">2023-11-08</time>
+    </span>
+
+  
+    <span id="/2023/11/07/garbage-collection-in-Java/" class="post-meta-item leancloud_visitors" data-flag-title="Java 垃圾收集" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>25 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>每一次重新阅读，都有新的收获，也将过去这段时间以来一些新的零散的知识点串联在一起。<br>沿着周志明老师的行文脉络，了解问题发生的背景，当时的人如何思考，提出了哪些方案，各自有什么优缺点，附带产生的问题如何解决，理论研究如何应用到工程实践中，就像真实地经历一段研发历史。这让人对垃圾收集的认识不再停留在记忆上，而是深入到理解中，相关的知识点不再是空中楼阁，无根之水，而是从一些事实基础和问题自然延申出来。<br>尽管在更底层的实现上仍然缺乏认识和想象力，以至于在一些细节上还是疑惑重重，但是仍然有豁然开朗的感觉呢。比如以前看不同垃圾收集器的过程示意图如鸡肋，如今看其中的停顿和并发，只觉充满智慧。</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><strong>垃圾收集（Garbage Collection，简称 GC）需要考虑什么？</strong></p>
+<ul>
+<li>哪些内存需要回收？</li>
+<li>什么时候回收？</li>
+<li>如何回收？</li>
+</ul>
+<p><strong>为什么要去了解垃圾收集和内存分配？</strong><br>当需要排查各种内存溢出、内存泄漏问题时，当垃圾收集成为系统达到更高并发量的瓶颈时，我们就需要对这些“自动化技术”实施必要的监控和调节。</p>
+<p><strong>在 Java 中，垃圾收集需要关注哪些内存区域？</strong><br>程序计数器、虚拟机栈和本地方法栈，随线程而生，随线程而灭，栈中的栈帧随着方法的进入和退出有条不紊地执行着入栈和出栈操作，每个栈帧中分配多少内存可以认为是<strong>编译期可知</strong>的，因此这几个区域地内存分配和回收具备确定性。<br>但是 Java 堆和方法区这两个区域则有显著的不确定性，只有<strong>运行期间</strong>，我们才知道程序会创建哪些对象，创建多少个对象，这部分内存的分配和回收是动态的。</p>
+<h2 id="哪些内存需要回收？"><a href="#哪些内存需要回收？" class="headerlink" title="哪些内存需要回收？"></a>哪些内存需要回收？</h2><p><strong>哪些对象是还存活着，哪些已经死亡？</strong></p>
+<blockquote>
+<p>对象死亡即不可能再被任何途径使用。其实曾经的我会怀疑，遗落在内存中的对象，真的没有办法“魔法般地”获取其引用地址吗？引用变量的值不就是 64 位的数字吗？</p>
+</blockquote>
+<h3 id="引用计数算法（Reference-Counting）"><a href="#引用计数算法（Reference-Counting）" class="headerlink" title="引用计数算法（Reference Counting）"></a>引用计数算法（Reference Counting）</h3><p>优点：</p>
+<ul>
+<li>原理简单</li>
+<li>判定效率高</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>例外情况多，需要额外处理（比如循环引用）</li>
+</ul>
+<blockquote>
+<p>提及引用计数算法，人们好像认定它无法应对循环引用因而被抛弃。虽说 Java 虚拟机中没有选用它，但是在其他计算机领域有所运用。循环引用也并非它绕不过去的难题，事实上，跨代引用问题中，老年代引用新生代形成的引用链不是也可能是一个尚未回收的孤岛吗？</p>
+</blockquote>
+<h3 id="可达性分析算法（Reachability-Analysis）"><a href="#可达性分析算法（Reachability-Analysis）" class="headerlink" title="可达性分析算法（Reachability Analysis）"></a>可达性分析算法（Reachability Analysis）</h3><ul>
+<li>选取一系列称为“GC Roots”的根对象作为起始节点集。</li>
+<li>根据引用关系向下搜索。</li>
+<li>如果某个对象到 GC Roots 间没有任何引用链相连，即该对象不可能再被使用。用图论的话说，就是 GC Roots 到该对象不可达。</li>
+</ul>
+<img src="/2023/11/07/garbage-collection-in-Java/Pasted%20image%2020231108011042.png" class="" title="利用可达性分析算法判定对象是否可回收">
+
+<p><strong>那么可作为 GC Roots 的对象有哪些呢？</strong><br>固定的 GC Roots，主要是在全局性引用和执行上下文中：</p>
+<ol>
+<li>在虚拟机栈（栈帧中的本地变量表）中引用的对象，比如各个线程被调用的方法堆栈中使用到的参数、局部变量、临时变量等。</li>
+<li>在方法区中类静态属性引用的变量。</li>
+<li>在方法区中类常量引用的对象，比如字符串常量池（String Table）里的引用。</li>
+<li>在本地方法栈中 JNI，即 Native 方法引用的对象。</li>
+<li>Java 虚拟机内部的引用，如基本类型的 Class 对象，常驻的异常类型，还有系统类加载器。</li>
+<li>所有被同步锁（synchronized）持有的对象</li>
+<li>反映 Java 虚拟机内部情况的 JMXBean、JVMTI 中注册的回调、本地代码缓存等（不懂）。</li>
+</ol>
+<p>临时性的GC Roots：<br>除了固定的 GC Roots 集合外，根据用户所选用的垃圾收集器以及当前回收的内存区域不同，还可以有其他对象“临时性”地加入。</p>
+<blockquote>
+<p>比如，当针对新生代发起垃圾收集时，如果老年代对象引用了它，那么被引用的对象就不应该被回收，尽管老年代对象可能已经不可达。为此，老年代对象需要临时性加入 GC Roots 集合。<br>当然，为了避免将所有老年代对象加入 GC Roots 集合这样一看就很不合理的操作，会做一些优化处理。</p>
+</blockquote>
+<img src="/2023/11/07/garbage-collection-in-Java/Snipaste_2023-11-08_20-01-41.png" class="" title="跨代引用问题">
+
+<h3 id="“引用”的概念扩充"><a href="#“引用”的概念扩充" class="headerlink" title="“引用”的概念扩充"></a>“引用”的概念扩充</h3><p>对于判断对象是否存活而言，“引用”的重要性不言而喻。但是如果对象只有“被引用”和“未被引用”两种状态，对于描述一些“内存足够就保留，内存不足就抛弃”的对象就显得无能为力。<br>缓存系统就是这样的一个典型应用场景。当内存充足时，就保留作为缓存；当内存不足时，就抛弃腾出空间给其他资源。</p>
+<blockquote>
+<p>曾经有一位热衷实践技术的同事就和我介绍了他在项目中使用弱引用实现的缓存模块，当时我还不太理解他为何这样做。事实上，享受自动垃圾收集的我并不能在一开始就敏锐地把握到对象在应用程序中的创建、存活和消亡过程。<br>当然我们并不推荐自己实现基于 JVM 的缓存系统，事实上他之所以提及，正是因为出了 bug。</p>
+</blockquote>
+<h4 id="引用的分类"><a href="#引用的分类" class="headerlink" title="引用的分类"></a>引用的分类</h4><ul>
+<li>强引用（Strongly Reference），只要强引用还在，绝不会回收。</li>
+<li>软引用（Soft Reference），只被软引用关联的对象，在系统发生 OOM 前，会被列入回收范围进行第二次回收。</li>
+<li>弱引用（Weak Reference），只被弱引用关联的对象，只能生存到下一次垃圾收集发生为止，无论内存是否 足够，都会回收。</li>
+<li>虚引用（Phantom Reference），一个对象是否有虚引用，不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。设置虚引用的唯一目的就是为了在对象被回收时收到一个系统通知。</li>
+</ul>
+<p>虚引用的一个经典应用是是 ByteBuffer 对象被回收时自动释放直接内存。</p>
+<h4 id="弱引用的测试"><a href="#弱引用的测试" class="headerlink" title="弱引用的测试"></a>弱引用的测试</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceTest_3</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_4MB</span> <span class="operator">=</span> <span class="number">4</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -Xmx20m -XX:+PrintGCDetails -verbose:gc</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// list -&gt; WeakReference -&gt; byte[]</span></span><br><span class="line">        List&lt;WeakReference&lt;<span class="type">byte</span>[]&gt;&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            WeakReference&lt;<span class="type">byte</span>[]&gt; ref = <span class="keyword">new</span> <span class="title class_">WeakReference</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">byte</span>[_4MB]);</span><br><span class="line">            list.add(ref);</span><br><span class="line">            System.out.print(list.size() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">            <span class="keyword">for</span> (WeakReference&lt;<span class="type">byte</span>[]&gt; w : list) &#123;</span><br><span class="line"></span><br><span class="line">                System.out.print(w.get() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;循环结束： &quot;</span> + list.size());</span><br><span class="line">        System.in.read();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>在测试中，minor GC 并没有回收掉全部的只被弱引用关联的对象，full GC 才全部回收掉，我一度以为关于弱引用的表述不正确。后来进一步测试发现，是因为部分对象直接分配在老年代。因此更准确的表述是，每一次 GC 都会回收所在发生区域里只被弱引用关联的对象。<br>这是一个有趣的经验，让我对部分垃圾收集中的“部分”二字有更深刻的体会，原来非收集区域的对象真的对发生在其他区域的垃圾收集无感。</p>
+</blockquote>
+<blockquote>
+<p>了解为什么扩充引用的概念，让人对引用的分类豁然开朗。我的脑海里情不自禁冒出了不太恰当的比喻：一个城市里的公民被区分了等级，一等公民（强）永远不会被强行驱逐；二等公民（软）在城市资源紧张时会被强行驱逐；三等公民（弱）被认为影响市容市貌，一旦有整顿就会被强行驱逐；一等公民里有一些需要被监视，一旦离开，会触发一个事件。</p>
+</blockquote>
+<h3 id="finalize-方法"><a href="#finalize-方法" class="headerlink" title="finalize 方法"></a>finalize 方法</h3><blockquote>
+<p>有趣的知识点，无趣的面试考点。</p>
+</blockquote>
+<h3 id="方法区的垃圾回收是什么样的？"><a href="#方法区的垃圾回收是什么样的？" class="headerlink" title="方法区的垃圾回收是什么样的？"></a>方法区的垃圾回收是什么样的？</h3><ul>
+<li>《Java虚拟机规范》中提到可以不要求虚拟机在方法区实现垃圾收集</li>
+<li>确实有未实现或未完整实现方法区类型卸载的收集器</li>
+<li>原因是<strong>方法区垃圾收集的性价比通常比较低</strong></li>
+</ul>
+<p>方法区的垃圾收集主要回收两部分：</p>
+<ul>
+<li>废弃的常量</li>
+<li>不再使用的类型</li>
+</ul>
+<p><strong>如何判定一个常量是否废弃？</strong><br>没有任何字符串对象引用常量池中的“java”常量，且虚拟机中也没有其他地方引用这个字面量。<br>如果这时发生垃圾回收，而且垃圾收集器判断确实有必要，才会将“java”常量清理出常量池。</p>
+<blockquote>
+<p>“虚拟机中也没有其他地方引用这个字面量”怎么理解？</p>
+</blockquote>
+<p><strong>如何判定一个类型是否可卸载？</strong></p>
+<ul>
+<li>该类的所有的实例都已经被回收</li>
+<li>加载该类的类加载器已经被回收</li>
+<li>该类对应的 Class 对象没有在任何地方被引用，无法在任何地方通过反射访问该类的方法</li>
+</ul>
+<p>Java虚拟机被允许对满足上述三个条件的无用类进行回收，这里说的仅仅是“被允许”，而并不是<br>和对象一样，没有引用了就必然会回收。关于是否要对类型进行回收，HotSpot 虚拟机提供了 -Xnoclassgc 参数进行控制，还可以使用 -verbose:class 以及 -XX:+TraceClassLoading、-XX:+TraceClassUnLoading 查看类加载和卸载信息。</p>
+<blockquote>
+<p>条件二如此苛刻，系统类加载器不会被回收，是否意味着正常的应用程序，类一旦加载就不会卸载？<br>“无法在任何地方通过反射访问该类的方法”是否多余，Method 对象不是引用了 Class 对象吗？<br>Class 对象没有被引用时，会被回收吗？<br>卸载类是指回收 Class 对象加上清理方法区中的类的信息（怎么样的存储结构呢）吗？</p>
+</blockquote>
+<h2 id="如何回收：垃圾收集算法"><a href="#如何回收：垃圾收集算法" class="headerlink" title="如何回收：垃圾收集算法"></a>如何回收：垃圾收集算法</h2><p>分类：</p>
+<ul>
+<li>引用计数式垃圾收集（Reference Counting GC）</li>
+<li>追踪式垃圾收集（Tracing GC）</li>
+</ul>
+<h3 id="分代收集理论"><a href="#分代收集理论" class="headerlink" title="分代收集理论"></a>分代收集理论</h3><p>分代收集名为理论，实质是一套符合大多数程序运行实际情况的经验法则，它建立在<strong>两个分代假说</strong>之上：</p>
+<ol>
+<li>弱分代假说（Weak Generational Hypothesis）：绝大多数对象都是朝生夕灭的。</li>
+<li>强分代假说（String Generational Hypothesis）：熬过越多次垃圾收集过程的对象就越难以消亡。</li>
+</ol>
+<p>这两个分代假说共同奠定了多款常用垃圾收集器的<strong>一致的设计原则</strong>：收集器应该将 Java 堆划分出不同的区域，然后将回收对象依据其年龄分配到不同的区域之中存储。<br>正因为有了区域划分，垃圾收集器才可以每次只回收一个或某些部分的区域，因而才有了“Minor GC”、“Major GC”和“Full GC”等回收类型划分；针对不同区域安排与里面存储对象存亡特征相匹配的垃圾收集算法，因而才发展出“标记-复制”、“标记-清除”和“标记-整理”等垃圾收集算法。</p>
+<blockquote>
+<p>了解分代收集理论，分代收集算法更显得有理有据。</p>
+</blockquote>
+<p>一般把 Java 堆划分为新生代（Young Generation）和老年代（Old Generation）两个区域。</p>
+<p><strong>针对不同分代的垃圾收集分类：</strong></p>
+<ul>
+<li>部分收集（Partial GC）：目标不是完整收集整个堆、<ul>
+<li>新生代收集（Minor GC&#x2F;Young GC）</li>
+<li>老年代收集（Major GC&#x2F;Old GC）：只有 CMS。Major GC有些混淆，应按上下文注意是老年代收集还是整堆收集。</li>
+<li>混合收集（Mixed GC）：只有 G1</li>
+</ul>
+</li>
+<li>整堆收集（Full GC）</li>
+</ul>
+<p>区域划分引起另一个问题，跨代引用。这个问题在前文的 GC Roots 选择时也提到过。<br>根据前两条假说可逻辑推理得出隐含推论：存在相互引用关系的两个对象，是应该倾向于同时生存或者同时消亡的。</p>
+<ol start="3">
+<li>跨代引用假说（Integenerational Reference Hypothesis）：跨代引用相对于同代引用来说仅占极少数。</li>
+</ol>
+<p>依据这条假说，我们不应再为少量的跨代引用而去扫描整个老年代。那么怎么处理跨代引用呢？在后面 HotSpot 的实现细节中我们再提。</p>
+<h3 id="标记-清除算法（Mark-Sweep）"><a href="#标记-清除算法（Mark-Sweep）" class="headerlink" title="标记-清除算法（Mark Sweep）"></a>标记-清除算法（Mark Sweep）</h3><p>在 1960 年由 Lisp 之父 John McCarthy 提出，分为标记和清除两个阶段。<br>缺点：</p>
+<ul>
+<li>执行效率不稳定，对象越多，且需要回收的对象越多，效率会降低。</li>
+<li>内存空间碎片化，长时间后没有足够的连续内存分配大对象。</li>
+</ul>
+<img src="/2023/11/07/garbage-collection-in-Java/Pasted%20image%2020231108041337.png" class="" title="“标记-清除”算法示意图">
+
+<h3 id="标记-复制算法"><a href="#标记-复制算法" class="headerlink" title="标记-复制算法"></a>标记-复制算法</h3><p>为解决标记-清除算法面对大量可回收对象时执行效率低的问题，1969 年 Fenichel 提出“半区复制”（Semispace Copying）。将内存划分为大小相等的两块，每次只使用一块，用完的时候，复制存活的对象到另一块。</p>
+<p>优点：</p>
+<ul>
+<li>存活对象少时，仅需复制少量对象。</li>
+<li>不存在内存空间碎片</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>空间浪费</li>
+</ul>
+<p>适用场景：</p>
+<ul>
+<li>新生代。</li>
+</ul>
+<img src="/2023/11/07/garbage-collection-in-Java/Pasted%20image%2020231108042320.png" class="" title="标记-复制算法示意图">
+
+<p><strong>怎么减少空间的浪费呢？</strong><br>IBM 公司研究表明新生代中 98% 的对象熬不过第一轮收集。在 1989 年，Andrew Appel 针对具备“朝生夕灭”特点的对象，提出了一种更优化的半区复制分代策略，现在称为“Appel 式回收”。具体做法是把新生代分为一块较大的 Eden 空间和两块较小的 Survivor 空间，每次分配内存只使用 Eden 和其中一块 Survivor。<br>HotSpot 虚拟机默认 Eden:Suvivor 为 8:1。</p>
+<blockquote>
+<p>在测试中，尽管 survivor 有空间，仍然只在 Eden 空间进行分配。</p>
+</blockquote>
+<p>如果 Survivor 空间不足以容纳一次 Minor GC 之后存活的对象时怎么办？<br>罕见情况的“逃生门”——使用其他区域（通常是老年代）进行分配担保（Handle Promotion）。</p>
+<h3 id="标记-整理算法（Mark-Compact）"><a href="#标记-整理算法（Mark-Compact）" class="headerlink" title="标记-整理算法（Mark Compact）"></a>标记-整理算法（Mark Compact）</h3><p>标记-复制算法面对对象存活率较高的情况，效率会降低；更关键的是，它需要额外空间进行分配担保。<br>针对老年代对象的存亡特征，1974 年 Edward Lueders 提出了另外一种有针对性的“标记-整理”算法，让所有存活对象都向内存空间一端移动。</p>
+<blockquote>
+<p>移动和复制的开销有什么差距吗？撇开分配担保问题，大量复制和大量移动是类似的把？</p>
+</blockquote>
+<img src="/2023/11/07/garbage-collection-in-Java/Pasted%20image%2020231108044446.png" class="" title="标记-整理算法示意图">
+
+<p>移动对象的弊端</p>
+<ul>
+<li>大量对象存活的话需要大量移动对象，负担重。在以前，对象移动操作必须全程暂停用户应用程序才能进行（STW，Stop The World）。</li>
+<li>不整理内存碎片的话，需要依赖更复杂的内存分配器和内存访问器解决。内存访问最频繁，反而影响吞吐量。</li>
+</ul>
+<p>不移动对象停顿时间会更短，甚至可以不需要停顿，但是从整个程序的吞吐量来看，移动对象会更划算。在这点上的区别分别演变出两种发展方向，低延迟和高吞吐量。</p>
+<blockquote>
+<p>书中提到的内存分配器和内存访问器解决的是在碎片化的内存空间中进行内存分配，还是可以将大对象分散地存储到碎片化的空间中呢？还提到硬盘存储大文件不要求物理连续的磁盘空间以及内存访问环节的额外负担，应该是指一种分散存储的实现方案吧？</p>
+</blockquote>
+<blockquote>
+<p>对于 CMS 的“和稀泥”解决方案，暂时容忍内存碎片，直到影响对象分配时再采用标记-整理算法收集一次，如果抛开备用的 Serial Old 单线程的效率问题不谈，除非在碎片化的内存空间中分配和访问内存在效率上低于在整理后的内存空间中，要不然“和稀泥”这种懒惰式的处理方案理论上效率更高吧？</p>
+</blockquote>
+<h2 id="HotSpot-的算法细节实现"><a href="#HotSpot-的算法细节实现" class="headerlink" title="HotSpot 的算法细节实现"></a>HotSpot 的算法细节实现</h2><h3 id="根节点枚举"><a href="#根节点枚举" class="headerlink" title="根节点枚举"></a>根节点枚举</h3><p>对象浩如烟海，怎么实现高效查找根节点的呢？</p>
+<p>迄今为止，<strong>所有收集器在根节点枚举这一步骤时都是必须暂停用户线程的</strong>。这是因为根节点枚举如果不在一个一致性快照中进行，准确性无法保证。</p>
+<p>Exact VM 类型的虚拟机使用的是准确式垃圾回收，当用户线程停顿后，不需要一个不漏地检查完所有执行上下文和全局的引用位置，就有办法直接得到哪些地方存放着对象引用。HotSpot 的具体解决方案是使用一组称为 OopMap（Ordinary Object Pointer Map） 的数据结构。</p>
+<ul>
+<li>一旦类加载动作完成，HotSpot 会把对象内什么偏移量上是什么类型的数据计算出来。</li>
+<li>在即时编译过程中，也会在特定位置记录下栈和寄存器里什么位置是引用。</li>
+</ul>
+<blockquote>
+<p>看书时，在这个地方其实有很多困惑。对于 OopMap，就像知道了一个不太懂的东西，了解了它能做什么，最明确的是，在即时编译中，会在安全点位置生成 OopMap。</p>
+</blockquote>
+<h3 id="安全点"><a href="#安全点" class="headerlink" title="安全点"></a>安全点</h3><p><strong>为什么引入安全点，它解决了什么问题？</strong></p>
+<p>在 OopMap 的协助下，HotSpot 可以快速准确地完成 GC Roots。但是非常多的指令可能导致 OopMap 的内容发生变化。</p>
+<blockquote>
+<p>书中“可能导致引用关系变化……的指令非常多”这句话让人困惑，OopMap 不是为了定位哪里是引用而非引用指向哪吧？如果只看“导致 OopMap 内容变化的指令非常多”更易理解。</p>
+</blockquote>
+<p><strong>在哪里生成 OopMap 呢？</strong><br>既然指令会导致 OopMap 内容发生变化，最简单粗暴的就是为每一条指令生成 OopMap，但是这样会空间成本会急剧上升。<br>HotSpot 只在特定的位置生成 OopMap，这些位置被称为“安全点”（Safepoint）。<br>安全点的设定决定了并非在代码指令流的任意位置都能够停顿下来开始垃圾收集，而是要求必须到达安全点才能够暂停。</p>
+<p><strong>安全点怎么选择呢？</strong></p>
+<ul>
+<li>不能太少以至于让收集器等太久</li>
+<li>不能太频繁以至于过分增大运行时的内存负担<br>安全点的位置的选取基本上是以“是否具有让程序长时间执行的特征”为标准进行选定的。</li>
+</ul>
+<blockquote>
+<p>是长时间运行前还是长时间运行后呢？根据前文，为了不让收集器等太久，那就是开始运行前？</p>
+</blockquote>
+<p><strong>如何在垃圾收集发生时，让所有线程（不包括 JNI 调用的线程）都跑到最近的安全点，然后停顿下来呢？</strong></p>
+<ul>
+<li>抢先式中断（Preemptive Suspension），系统先中断全部用户线程，如果有用户线程中断的地方不是安全点，就恢复该线程执行，再中断，直到跑到安全点。（没人选）</li>
+<li>主动式中断（Voluntary Suspenstion），设置一个标志位，线程执行时不停主动轮询，发现中断标志为真就在最近的安全点主动挂起。</li>
+</ul>
+<blockquote>
+<p>这个问题和如何通知多线程一起做一件事很像，设置标志位，再让线程运行过程中轮询。</p>
+</blockquote>
+<p><strong>什么时候进行轮询？</strong><br>轮询标志的地方与安全点是重合的，另外还要加上创建对象和其他需要在堆上分配内存的地方，这样可以检查是否即将发生垃圾收集，避免没有足够内存分配给新对象。</p>
+<blockquote>
+<p>仔细一想，与安全点重合似乎是理所当然，额外选取的地方也有恰当的理由。</p>
+</blockquote>
+<p>轮询在印象里都意味着额外开销，虚拟机如何应对？<br>HotSpot 使用内存保护陷阱的方式，把轮询操作精简至只有一条汇编指令的程度。</p>
+<blockquote>
+<p>很遗憾，看懂又不懂，总之，轮询操作优化得很高效。</p>
+</blockquote>
+<h3 id="安全区域"><a href="#安全区域" class="headerlink" title="安全区域"></a>安全区域</h3><p>为什么引入安全区域，它解决了什么问题？</p>
+<p>安全点机制保证了程序执行时，在不太长的时间内，就会遇到可进入垃圾收集过程的安全点，但是如果程序“不执行”的时候，比如线程处于 Sleep 或者 Blocked 时，就无法通过轮询获知中断标识。对于这种情况，引入了安全区域（Safe Region）来解决。</p>
+<p>安全区域是指能够确保在某一段代码片段之中，引用关系不会发生变化。安全区域可以看作是扩展拉伸了的安全点。</p>
+<ol>
+<li>当用户线程执行到安全区域里的代码，首先会标识自己进入了安全区域</li>
+<li>虚拟机发起垃圾回收时，不去管这些写线程</li>
+<li>当线程要离开安全区域，会检查虚拟机是否已完成根节点枚举（或者其他需要暂定用户线程的阶段），<strong>看起来是否处于用户线程暂停是可以检测的</strong>。</li>
+<li>如果已完成，继续；如果未完成，<strong>等待至收到可以离开安全区域的信号</strong></li>
+</ol>
+<blockquote>
+<p>不去管处于安全区域的线程的意思是什么，不是线程主动轮询是否中断的标志吗？这个标志不是全局共享的吗，是虚拟机为各个线程单独设置的？</p>
+</blockquote>
+<h3 id="记忆集和卡表"><a href="#记忆集和卡表" class="headerlink" title="记忆集和卡表"></a>记忆集和卡表</h3><p>为什么引入记忆集，它解决了什么问题？</p>
+<p>为了解决对象跨代引用所带来的问题，比如在标记新生代时，避免将整个老年代的对象都加入 GC Roots 进行扫描。</p>
+<blockquote>
+<p>这个问题起初让我很迷惑，直到我认识到“老年代里有一些已经不可达但还没回收的对象，它们可能引用了新生代里的对象”这个现象，我在想我可能理解了跨代问题。但是此时，我又迟疑了，如果引用新生代对象的老年代对象已经不可达，回收掉就好了，如果老年代对象可达，那么从固定的 GC Roots 一定可以找到老年代对象，再找到新生代对象。</p>
+</blockquote>
+<p>记忆集是一种用于记录从非收集区域指向收集区域的指针集合的抽象数据结构。<br>如果不考虑效率和成本，最简单的方法可以用非收集区域中所有含跨代引用的对象数组来实现。</p>
+<p>设计者通常选择更为粗犷的记录粒度来节省记忆集的存储和维护成本，比如：</p>
+<ul>
+<li>字长精度：每个记录精确到一个机器字长，该字包含跨代指针。</li>
+<li>对象精度：每个记录精确到一个对象，该对象里包含跨代指针。</li>
+<li>卡精度：每个记录精确到一块内存区域，该区域内有对象含有跨代指针。</li>
+</ul>
+<p>卡表（Card Table）是记忆集的一种具体实现。<br>卡表最简单的形式可以只是一个字节数组，HotSpot 虚拟机也是这样做的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CARD_TABLE[<span class="built_in">this</span> address &gt;&gt; <span class="number">9</span>] = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/11/07/garbage-collection-in-Java/Pasted%20image%2020231108160535.png" class="" title="卡表与卡页对应示意图">
+
+<p>一个卡页的内存中通常包含不止一个对象，只要卡页内有一个或更多对象的字段存在跨代引用指针，就将卡表的数组元素的值标识为 1，成该元素变脏（Dirty）。</p>
+<blockquote>
+<p>这是否以为着卡表长度为 (老年代容量 &#x2F; 512)，这内存占用还是不低欸。</p>
+</blockquote>
+<blockquote>
+<p>区域内怎么判断出对象的开始和结束位置呢？虚拟机可以通过一个地址，知道该地址是一个对象的起始地址吗？</p>
+</blockquote>
+<h3 id="写屏障"><a href="#写屏障" class="headerlink" title="写屏障"></a>写屏障</h3><p>卡表元素如何维护？它们何时变脏，谁来把它们变脏。</p>
+<p>卡表元素何时变脏的答案是明确的——有其他分代区域中对象引用本区域对象时，其对应的卡表元素就应该变脏。<br>问题是如何在对象赋值的那一刻去更新维护卡表呢？<br>在解释执行字节码的情况中，虚拟机有充分的介入空间；但是在编译执行的场景中，即时编译后的代码已经是纯粹的机器指令流了。<br>HotSpot 虚拟机是通过写屏障（Write Barrier）技术维护卡表状态，在机器码层面介入每一个赋值操作。</p>
+<blockquote>
+<p>又是一个看懂又不懂的事情，总之，理解为引用字段赋值的 AOP 切面吧。</p>
+</blockquote>
+<ul>
+<li>写前屏障（Pre-Write Barrier），直到 G1 收集器才使用到。</li>
+<li>写后屏障（Post-Write Barrier）。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">oop_field_store</span><span class="params">(oop* field, oop new_value)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 引用字段赋值操作</span></span><br><span class="line">    *field = new_value;</span><br><span class="line">    <span class="comment">// 写后屏障，在这里完成卡表状态更新</span></span><br><span class="line">    <span class="built_in">post_write_barrier</span>(field, new_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这应该只是为了表达思路的伪代码吧？</p>
+</blockquote>
+<p>应用写屏障后，每次只要对引用更新，都会产生额外的开销，但是和 Minor GC 时扫描整个老年代的代价相比还是低很多的。</p>
+<p>除了写屏障的开销外，卡表在高并发场景下还面临着“伪共享”（False Sharing）问题。</p>
+<p>现代中央处理器的缓存系统中是以缓存行（Cache Line）为单位存储的，当多线程修改互相独立的变量时，如果这些变量恰好共享同一个缓存行，就会彼此影响而导致性能降低。<br>假设 64 个卡表元素共享一个缓存行，对应的卡页总内存为 32 KB，如果不同线程更新的对象都在这 32 KB 的内存区域内，就会导致更新卡表时发生伪共享问题。<br>一种简单的解决方案是不采用无条件的写屏障，而是先检查卡表标记，只有未被标记才标记为变脏。</p>
+<p>在 JDK 7 后，新增 -XX:+UseCondCardMark 参数决定是否开启卡表更新的条件判断。开启后增加一次额外的判断开销，但能够避免伪共享问题。</p>
+<h3 id="并发的可达性分析"><a href="#并发的可达性分析" class="headerlink" title="并发的可达性分析"></a>并发的可达性分析</h3><p>从 GC Roots 再继续向下遍历对象图，停顿时间必然与堆容量成正比。如果能够削减这部分的停顿时间，对于所有使用追踪式垃圾收集算法的收集器而言，“标记”阶段都能收益匪浅。</p>
+<p>为什么必须在一个能保障一致性的快照上才能进行对象图的遍历？<br>三色标记（Tri-color Marking），扫描过程就想灰色波峰从黑向白推进。<br>白色：表示对象尚未被垃圾收集器访问到。<br>黑色：表示对象已经被垃圾收集器访问到，且这个对象的所有引用都已经扫描过了。<br>灰色：表示对象已经被垃圾收集器访问到，但这个对象上至少有一个引用还没有被扫描过。</p>
+<p>如果用户线程是冻结的，那么不会有问题。如果用户线程在收集过程中修改了引用关系，就会出现两种后果：</p>
+<ul>
+<li>把原本消亡的对象，错误标记为存活。（尚可以容忍，只是产生了浮动垃圾，下次收集即可）</li>
+<li>把原本存活的对象，错误标记为死亡。这是不允许发生的。</li>
+</ul>
+<p>Wilson 于 1994 年在理论上证明，当且仅当以下两个条件同时满足，会产生“对象消失”的问题：</p>
+<ul>
+<li>赋值器插入了一条或多条从黑色对象到白色对象的新引用。</li>
+<li>赋值器删除了全部从灰色到<strong>该</strong>白色对象的直接<strong>或间接</strong>引用。</li>
+</ul>
+<blockquote>
+<p>第二个条件的描述需要很精确，不能忽略关键字眼。</p>
+</blockquote>
+<p>要解决并发扫描时的对象消亡问题，只需要破坏这两个条件的任意一个即可。由此分别产生了两种解决方案：</p>
+<ul>
+<li>增量更新（Incremental Update），当黑色对象插入新的指向白色对象的引用时，记录，在并发扫描结束后，以这些黑色对象为根，重新扫描。</li>
+<li>原始快照（Snapshot At Beginning），当灰色对象要删除指向白色对象的引用关系时，记录，在并发扫描结束后，以这些灰色对象为根，重新扫描。</li>
+</ul>
+<blockquote>
+<p>不太理解“以这些灰色对象为根，重新扫描”，反而是“按照扫描的那一刻的对象图进行扫描”更容易理解。<br>应该是以这些灰色对象为根，根据记录的被删除引用，继续扫描。把继续扫描到的对象，统统视为存活对象。<br>如果没有理解错的话，这时候会产生一种错误将白标记为黑的浮动垃圾；第一种方案不会出现该情况；但两种方案都不能避免已标记为黑的对象在并发时成为浮动垃圾。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +612,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -465,7 +845,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -665,7 +1045,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -827,7 +1207,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1113,7 +1493,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1267,7 +1647,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1401,7 +1781,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1512,7 +1892,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1662,7 +2042,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
+      <time title="修改时间：2023-11-08 23:58:43" itemprop="dateModified" datetime="2023-11-08T23:58:43+08:00">2023-11-08</time>
     </span>
 
   
@@ -1758,154 +2138,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/07/how-to-use-OpenVPN-to-access-home-network/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Moralok">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Moralok">
-      <meta itemprop="description" content="Moralok's blog">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Moralok">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/06/07/how-to-use-OpenVPN-to-access-home-network/" class="post-title-link" itemprop="url">使用 OpenVPN 访问家庭内网</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-06-07 22:19:17" itemprop="dateCreated datePublished" datetime="2023-06-07T22:19:17+08:00">2023-06-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-06 18:10:14" itemprop="dateModified" datetime="2023-11-06T18:10:14+08:00">2023-11-06</time>
-    </span>
-
-  
-    <span id="/2023/06/07/how-to-use-OpenVPN-to-access-home-network/" class="post-meta-item leancloud_visitors" data-flag-title="使用 OpenVPN 访问家庭内网" title="阅读次数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">阅读次数：</span>
-      <span class="leancloud-visitors-count"></span>
-    </span>
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>744</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="网络概况"><a href="#网络概况" class="headerlink" title="网络概况"></a>网络概况</h2><p>宽带是电信宽带，分配了动态的公网 IP。<br>光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。<br>一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。<br>Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机，IP 192.168.46.128。Windows 10 主机在子网中的 IP 为 192.168.3.1。</p>
-<table>
-<thead>
-<tr>
-<th>子网</th>
-<th>Windows 10 主机</th>
-<th>Linux 主机</th>
-<th>客户端</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>路由器 192.168.3.0&#x2F;24</td>
-<td>192.168.3.120</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr>
-<td>Vmware NAT 192.168.46.0&#x2F;24</td>
-<td>192.168.46.1</td>
-<td>192.168.46.128</td>
-<td>-</td>
-</tr>
-<tr>
-<td>VPN 10.8.0.0&#x2F;24</td>
-<td>10.8.0.1</td>
-<td>-</td>
-<td>10.8.0.6</td>
-</tr>
-</tbody></table>
-<h2 id="目标和考虑因素"><a href="#目标和考虑因素" class="headerlink" title="目标和考虑因素"></a>目标和考虑因素</h2><ol>
-<li>能从公网访问家庭内网，包括 Windows 10 主机和虚拟机上的 Linux 主机。</li>
-<li>不想通过路由器的 NAT 功能直接将路由器局域网上的设备映射到公网。一是为了安全，二是为了避免运营商审查。</li>
-<li>已经尝试过使用 ZeroTier，将所需设备组建在一个局域网当中，可以作为备选方案。同时不想每次新增设备都安装 ZeroTier。</li>
-<li>想利用公网 IP 以及上行带宽尝尝鲜。</li>
-<li>想要能直连虚拟机上的 Linux 主机，而不是通过 Vmware 的 NAT 映射。不想每次新增服务都要设置 NAT，修改 Windows Defender 的规则。</li>
-</ol>
-<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="在-Windows-10-上安装-OpenVPN-服务器"><a href="#在-Windows-10-上安装-OpenVPN-服务器" class="headerlink" title="在 Windows 10 上安装 OpenVPN 服务器"></a>在 Windows 10 上安装 OpenVPN 服务器</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" title="在 Windows 10 上安装 OpenVPN 服务器">在 Windows 10 上安装 OpenVPN 服务器</a>。</p>
-<h3 id="在-iOS-和-macOS-上安装-OpenVPN-客户端"><a href="#在-iOS-和-macOS-上安装-OpenVPN-客户端" class="headerlink" title="在 iOS 和 macOS 上安装 OpenVPN 客户端"></a>在 iOS 和 macOS 上安装 OpenVPN 客户端</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" title="在 iOS 和 macOS 上安装 OpenVPN 客户端">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>。</p>
-<h3 id="客户端访问服务端其他的私有子网"><a href="#客户端访问服务端其他的私有子网" class="headerlink" title="客户端访问服务端其他的私有子网"></a>客户端访问服务端其他的私有子网</h3><p>如果在所需的每一个设备上都安装 OpenVPN，将它们连接在 VPN 的子网 10.8.0.0&#x2F;24 中，也是可以满足需求的，但是这和每个设备都安装 ZeroTier 差不多。</p>
-<h4 id="server-ovpn-新增配置"><a href="#server-ovpn-新增配置" class="headerlink" title="server.ovpn 新增配置"></a>server.ovpn 新增配置</h4><p>在 <code>server.ovpn</code> 配置文件中新增一行配置，这个配置的意思是将该路由配置统一推送给客户端，让它们可以访问服务端的其他私有子网。相当于将服务端的其他私有子网的情况告知客户端，这样客户端就知道发往 192.168.46.128 的 Packet 是发向哪里的。</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">push &quot;route 192.168.46.0 255.255.255.0&quot;</span><br></pre></td></tr></table></figure>
-
-<h4 id="打开-Windows-10-主机的路由转发功能"><a href="#打开-Windows-10-主机的路由转发功能" class="headerlink" title="打开 Windows 10 主机的路由转发功能"></a>打开 Windows 10 主机的路由转发功能</h4><ol>
-<li><code>Win + R</code> 输入 regedit 打开注册表。</li>
-<li>找到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters</code>，修改 <code>IPEnableRouter</code> 为 1。</li>
-<li>重启</li>
-</ol>
-<h4 id="为虚拟机上的-Linux-主机新增路由"><a href="#为虚拟机上的-Linux-主机新增路由" class="headerlink" title="为虚拟机上的 Linux 主机新增路由"></a>为虚拟机上的 Linux 主机新增路由</h4><p>在终端中输入命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route add -net 10.8.0.0/24 gw 192.168.46.1</span><br></pre></td></tr></table></figure>
-<p>这是为了让 OpenVPN 服务端的其他私有子网上的设备知道来自 10.8.0.0&#x2F;24 的 IP Packet 应该路由回 OpenVPN 服务端。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.51cto.com/richie/389636">透过openvpn来访问内网资源</a><br><a target="_blank" rel="noopener" href="https://limbo.moe/posts/2018/openvpn-routes">OpenVPN 路由详解</a><br><a target="_blank" rel="noopener" href="https://qastack.cn/superuser/865302/yet-another-routing-issue-in-openvpn-cannot-access-local-machines-while-on-vpn">OpenVPN中的另一个路由问题 - 在VPN上无法访问本地计算机</a><br><a target="_blank" rel="noopener" href="https://www.nixops.me/articles/openvpn-add-local-routing-table.html">openvpn添加本地路由表</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43615820/article/details/113660623">windows开启路由转发</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/snake-hand/p/3143041.html">linux route命令的使用详解</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/bcbobo21cn/article/details/52548923">Windows命令行route命令使用图解</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1930,13 +2162,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">27k</span>
+    <span title="站点总字数">35k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:31</span>
+    <span title="站点阅读时长">1:56</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
