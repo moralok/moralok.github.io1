@@ -110,7 +110,23 @@ end
 
 如果真的存在这样的业务场景，应考虑使用其他解决方案加以优化。
 
-#### 改进二：加锁时指定 tag
+#### 改进二：使用 watchdog 实现锁续期
+
+为 Redis 的 key 设置过期时间，其实是为了解决死锁问题而做出的兜底措施。可以为获得的锁设置定时任务定期地为锁续期，以避免锁被提前释放。
+
+```java
+private void scheduleRenewal() {
+    String value = lockValue.get();
+    ScheduledFuture<?> scheduledFuture = sScheduler.scheduleAtFixedRate(
+        () -> this.renewal(value), RENEWAL_INTERVAL, RENEWAL_INTERVAL, TimeUnit.MILLISECONDS
+    );
+    renewalTask.set(scheduledFuture);
+}
+```
+
+但是这个方式仍然不能避免解锁失败时的其他线程的等待时间。
+
+#### 改进三：加锁时指定 tag
 
 可以将 set 指令的 value 参数设置为一个随机数，释放锁时先匹配持有的 tag 是否和 value 一致，如果一致再删除 key，以此避免锁被其他线程错误释放。
 
@@ -141,13 +157,51 @@ end
 
 可重入性是指线程在已经持有锁的情况下再次请求加锁，如果一个锁支持同一个线程多次加锁，那么就称这个锁是可重入的，类似 Java 的 ReentrantLock。
 
-Redis 分布式锁如果要支持可重入，可以使用线程的 ThreadLocal 变量存储当前持有的锁计数。
+#### 使用 ThreadLocal 实现锁计数
+
+Redis 分布式锁如果要支持可重入，可以使用线程的 ThreadLocal 变量存储当前持有的锁计数。但是在多次获得锁后，过期时间并没有得到延长，后续获得锁后持有锁的时间其实比设置的时间更短。
 
 ```java
 private ThreadLocal<Integer> lockCount = ThreadLocal.withInitial(() -> 0);
+
+public boolean tryLock() {  
+    Integer count = lockCount.get();  
+    if (count != null && count > 0) {  
+        lockCount.set(count + 1);   
+        return true;    
+    }  
+    String result = commands.set(lockKey, lockValue.get(), SetArgs.Builder.nx().px(RedisLockManager.LOCK_EXPIRE));  
+    if ("OK".equals(result)) {  
+        lockCount.set(1);  
+        scheduleRenewal();  
+        return true;    
+    }  
+    return false;  
+}
+```
+
+#### 使用 Redis hash 实现锁计数
+
+还可以使用 Redis 的 hash 数据结构实现锁计数，支持重新获取锁后重置过期时间。
+
+```lua
+if (redis.call('exists', KEYS[1]) == 0) then 
+	redis.call('hset', KEYS[1], ARGV[2], 1);
+	redis.call('pexpire', KEYS[1], ARGV[1]);
+    return nil;
+    end;
+if (redis.call('hexists', KEYS[1], ARGV[2]) == 1) then
+	redis.call('hincrby', KEYS[1], ARGV[2], 1);
+	redis.call('pexpire', KEYS[1], ARGV[1]);
+    return nil;
+return redis.call('pttl', KEYS[1]);
 ```
 
 书的作者**不推荐使用可重入锁**，他提出可重入锁会加重客户端的复杂度，如果在编写代码时注意在逻辑结构上进行调整，完全可以避免使用可重入锁。
+
+## 代码实现
+
+[redis-lock](https://github.com/moralok/redis-lock)
 
 ## 参考文章
 
