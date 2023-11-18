@@ -1,7 +1,8 @@
 ---
 title: 在 iOS 和 macOS 上安装 OpenVPN 客户端
 date: 2023-06-07 17:04:23
-tags: OpenVPN
+tags: 
+    - openvpn
 ---
 
 ## 安装 OpenVPN Connect

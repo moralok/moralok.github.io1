@@ -1,7 +1,8 @@
 ---
 title: 在 Windows 10 上安装 OpenVPN 服务器
 date: 2023-06-07 15:18:02
-tags: OpenVPN
+tags: 
+    - openvpn
 ---
 
 ## 安装 OpenVPN server

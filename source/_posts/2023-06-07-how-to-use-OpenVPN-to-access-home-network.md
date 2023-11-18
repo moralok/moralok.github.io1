@@ -1,7 +1,8 @@
 ---
 title: 使用 OpenVPN 访问家庭内网
 date: 2023-06-07 22:19:17
-tags: OpenVPN
+tags: 
+    - openvpn
 ---
 
 ## 网络概况

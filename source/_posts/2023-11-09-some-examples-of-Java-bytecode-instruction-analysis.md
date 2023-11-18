@@ -2,7 +2,7 @@
 title: 关于 Java 字节码指令的一些例子分析
 date: 2023-11-09 23:13:11
 tags:
-    - Java
+    - java
     - bytecode
 ---
 

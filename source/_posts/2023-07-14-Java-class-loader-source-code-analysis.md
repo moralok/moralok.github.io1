@@ -2,8 +2,8 @@
 title: Java 类加载器源码分析
 date: 2023-07-14 04:08:11
 tags:
-    - Java
-    - ClassLoader
+    - java
+    - class loader
 ---
 
 ### 组织类加载工作：loadClass

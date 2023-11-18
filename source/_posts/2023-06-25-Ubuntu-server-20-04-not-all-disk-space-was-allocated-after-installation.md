@@ -2,7 +2,7 @@
 title: Ubuntu server 20.04 安装后没有分配全部磁盘空间
 date: 2023-06-25 00:04:43
 tags:
-    - Ubuntu
+    - ubuntu
 ---
 
 最近在本地测试 Kubesphere 和 Minikube，使用 Ubuntu server 20.04 搭建了多个虚拟机，磁盘空间紧张。注意到安装后，磁盘空间仅占据分配的一半左右。

@@ -2,7 +2,7 @@
 title: 字符串常量池的测试和分析
 date: 2023-11-03 15:57:47
 tags: 
-    - Java
+    - java
     - jvm
 ---
 

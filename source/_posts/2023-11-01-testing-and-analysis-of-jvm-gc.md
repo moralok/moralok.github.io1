@@ -2,7 +2,7 @@
 title: JVM GC 的测试和分析
 date: 2023-11-01 11:42:50
 tags: 
-  - Java
+  - java
   - jvm
 ---
 

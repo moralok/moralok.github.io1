@@ -2,7 +2,7 @@
 title: JVM 内存区域的测试和分析
 date: 2023-11-04 19:21:25
 tags:
-    - Java
+    - java
     - jvm
 ---
 

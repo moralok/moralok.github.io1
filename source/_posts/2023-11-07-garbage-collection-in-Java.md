@@ -2,7 +2,7 @@
 title: Java 垃圾收集
 date: 2023-11-08 00:44:21
 tags:
-    - Java
+    - java
     - jvm
 ---
 
