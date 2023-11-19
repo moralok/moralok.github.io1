@@ -2,6 +2,8 @@
 title: 使用 Grafana 和 Prometheus 搭建监控
 date: 2023-11-18 13:48:40
 tags:
+    - grafana
+    - prometheus
 ---
 
 
