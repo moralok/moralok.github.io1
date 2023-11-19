@@ -152,13 +152,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,165 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/19/JDK-dynamic-proxy-and-CGLib/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/19/JDK-dynamic-proxy-and-CGLib/" class="post-title-link" itemprop="url">JDK 动态代理和 CGLib</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-11-19 14:20:39 / 修改时间：23:16:03" itemprop="dateCreated datePublished" datetime="2023-11-19T14:20:39+08:00">2023-11-19</time>
+    </span>
+
+  
+    <span id="/2023/11/19/JDK-dynamic-proxy-and-CGLib/" class="post-meta-item leancloud_visitors" data-flag-title="JDK 动态代理和 CGLib" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>860</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="JDK-动态代理"><a href="#JDK-动态代理" class="headerlink" title="JDK 动态代理"></a>JDK 动态代理</h3><p>Java 标准库提供了动态代理功能，允许程序在运行期动态创建指定接口的实例。</p>
+<h3 id="CGLib-动态代理"><a href="#CGLib-动态代理" class="headerlink" title="CGLib 动态代理"></a>CGLib 动态代理</h3><p>使用 ASM 框架，加载代理对象的 Class 文件，通过修改其字节码生成子类。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/cglib/cglib">cglib Github 仓库</a></p>
+<h3 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h3><ul>
+<li>JDK 动态代理适用于实现接口的类，对未实现接口的类无能为力。</li>
+<li>CGLib 不要求类实现接口，但对 final 方法无能为力。</li>
+</ul>
+<h3 id="性能比较"><a href="#性能比较" class="headerlink" title="性能比较"></a>性能比较</h3><ul>
+<li>在 JDK 8 以前，CGLib 性能更好</li>
+<li>从 JDK 8 开始，JDK 动态代理性能更好</li>
+</ul>
+<blockquote>
+<p>根据 README.md 的提醒，cglib 已经不再维护，且在较新版本的 JDK 尤其是 JDK 17+ 中表现不佳，官方推荐可以考虑迁移到 <a target="_blank" rel="noopener" href="https://bytebuddy.net/">ByteBuddy</a>。在如今越来越多的项目迁移到 JDK 17 的背景下，值得注意。</p>
+</blockquote>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="代理对象的类和接口"><a href="#代理对象的类和接口" class="headerlink" title="代理对象的类和接口"></a>代理对象的类和接口</h3><p>代理对象的类和实现的接口：</p>
+<ul>
+<li><p>HelloService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">HelloService</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(String name)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>HelloService.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">HelloService</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (name == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;name can not be null&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello &quot;</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="JDK-动态代理示例"><a href="#JDK-动态代理示例" class="headerlink" title="JDK 动态代理示例"></a>JDK 动态代理示例</h3><ul>
+<li>自定义 InvocationHandler<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceInvocationHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">UserServiceInvocationHandler</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. before invocation&quot;</span>);</span><br><span class="line">            <span class="type">Object</span> <span class="variable">ret</span> <span class="operator">=</span> method.invoke(target, args);</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. after invocation&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. when exception occurs&quot;</span>);</span><br><span class="line">            <span class="keyword">throw</span> e;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. finally&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>测试类<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JdkProxyTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">HelloService</span> <span class="variable">target</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloServiceImpl</span>();</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> target.getClass().getClassLoader();</span><br><span class="line">        Class&lt;?&gt;[] interfaces = target.getClass().getInterfaces();</span><br><span class="line">        <span class="type">UserServiceInvocationHandler</span> <span class="variable">invocationHandler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserServiceInvocationHandler</span>(target);</span><br><span class="line"></span><br><span class="line">        <span class="type">HelloService</span> <span class="variable">proxy</span> <span class="operator">=</span> (HelloService) Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);</span><br><span class="line">        proxy.sayHello(<span class="string">&quot;Tom&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;=================&quot;</span>);</span><br><span class="line">        proxy.sayHello(<span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>结果<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">do sth. before invocation</span><br><span class="line">Hello Tom</span><br><span class="line">do sth. after invocation</span><br><span class="line">do sth. finally</span><br><span class="line">=================</span><br><span class="line">do sth. before invocation</span><br><span class="line">do sth. when exception occurs</span><br><span class="line">do sth. finally</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.reflect.UndeclaredThrowableException</span><br><span class="line">	at com.sun.proxy.$Proxy0.sayHello(Unknown Source)</span><br><span class="line">	at com.moralok.proxy.jdk.JdkProxyTest.main(JdkProxyTest.java:19)</span><br><span class="line">Caused by: java.lang.reflect.InvocationTargetException</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)</span><br><span class="line">	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">	at java.lang.reflect.Method.invoke(Method.java:498)</span><br><span class="line">	at com.moralok.proxy.jdk.UserServiceInvocationHandler.invoke(UserServiceInvocationHandler.java:18)</span><br><span class="line">	... 2 more</span><br><span class="line">Caused by: java.lang.IllegalArgumentException: name can not be null</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl.sayHello(HelloServiceImpl.java:8)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="CGLib-动态代理示例"><a href="#CGLib-动态代理示例" class="headerlink" title="CGLib 动态代理示例"></a>CGLib 动态代理示例</h3><ul>
+<li>引入依赖<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>自定义 MethodInterceptor<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceMethodInterceptor</span> <span class="keyword">implements</span> <span class="title class_">MethodInterceptor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object obj, Method method, Object[] args, MethodProxy proxy)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. before invocation&quot;</span>);</span><br><span class="line">            <span class="type">Object</span> <span class="variable">ret</span> <span class="operator">=</span> proxy.invokeSuper(obj, args);</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. after invocation&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. when exception occurs&quot;</span>);</span><br><span class="line">            <span class="keyword">throw</span> e;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;do sth. finally&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>测试类<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CglibTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">UserServiceMethodInterceptor</span> <span class="variable">methodInterceptor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserServiceMethodInterceptor</span>();</span><br><span class="line">        <span class="type">Enhancer</span> <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>();</span><br><span class="line">        enhancer.setSuperclass(HelloServiceImpl.class);</span><br><span class="line">        enhancer.setCallback(methodInterceptor);</span><br><span class="line"></span><br><span class="line">        <span class="type">HelloService</span> <span class="variable">proxy</span> <span class="operator">=</span> (HelloService) enhancer.create();</span><br><span class="line">        proxy.sayHello(<span class="string">&quot;Tom&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;=================&quot;</span>);</span><br><span class="line">        proxy.sayHello(<span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>结果<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">do sth. before invocation</span><br><span class="line">Hello Tom</span><br><span class="line">do sth. after invocation</span><br><span class="line">do sth. finally</span><br><span class="line">=================</span><br><span class="line">do sth. before invocation</span><br><span class="line">do sth. when exception occurs</span><br><span class="line">do sth. finally</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.IllegalArgumentException: name can not be null</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl.sayHello(HelloServiceImpl.java:8)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31.CGLIB$sayHello$0(&lt;generated&gt;)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31$$FastClassByCGLIB$$c068b511.invoke(&lt;generated&gt;)</span><br><span class="line">	at net.sf.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:228)</span><br><span class="line">	at com.moralok.proxy.cglib.UserServiceMethodInterceptor.intercept(UserServiceMethodInterceptor.java:14)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31.sayHello(&lt;generated&gt;)</span><br><span class="line">	at com.moralok.proxy.cglib.CglibTest.main(CglibTest.java:18)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="总结和思考"><a href="#总结和思考" class="headerlink" title="总结和思考"></a>总结和思考</h2><p>两者在使用上是相仿的。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>JDK 动态代理</th>
+<th>CGLib 动态代理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>差异</td>
+<td>必须实现接口</td>
+<td>子类继承，不适用 final 方法</td>
+</tr>
+<tr>
+<td>拦截器</td>
+<td>InvocationHandler</td>
+<td>MethodInterceptor</td>
+</tr>
+<tr>
+<td>额外信息</td>
+<td>ClassLoader、interfaces</td>
+<td>Class</td>
+</tr>
+<tr>
+<td>创建代理</td>
+<td>Proxy.newProxyInstance</td>
+<td>Enhancer.create</td>
+</tr>
+</tbody></table>
+<ul>
+<li>对于两者的源码，读得不多。有时候会感慨，看别人这么多年前的代码，还是感觉吃力，一下子会失去动力和信息。</li>
+<li>但也提醒自己，不要太在意，用得本就不多，涉及源码的机会更是没有，如果方方面面都要细究，人生太短，智商不够，等涉足相关问题再回头研究。</li>
+<li>基础的用法和概念应该了解，不然看到 Spring AOP 源码时，分不清 Spring 封装的边界在哪里。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +391,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -401,7 +560,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -555,7 +714,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -723,7 +882,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -1156,7 +1315,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -1389,7 +1548,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -1589,7 +1748,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -1751,7 +1910,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -1911,7 +2070,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
+      <time title="修改时间：2023-11-19 23:16:03" itemprop="dateModified" datetime="2023-11-19T23:16:03+08:00">2023-11-19</time>
     </span>
 
   
@@ -2153,160 +2312,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/29/tmux-frequently-used-commands/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Moralok">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Moralok">
-      <meta itemprop="description" content="Moralok's blog">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Moralok">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/06/29/tmux-frequently-used-commands/" class="post-title-link" itemprop="url">Tmux 常用命令和快捷键</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-06-29 18:44:44" itemprop="dateCreated datePublished" datetime="2023-06-29T18:44:44+08:00">2023-06-29</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-19 01:22:55" itemprop="dateModified" datetime="2023-11-19T01:22:55+08:00">2023-11-19</time>
-    </span>
-
-  
-    <span id="/2023/06/29/tmux-frequently-used-commands/" class="post-meta-item leancloud_visitors" data-flag-title="Tmux 常用命令和快捷键" title="阅读次数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">阅读次数：</span>
-      <span class="leancloud-visitors-count"></span>
-    </span>
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>727</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Tmux-是什么"><a href="#Tmux-是什么" class="headerlink" title="Tmux 是什么"></a>Tmux 是什么</h2><p>Tmux 是一个终端复用器（Terminal Multiplexer），它可以将终端的会话和窗口解绑分离，达到窗口关闭，会话不终止，并且还能使用窗口再次绑定目标会话的效果，从而避免因为网络中断或者窗口关闭导致会话中运行的进程终止。</p>
-<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>Ubuntu server 20.04 默认已安装 Tmux。如果没有，可以通过以下命令安装：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo apt-get install tmux</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="会话管理"><a href="#会话管理" class="headerlink" title="会话管理"></a>会话管理</h3><h4 id="新建会话"><a href="#新建会话" class="headerlink" title="新建会话"></a>新建会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux new -s &lt;session-name&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="分离会话"><a href="#分离会话" class="headerlink" title="分离会话"></a>分离会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux detach</span></span><br></pre></td></tr></table></figure>
-<h4 id="查看会话列表"><a href="#查看会话列表" class="headerlink" title="查看会话列表"></a>查看会话列表</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux <span class="built_in">ls</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="接入会话"><a href="#接入会话" class="headerlink" title="接入会话"></a>接入会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux attach -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux attach -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="杀死会话"><a href="#杀死会话" class="headerlink" title="杀死会话"></a>杀死会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-session -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-session -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="切换会话"><a href="#切换会话" class="headerlink" title="切换会话"></a>切换会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux switch -t &lt;session-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux switch -t &lt;session-id&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="重命名会话"><a href="#重命名会话" class="headerlink" title="重命名会话"></a>重命名会话</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-session -t &lt;old&gt; &lt;new&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-session &lt;new&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="会话快捷键"><a href="#会话快捷键" class="headerlink" title="会话快捷键"></a>会话快捷键</h4><ul>
-<li><strong><code>Ctrl+b d</code>：分离当前会话，猜测 detach</strong></li>
-<li><strong><code>Ctrl+b s</code>：查看会话列表并选择，session</strong></li>
-<li><strong><code>Ctrl+b $</code>：重命名当前会话名称</strong></li>
-<li><strong><code>Ctrl+d</code>：关闭当前会话</strong></li>
-</ul>
-<h3 id="窗口管理"><a href="#窗口管理" class="headerlink" title="窗口管理"></a>窗口管理</h3><h4 id="新建窗口"><a href="#新建窗口" class="headerlink" title="新建窗口"></a>新建窗口</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux new-window -n &lt;window-name&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="关闭窗口"><a href="#关闭窗口" class="headerlink" title="关闭窗口"></a>关闭窗口</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-window -t &lt;window-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux kill-window</span></span><br></pre></td></tr></table></figure>
-<h4 id="切换窗口"><a href="#切换窗口" class="headerlink" title="切换窗口"></a>切换窗口</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-window -t &lt;window-name&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-window -t &lt;window-id&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="重命名窗口"><a href="#重命名窗口" class="headerlink" title="重命名窗口"></a>重命名窗口</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-window -t &lt;old&gt; &lt;new&gt;</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux rename-window &lt;new&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="窗口快捷键"><a href="#窗口快捷键" class="headerlink" title="窗口快捷键"></a>窗口快捷键</h4><ul>
-<li><strong><code>Ctrl+b c</code>：创建一个新窗口，状态栏会显示窗口信息</strong></li>
-<li><code>Ctrl+b p</code>：切换到上一个窗口，prev</li>
-<li><code>Ctrl+b n</code>：切换到下一个窗口，next</li>
-<li><code>Ctrl+b &lt;number&gt;</code>：切换到指定编号的窗口</li>
-<li><strong><code>Ctrl+b w</code>：查看窗口列表并选择，window</strong></li>
-<li><strong><code>Ctrl+b ,</code>：重命名当前窗口</strong></li>
-<li><strong><code>Ctrl+b &amp;</code>：关闭当前窗口</strong></li>
-</ul>
-<h3 id="窗格管理"><a href="#窗格管理" class="headerlink" title="窗格管理"></a>窗格管理</h3><h4 id="划分窗格"><a href="#划分窗格" class="headerlink" title="划分窗格"></a>划分窗格</h4><p>猜测 vertical，horizontal。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux split-window [-v]</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux split-window -h</span></span><br></pre></td></tr></table></figure>
-<h4 id="移动光标"><a href="#移动光标" class="headerlink" title="移动光标"></a>移动光标</h4><p>猜测 upper，down，left，right。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -U</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -D</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -L</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux select-pane -R</span></span><br></pre></td></tr></table></figure>
-<h4 id="交换窗格"><a href="#交换窗格" class="headerlink" title="交换窗格"></a>交换窗格</h4><p>当前窗格和上一个或下一个窗格交换位置。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux swap-pane -U</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux swap-pane -D</span></span><br></pre></td></tr></table></figure>
-<h4 id="窗格快捷键"><a href="#窗格快捷键" class="headerlink" title="窗格快捷键"></a>窗格快捷键</h4><ul>
-<li><strong><code>Ctrl+b &quot;</code>：上下划分窗格</strong></li>
-<li><strong><code>Ctrl+b %</code>：左右划分窗格</strong></li>
-<li><strong><code>Ctrl+b &lt;arrow key&gt;</code>：使用方向键切换窗格</strong></li>
-<li><code>Ctrl+b ;</code>：光标切换到上一个窗格</li>
-<li><code>Ctrl+b o</code>：光标切换到下一个窗格</li>
-<li><code>Ctrl+b &#123;</code>：当前窗格和上一个窗格交换位置</li>
-<li><code>Ctrl+b &#125;</code>：当前窗格和下一个窗格交换位置</li>
-<li><strong><code>Ctrl+b x</code>：关闭当前窗格</strong></li>
-<li><code>Ctrl+b !</code>：将当前窗格拆分为一个独立窗口</li>
-<li><code>Ctrl+b z</code>：当前窗格全屏显示，再使用一次会变回原来大小，状态栏会有大写的 Z 标识</li>
-<li><code>Ctrl+b q</code>：显示窗格编号</li>
-</ul>
-<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="进入翻页模式"><a href="#进入翻页模式" class="headerlink" title="进入翻页模式"></a>进入翻页模式</h4><ul>
-<li><strong><code>Ctrl+b [</code>：进入翻页模式</strong></li>
-<li><code>q</code>：退出翻页模式</li>
-</ul>
-<h4 id="列出所有快捷键，及其对应的-Tmux-命令"><a href="#列出所有快捷键，及其对应的-Tmux-命令" class="headerlink" title="列出所有快捷键，及其对应的 Tmux 命令"></a>列出所有快捷键，及其对应的 Tmux 命令</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux list-keys</span></span><br></pre></td></tr></table></figure>
-<h4 id="列出所有-Tmux-命令及其参数"><a href="#列出所有-Tmux-命令及其参数" class="headerlink" title="列出所有 Tmux 命令及其参数"></a>列出所有 Tmux 命令及其参数</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tmux list-commands</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/10/tmux.html">Tmux 使用教程</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_51311218/article/details/122172339">Tmux 学习</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -2331,13 +2336,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">41k</span>
+    <span title="站点总字数">42k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:18</span>
+    <span title="站点阅读时长">2:21</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
