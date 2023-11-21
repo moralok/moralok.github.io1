@@ -6,6 +6,16 @@ tags:
     - spring
 ---
 
+### context 刷新流程简单图解
+
+#### 刷新流程
+
+{% asset_img "Pasted image 20231122005901.png" Spring context 刷新流程 %}
+
+#### 刷新流程中的组件
+
+{% asset_img "Pasted image 20231122021817.png" Spring context 刷新流程中的组件 %}
+
 ### 上下文刷新 AbstractApplicationContext#refresh
 ```java
 public void refresh() throws BeansException, IllegalStateException {
@@ -100,9 +110,9 @@ protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 配置 BeanFactory 以供在此 context 中使用，例如 context 的类加载器和一些后处理器，手动注册一些单例。
 
 1. 为 beanFactory 配置 context 相关的资源，如类加载器
-2. 配置 Bean 后处理器
-    - context 回调，注入特定类型时可触发自定义逻辑
-    - 检测 ApplicationListener
+2. 添加 Bean 后处理器
+    - ApplicationContextAwareProcessor，context 回调，注入特定类型时可触发自定义逻辑
+    - ApplicationListenerDetector，检测 ApplicationListener
 3. 手动注册单例
 
 > ignoreDependencyInterface 和 registerResolvableDependency 在理解之后比单纯地记忆它们有趣许多。
@@ -202,13 +212,13 @@ protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory b
 
 invokeBeanFactoryPostProcessors 方法堪比裹脚布。
 
-顺序规则：
+**关于调用顺序的规则**：
 
 1. BeanFactoryPostProcessor 分为 context 添加的和 beanFactory 注册的，前者优于后者
 2. BeanFactoryPostProcessor 又可分为常规的和 BeanDefinitionRegistryPostProcessor，后者优于前者
 3. PriorityOrdered 优于 Ordered 优于剩余的
 
-新增情况：
+可能新增 beanDefinition 的情况：
 
 1. BeanDefinitionRegistryPostProcessor 可能在 beanFactory 中引入新的 beanDefinition
 
@@ -559,7 +569,7 @@ protected void registerListeners() {
 
 添加 ApplicationListener。
 
-代码中预防的是后处理器 ApplicationListenerDetector 将 target 添加为监听器后，其他后处理器为其创建了代理，然后用户手动将代理也添加为监听器？
+> 后处理器 ApplicationListenerDetector 在 processor chain 的最后，最终会将创建的代理添加为监听器。什么情况下会出现代码中预防的情况呢？
 
 ```java
 public void addApplicationListener(ApplicationListener<?> listener) {
@@ -620,7 +630,7 @@ protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory b
 
 确保所有非惰性初始化单例都已实例化，同时还要考虑 `FactoryBeans`。 如果需要，通常在工厂设置结束时调用。
 
-**{% post_link how-does-Spring-load-beans '加载 Bean 的流程分析在此' %}**。
+{% post_link how-does-Spring-load-beans '加载 Bean 的流程分析在此' %}。
 
 > 先对集合进行 Copy 再迭代是很常见的处理方式，可以有效保证迭代时不受原集合影响，也不会影响到原集合。
 
