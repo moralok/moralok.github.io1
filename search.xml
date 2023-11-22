@@ -1,6 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>在 Ubuntu 上安装 Clash</title>
+    <url>/2023/05/27/how-to-install-clash-on-ubuntu/</url>
+    <content><![CDATA[<h2 id="安装-Clash"><a href="#安装-Clash" class="headerlink" title="安装 Clash"></a>安装 Clash</h2><p>从 <a href="https://github.com/Dreamacro/clash/releases">GitHub</a> 下载预构建的二进制文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ wget https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz</span><br></pre></td></tr></table></figure>
+
+<p>使用 gzip 解压压缩包 clash-linux-amd64-v1.16.0.gz 得到 clash-linux-amd64-v1.16.0。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ gzip -d clash-linux-amd64-v1.16.0.gz </span><br><span class="line">gzip: clash-linux-amd64-v1.16.0: Value too large for defined data type</span><br></pre></td></tr></table></figure>
+<p>忽略提示。</p>
+<p>移动二进制文件到目录 <code>/usr/local/bin</code> 并且重命名为 clash。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ sudo mv clash-linux-amd64-v1.16.0 /usr/local/bin/clash</span><br><span class="line">[sudo] password for wrmao:</span><br></pre></td></tr></table></figure>
+
+<p>现在可以通过 <code>clash -v</code> 查看 Clash 的版本信息。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash -v</span><br><span class="line">Clash v1.16.0 linux amd64 with go1.20.4 Fri May 19 13:57:32 UTC 2023</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用-Clash"><a href="#使用-Clash" class="headerlink" title="使用 Clash"></a>使用 Clash</h2><p>使用命令 <code>clash</code> 启动，可以看到日志。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash</span><br><span class="line">INFO[0000] Can&#x27;t find config, create a initial config file </span><br><span class="line">INFO[0000] Can&#x27;t find MMDB, start download              </span><br><span class="line">INFO[0003] Mixed(http+socks) proxy listening at: 127.0.0.1:7890</span><br></pre></td></tr></table></figure>
+
+<p>在第一次启动 Clash 时，Clash 会在 <code>~/.config</code> 下创建目录 clash，并在其中创建 3 个文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ ls</span><br><span class="line">cache.db  config.yaml  Country.mmdb</span><br></pre></td></tr></table></figure>
+<p>其中 config.yaml 是 Clash 的配置文件，Country.mmdb 是全球 IP 库，可以实现各个国家的 IP 信息解析和地理定位。<br>config.yaml 的内容直接从已有的配置文件复制过来。</p>
+<p>可以浏览器访问 <a href="http://clash.razord.top/#/proxies">http://clash.razord.top/#/proxies</a> 选择代理服务器。</p>
+<h2 id="设置-Clash-为后台服务"><a href="#设置-Clash-为后台服务" class="headerlink" title="设置 Clash 为后台服务"></a>设置 Clash 为后台服务</h2><p>参考官方文档 <a href="https://dreamacro.github.io/clash/introduction/service.html">Clash as a service</a>。</p>
+<p>拷贝配置文件到 <code>/etc/clash</code>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ sudo cp config.yaml /etc/clash/</span><br><span class="line">:~/.config/clash$ sudo cp Country.mmdb /etc/clash/</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>/etc/systemd/system/clash.service</code> 创建 systemd 配置文件：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Clash daemon, A rule-based proxy in Go.</span><br><span class="line">After=network-online.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">Restart=always </span><br><span class="line">ExecStart=/usr/local/bin/clash -d /etc/clash</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<p>之后重载 systemd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<p>设置系统开机时启动 clashd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl enable clash</span><br></pre></td></tr></table></figure>
+
+<p>马上启动 clashd：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl start clash</span><br></pre></td></tr></table></figure>
+
+<p>检查 Clash 的健康状态和日志：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl status clash</span><br><span class="line">journalctl -xe</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>clash</tag>
+        <tag>proxy</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Docker 常用命令列表</title>
     <url>/2020/08/19/docker-frequently-used-commands/</url>
     <content><![CDATA[<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><p>从 Docker 官方命令行参考中按顺序选取常用的命令和用法。</p>
@@ -453,78 +498,6 @@
       </tags>
   </entry>
   <entry>
-    <title>在 Ubuntu 上安装 Clash</title>
-    <url>/2023/05/27/how-to-install-clash-on-ubuntu/</url>
-    <content><![CDATA[<h2 id="安装-Clash"><a href="#安装-Clash" class="headerlink" title="安装 Clash"></a>安装 Clash</h2><p>从 <a href="https://github.com/Dreamacro/clash/releases">GitHub</a> 下载预构建的二进制文件。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ wget https://github.com/Dreamacro/clash/releases/download/v1.16.0/clash-linux-amd64-v1.16.0.gz</span><br></pre></td></tr></table></figure>
-
-<p>使用 gzip 解压压缩包 clash-linux-amd64-v1.16.0.gz 得到 clash-linux-amd64-v1.16.0。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ gzip -d clash-linux-amd64-v1.16.0.gz </span><br><span class="line">gzip: clash-linux-amd64-v1.16.0: Value too large for defined data type</span><br></pre></td></tr></table></figure>
-<p>忽略提示。</p>
-<p>移动二进制文件到目录 <code>/usr/local/bin</code> 并且重命名为 clash。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:/mnt/hgfs/share$ sudo mv clash-linux-amd64-v1.16.0 /usr/local/bin/clash</span><br><span class="line">[sudo] password for wrmao:</span><br></pre></td></tr></table></figure>
-
-<p>现在可以通过 <code>clash -v</code> 查看 Clash 的版本信息。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash -v</span><br><span class="line">Clash v1.16.0 linux amd64 with go1.20.4 Fri May 19 13:57:32 UTC 2023</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用-Clash"><a href="#使用-Clash" class="headerlink" title="使用 Clash"></a>使用 Clash</h2><p>使用命令 <code>clash</code> 启动，可以看到日志。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~$ clash</span><br><span class="line">INFO[0000] Can&#x27;t find config, create a initial config file </span><br><span class="line">INFO[0000] Can&#x27;t find MMDB, start download              </span><br><span class="line">INFO[0003] Mixed(http+socks) proxy listening at: 127.0.0.1:7890</span><br></pre></td></tr></table></figure>
-
-<p>在第一次启动 Clash 时，Clash 会在 <code>~/.config</code> 下创建目录 clash，并在其中创建 3 个文件。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ ls</span><br><span class="line">cache.db  config.yaml  Country.mmdb</span><br></pre></td></tr></table></figure>
-<p>其中 config.yaml 是 Clash 的配置文件，Country.mmdb 是全球 IP 库，可以实现各个国家的 IP 信息解析和地理定位。<br>config.yaml 的内容直接从已有的配置文件复制过来。</p>
-<p>可以浏览器访问 <a href="http://clash.razord.top/#/proxies">http://clash.razord.top/#/proxies</a> 选择代理服务器。</p>
-<h2 id="设置-Clash-为后台服务"><a href="#设置-Clash-为后台服务" class="headerlink" title="设置 Clash 为后台服务"></a>设置 Clash 为后台服务</h2><p>参考官方文档 <a href="https://dreamacro.github.io/clash/introduction/service.html">Clash as a service</a>。</p>
-<p>拷贝配置文件到 <code>/etc/clash</code>。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">:~/.config/clash$ sudo cp config.yaml /etc/clash/</span><br><span class="line">:~/.config/clash$ sudo cp Country.mmdb /etc/clash/</span><br></pre></td></tr></table></figure>
-
-<p>在 <code>/etc/systemd/system/clash.service</code> 创建 systemd 配置文件：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Clash daemon, A rule-based proxy in Go.</span><br><span class="line">After=network-online.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">Restart=always </span><br><span class="line">ExecStart=/usr/local/bin/clash -d /etc/clash</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-<p>之后重载 systemd：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
-
-<p>设置系统开机时启动 clashd：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl enable clash</span><br></pre></td></tr></table></figure>
-
-<p>马上启动 clashd：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl start clash</span><br></pre></td></tr></table></figure>
-
-<p>检查 Clash 的健康状态和日志：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl status clash</span><br><span class="line">journalctl -xe</span><br></pre></td></tr></table></figure>]]></content>
-      <tags>
-        <tag>clash</tag>
-        <tag>proxy</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在 iOS 和 macOS 上安装 OpenVPN 客户端</title>
-    <url>/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/</url>
-    <content><![CDATA[<h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
-<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
-<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
-<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
-<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
-<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
-<p>将修改好的客户端配置文件导入到客户端中即可。</p>
-<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
-<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
-<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
-<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
-<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
-<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
-<blockquote>
-<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
-</blockquote>
-<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
-]]></content>
-      <tags>
-        <tag>openvpn</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>在 Windows 10 上安装 OpenVPN 服务器</title>
     <url>/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/</url>
     <content><![CDATA[<h2 id="安装-OpenVPN-server"><a href="#安装-OpenVPN-server" class="headerlink" title="安装 OpenVPN server"></a>安装 OpenVPN server</h2><p>从 <a href="https://openvpn.net/community-downloads/">OpenVPN 社区</a> 下载 Windows 64-bit MSI installer。本次安装的版本为 OpenVPN 2.6.4。</p>
@@ -551,6 +524,33 @@
 <p>端口号按需修改，默认为1194，需要保证 OpenVPN 的网络流量可以通过防火墙，设置 Windows 10 Defender 允许 OpenVPN 通过即可。dh2048.pem 修改为生成的文件名 dh.pem。取消注释 duplicate-cn，让多个客户端使用同一个客户端证书。注释掉 tls-auth ta.key 0。复制 ca.crt，dh.pem，server.crt 和 server.key 到目录 C：\Program Files\OpenVPN\config 中。</p>
 <h2 id="启动与连接"><a href="#启动与连接" class="headerlink" title="启动与连接"></a>启动与连接</h2><p>启动 OpenVPN，点击连接，系统提示分配 IP 10.8.0.1。按配置，每次 OpenVPN server 都将为自己分配 10.8.0.1。</p>
 <h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://blog.eyyyye.com/article/39#menu_3">openvpn安装配置说明(windows系统)</a><br><a href="https://zhuanlan.zhihu.com/p/525197398">如何在Windows 10上安装和配置OpenVPN</a></p>
+]]></content>
+      <tags>
+        <tag>openvpn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在 iOS 和 macOS 上安装 OpenVPN 客户端</title>
+    <url>/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/</url>
+    <content><![CDATA[<h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
+<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
+<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
+<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
+<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
+<p>将修改好的客户端配置文件导入到客户端中即可。</p>
+<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
+<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
+<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
+<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
+<blockquote>
+<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
+</blockquote>
+<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
 ]]></content>
       <tags>
         <tag>openvpn</tag>
@@ -663,8 +663,8 @@
 <h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://zhuanlan.zhihu.com/p/46973701">Linux 让终端走代理的几种方法</a><br><a href="https://blog.51cto.com/u_14814563/5415887">Linux ❀ wget设置代理</a><br><a href="https://cloud-atlas.readthedocs.io/zh_CN/latest/docker/network/docker_proxy.html#docker-server-proxy">配置Docker使用代理</a><br><a href="https://note.qidong.name/2020/05/docker-proxy/">Docker的三种网络代理配置</a><br><a href="https://neucrack.com/p/286">docker 设置代理，以及国内加速镜像设置</a></p>
 ]]></content>
       <tags>
-        <tag>docker</tag>
         <tag>proxy</tag>
+        <tag>docker</tag>
       </tags>
   </entry>
   <entry>
@@ -1579,6 +1579,233 @@
       </tags>
   </entry>
   <entry>
+    <title>关于 Java 字节码指令的一些例子分析</title>
+    <url>/2023/11/09/some-examples-of-Java-bytecode-instruction-analysis/</url>
+    <content><![CDATA[<h2 id="演示字节码指令的执行"><a href="#演示字节码指令的执行" class="headerlink" title="演示字节码指令的执行"></a>演示字节码指令的执行</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> Short.MAX_VALUE + <span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> a + b;</span><br><span class="line">        System.out.println(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="操作数栈和本地变量表的大小"><a href="#操作数栈和本地变量表的大小" class="headerlink" title="操作数栈和本地变量表的大小"></a>操作数栈和本地变量表的大小</h3><p>在编译期间就可计算得到操作数栈和本地变量表的大小。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">stack=2, locals=4, args_size=1</span><br></pre></td></tr></table></figure>
+
+<h3 id="本地变量表"><a href="#本地变量表" class="headerlink" title="本地变量表"></a>本地变量表</h3><p>Slot，即槽位，可理解为索引。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">Start  Length  Slot  Name   Signature</span><br><span class="line">    0      18     0  args   [Ljava/lang/String;</span><br><span class="line">    3      15     1     a   I</span><br><span class="line">    6      12     2     b   I</span><br><span class="line">   10       8     3     c   I</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">3 = Integer            32768</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">4 = Fieldref           <span class="comment">#27.#28        // java/lang/System.out:Ljava/io/PrintStream;</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">5 = Methodref          <span class="comment">#29.#30        // java/io/PrintStream.println:(I)V</span></span> </span><br></pre></td></tr></table></figure>
+
+<img src="/2023/11/09/some-examples-of-Java-bytecode-instruction-analysis/Snipaste_2023-11-10_00-28-14.png" class="" title="字节码指令执行栈帧示意图">
+
+<h3 id="字节码指令"><a href="#字节码指令" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: bipush        10</span><br><span class="line"> 2: istore_1</span><br><span class="line"> 3: ldc           #3             // int 32768</span><br><span class="line"> 5: istore_2</span><br><span class="line"> 6: iload_1</span><br><span class="line"> 7: iload_2</span><br><span class="line"> 8: iadd</span><br><span class="line"> 9: istore_3</span><br><span class="line">10: getstatic     #4             // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">13: iload_3</span><br><span class="line">14: invokevirtual #5             // Method java/io/PrintStream.println:(I)V</span><br><span class="line">17: return</span><br></pre></td></tr></table></figure>
+<ul>
+<li>bipush，将一个 byte，推入操作数栈。<ul>
+<li>short 范围内的数是和字节码指令一起存储的，范围外的数是存储在运行时常量池中的。</li>
+<li>操作数栈的宽度是 4 个字节，short 范围内的数在推入操作数栈前会经过符号扩展成为 int。</li>
+</ul>
+</li>
+<li>istore_1，将栈顶的 int，存入局部变量表，槽位 1。</li>
+<li>ldc，从运行时常量池中将指定常量推入操作数栈。</li>
+<li>istore_2，将栈顶的 int，存入局部变量表，槽位 2。</li>
+<li>iload_1 iload_2，依次从局部变量表将两个 int 推入操作数栈，槽位分别是 1 和 2。</li>
+<li>iadd，将栈顶的两个 int 弹出并相加，将结果推入操作数栈。</li>
+<li>istore_3，将栈顶的 int，存入局部变量表，槽位 3。</li>
+<li>getstatic，获取类的静态属性，推入操作数栈。</li>
+<li>iload_3，从局部变量表将 int 推入操作数栈，槽位 3。</li>
+<li>invokevirtual，将栈顶的参数依次弹出，调用实例方法。</li>
+<li>return，返回 void</li>
+</ul>
+<h2 id="分析-a-和-a"><a href="#分析-a-和-a" class="headerlink" title="分析 a++ 和 ++a"></a>分析 a++ 和 ++a</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_3</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> a++ + ++a + a--;</span><br><span class="line">        System.out.println(a);</span><br><span class="line">        System.out.println(b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="字节码指令-1"><a href="#字节码指令-1" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: bipush        10</span><br><span class="line"> 2: istore_1</span><br><span class="line"> 3: iload_1</span><br><span class="line"> 4: iinc          1, 1</span><br><span class="line"> 7: iinc          1, 1</span><br><span class="line">10: iload_1</span><br><span class="line">11: iadd</span><br><span class="line">12: iload_1</span><br><span class="line">13: iinc          1, -1</span><br><span class="line">16: iadd</span><br><span class="line">17: istore_2</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>a++ 和 ++a 的区别是先 load 还是先 iinc。</li>
+<li>iinc，将局部变量表指定槽位的数加上一个常数。</li>
+<li>注意 a 只 load 到操作数栈并没有 store 回局部变量表。</li>
+<li>b &#x3D; 10 + 12 + 12 &#x3D; 34</li>
+<li>a &#x3D; 10 + 1 + 1 - 1 &#x3D; 11</li>
+</ul>
+<h2 id="分析判断条件"><a href="#分析判断条件" class="headerlink" title="分析判断条件"></a>分析判断条件</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_4</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// ifeq, goto</span></span><br><span class="line">        <span class="keyword">if</span> (a == <span class="number">0</span>) &#123;</span><br><span class="line">            a = <span class="number">10</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            a = <span class="number">20</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="字节码指令-2"><a href="#字节码指令-2" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: iconst_0</span><br><span class="line"> 1: istore_1</span><br><span class="line"> 2: iload_1</span><br><span class="line"> 3: ifne          12</span><br><span class="line"> 6: bipush        10</span><br><span class="line"> 8: istore_1</span><br><span class="line"> 9: goto          15</span><br><span class="line">12: bipush        20</span><br><span class="line">14: istore_1</span><br><span class="line">15: return</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>iconst，将一个 int 常量推入操作数栈。</li>
+<li>if<code>&lt;cond&gt;</code>，一个 int 和 0 的比较成立时进入分支，跳转到指定行号。</li>
+<li>goto，总是进入的分支，跳转到指定行号。</li>
+</ul>
+<h2 id="涉及的字节码指令"><a href="#涉及的字节码指令" class="headerlink" title="涉及的字节码指令"></a>涉及的字节码指令</h2><ul>
+<li>bipush，将一个 byte 符号扩展为一个 int，推入操作数栈。</li>
+<li>istore，将栈顶的 int，存入局部变量表的指定槽位。</li>
+<li>iload，将局部变量表指定槽位的 int，推入操作数栈。</li>
+<li>ldc，从运行时常量池将指定常量推入操作数栈。</li>
+<li>iadd，将栈顶的两个 int 弹出并相加，将结果推入操作数栈。</li>
+<li>getstatic，获取类的静态属性，推入操作数栈。</li>
+<li>invokevirtual，将栈顶的参数依次弹出，调用实例方法。</li>
+<li>return，返回 void。</li>
+<li>iinc，将局部变量表中指定槽位的数加一个常量。</li>
+<li>if<code>&lt;cond&gt;</code>，一个 int 和 0 的比较成立时进入分支，跳转到指定行号。<ul>
+<li>ifeq，equals</li>
+<li>ifne，not equals</li>
+<li>iflt，less than</li>
+<li>ifge，greater than or equals</li>
+<li>ifgt，great than</li>
+<li>ifle，less than or equals</li>
+</ul>
+</li>
+<li>goto，总是进入的分支，跳转到指定行号。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>java</tag>
+        <tag>bytecode</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于 Redis 的分布式锁的简单实现</title>
+    <url>/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/</url>
+    <content><![CDATA[<p>在分布式应用中，并发访问资源需要谨慎考虑。比如读取和修改保存并不是一个原子操作，在并发时，就可能发生修改的结果被覆盖的问题。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110180458.png" class="" title="分布式应用中的并发问题">
+
+<p>很多人都了解在必要的时候需要使用分布式锁来限制程序的并发执行，但是在具体的细节上，往往并不正确。</p>
+<h2 id="基于-Redis-的分布式锁简单实现"><a href="#基于-Redis-的分布式锁简单实现" class="headerlink" title="基于 Redis 的分布式锁简单实现"></a>基于 Redis 的分布式锁简单实现</h2><p>本质上要实现的目标就是在 Redis 中占坑，告诉后来者资源已经被锁定，放弃或者稍后重试。Redis 原生支持 set if not exists 的语义。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">setnx lock:user1 <span class="literal">true</span></span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<h3 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h3><h4 id="问题一：异常引发死锁-1"><a href="#问题一：异常引发死锁-1" class="headerlink" title="问题一：异常引发死锁 1"></a>问题一：异常引发死锁 1</h4><p>如果在处理过程中，程序出现异常，将导致 del 指令没有执行成功。锁无法释放，其他线程将无法再获取锁。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110182254.png" class="" title="异常引发死锁 1">
+
+<h4 id="改进一：设置超时时间"><a href="#改进一：设置超时时间" class="headerlink" title="改进一：设置超时时间"></a>改进一：设置超时时间</h4><p>对 key 设置过期时间，如果在处理过程中，程序出现异常，导致 del 指令没有执行成功，设置的过期时间一到，key 将自动被删除，锁也就等于被释放了。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">setnx lock:user1 <span class="literal">true</span></span></span><br><span class="line">OK</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">expire lock:user1 5</span></span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="问题二：异常引发死锁-2"><a href="#问题二：异常引发死锁-2" class="headerlink" title="问题二：异常引发死锁 2"></a>问题二：异常引发死锁 2</h4><p>事实上，上述措施并没有彻底解决问题。如果在设置 key 的超时时间之前，程序出现异常，一切仍旧会发生。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110190407.png" class="" title="异常引发死锁 2">
+
+<p>本质原因是 setnx 和 expire 两个指令不是一个原子操作。那么是否可以使用 Redis 的事务解决呢？不行。因为 expire 依赖于 setnx 的执行结果，如果 setnx 没有成功，expire 就不应该执行。</p>
+<h4 id="改进二：setnx-expire-的原子指令"><a href="#改进二：setnx-expire-的原子指令" class="headerlink" title="改进二：setnx + expire 的原子指令"></a>改进二：setnx + expire 的原子指令</h4><p>如果 setnx 和 expire 可以用一个原子指令实现就好了。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110190442.png" class="" title="setnx + expire 原子指令">
+
+<h5 id="基于原生指令的实现"><a href="#基于原生指令的实现" class="headerlink" title="基于原生指令的实现"></a>基于原生指令的实现</h5><p>在 Redis 2.8 版本中，Redis 的作者加入 set 指令扩展参数，允许 setnx 和 expire 组合成一个原子指令。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash"><span class="built_in">set</span> lock:user1 <span class="literal">true</span> ex 5 nx</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<h5 id="基于-Lua-脚本的实现"><a href="#基于-Lua-脚本的实现" class="headerlink" title="基于 Lua 脚本的实现"></a>基于 Lua 脚本的实现</h5><p>除了使用原生的指令外，还可以使用 Lua 脚本，将多个 Redis 指令组合成一个原子指令。</p>
+<figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&#x27;setnx&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]) == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">  redis.call(<span class="string">&#x27;expire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="超时问题"><a href="#超时问题" class="headerlink" title="超时问题"></a>超时问题</h3><p>基于 Redis 的分布式锁还会面临超时问题。如果在加锁和释放之间的处理逻辑过于耗时，以至于超出了 key 的过期时间，锁将在处理结束前被释放，就可能发生问题。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110191738.png" class="" title="其他线程提前进入临界区">
+
+<h4 id="问题一：其他线程提前进入临界区"><a href="#问题一：其他线程提前进入临界区" class="headerlink" title="问题一：其他线程提前进入临界区"></a>问题一：其他线程提前进入临界区</h4><p>如果第一个线程因为处理逻辑过于耗时导致在处理结束前锁已经被释放，其他线程将可以提前获得锁，临界区的代码将不能保证严格串行执行。</p>
+<h4 id="问题二：错误释放其他线程的锁"><a href="#问题二：错误释放其他线程的锁" class="headerlink" title="问题二：错误释放其他线程的锁"></a>问题二：错误释放其他线程的锁</h4><p>如果在第二个线程获得锁后，第一个线程刚好处理逻辑结束去释放锁，将导致第二个线程的锁提前被释放，引发连锁问题。</p>
+<h4 id="改进一：不要用于较长时间的任务"><a href="#改进一：不要用于较长时间的任务" class="headerlink" title="改进一：不要用于较长时间的任务"></a>改进一：不要用于较长时间的任务</h4><p>与其说是改进，不如说是注意事项。如果真的出现问题，造成的数据错误可能需要人工介入解决。</p>
+<p>如果真的存在这样的业务场景，应考虑使用其他解决方案加以优化。</p>
+<h4 id="改进二：使用-watchdog-实现锁续期"><a href="#改进二：使用-watchdog-实现锁续期" class="headerlink" title="改进二：使用 watchdog 实现锁续期"></a>改进二：使用 watchdog 实现锁续期</h4><p>为 Redis 的 key 设置过期时间，其实是为了解决死锁问题而做出的兜底措施。可以为获得的锁设置定时任务定期地为锁续期，以避免锁被提前释放。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">scheduleRenewal</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> lockValue.get();</span><br><span class="line">    ScheduledFuture&lt;?&gt; scheduledFuture = sScheduler.scheduleAtFixedRate(</span><br><span class="line">        () -&gt; <span class="built_in">this</span>.renewal(value), RENEWAL_INTERVAL, RENEWAL_INTERVAL, TimeUnit.MILLISECONDS</span><br><span class="line">    );</span><br><span class="line">    renewalTask.set(scheduledFuture);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是这个方式仍然不能避免解锁失败时的其他线程的等待时间。</p>
+<h4 id="改进三：加锁时指定-tag"><a href="#改进三：加锁时指定-tag" class="headerlink" title="改进三：加锁时指定 tag"></a>改进三：加锁时指定 tag</h4><p>可以将 set 指令的 value 参数设置为一个随机数，释放锁时先匹配持有的 tag 是否和 value 一致，如果一致再删除 key，以此避免锁被其他线程错误释放。</p>
+<h5 id="基于原生指令的实现-1"><a href="#基于原生指令的实现-1" class="headerlink" title="基于原生指令的实现"></a>基于原生指令的实现</h5><figure class="highlight console"><table><tr><td class="code"><pre><span class="line">tag = random.nextint()</span><br><span class="line">if redis.set(key, tag, nx= True, ex=5):</span><br><span class="line">	do_something()</span><br><span class="line">	redis.delifequals(key, tag)</span><br></pre></td></tr></table></figure>
+
+<p>但是注意，Redis 并没有提供语义为 delete if equals 的原子指令，这样的话问题并不能被彻底解决。如果在第一个线程判断 tag 是否和 value 相等之后，第二个线程刚好获得了锁，然后第一个线程因为匹配成功执行删除 key 操作，仍然将导致第二个线程获得的锁被第一个线程错误释放。</p>
+<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110193919.png" class="" title="错误释放其他线程的锁">
+
+<h5 id="基于-Lua-脚本的实现-1"><a href="#基于-Lua-脚本的实现-1" class="headerlink" title="基于 Lua 脚本的实现"></a>基于 Lua 脚本的实现</h5><figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&quot;get&quot;</span>, KEYS[<span class="number">1</span>]) == ARGV[<span class="number">1</span>] <span class="keyword">then</span></span><br><span class="line">  <span class="keyword">return</span> redis.call(<span class="string">&quot;del&quot;</span>, KEYS[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="可重入性"><a href="#可重入性" class="headerlink" title="可重入性"></a>可重入性</h3><p>可重入性是指线程在已经持有锁的情况下再次请求加锁，如果一个锁支持同一个线程多次加锁，那么就称这个锁是可重入的，类似 Java 的 ReentrantLock。</p>
+<h4 id="使用-ThreadLocal-实现锁计数"><a href="#使用-ThreadLocal-实现锁计数" class="headerlink" title="使用 ThreadLocal 实现锁计数"></a>使用 ThreadLocal 实现锁计数</h4><p>Redis 分布式锁如果要支持可重入，可以使用线程的 ThreadLocal 变量存储当前持有的锁计数。但是在多次获得锁后，过期时间并没有得到延长，后续获得锁后持有锁的时间其实比设置的时间更短。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> ThreadLocal&lt;Integer&gt; lockCount = ThreadLocal.withInitial(() -&gt; <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">()</span> &#123;  </span><br><span class="line">    <span class="type">Integer</span> <span class="variable">count</span> <span class="operator">=</span> lockCount.get();  </span><br><span class="line">    <span class="keyword">if</span> (count != <span class="literal">null</span> &amp;&amp; count &gt; <span class="number">0</span>) &#123;  </span><br><span class="line">        lockCount.set(count + <span class="number">1</span>);   </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;    </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> commands.set(lockKey, lockValue.get(), SetArgs.Builder.nx().px(RedisLockManager.LOCK_EXPIRE));  </span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;OK&quot;</span>.equals(result)) &#123;  </span><br><span class="line">        lockCount.set(<span class="number">1</span>);  </span><br><span class="line">        scheduleRenewal();  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;    </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用-Redis-hash-实现锁计数"><a href="#使用-Redis-hash-实现锁计数" class="headerlink" title="使用 Redis hash 实现锁计数"></a>使用 Redis hash 实现锁计数</h4><p>还可以使用 Redis 的 hash 数据结构实现锁计数，支持重新获取锁后重置过期时间。</p>
+<figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;exists&#x27;</span>, KEYS[<span class="number">1</span>]) == <span class="number">0</span>) <span class="keyword">then</span> </span><br><span class="line">	redis.call(<span class="string">&#x27;hset&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">	redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">end</span>;</span><br><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;hexists&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>]) == <span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">	redis.call(<span class="string">&#x27;hincrby&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">	redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line"><span class="keyword">return</span> redis.call(<span class="string">&#x27;pttl&#x27;</span>, KEYS[<span class="number">1</span>]);</span><br></pre></td></tr></table></figure>
+
+<p>书的作者<strong>不推荐使用可重入锁</strong>，他提出可重入锁会加重客户端的复杂度，如果在编写代码时注意在逻辑结构上进行调整，完全可以避免使用可重入锁。</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p><a href="https://github.com/moralok/redis-lock">redis-lock</a></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li>《Redis 深度历险，核心原理与应用实践》</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>distributed lock</tag>
+        <tag>redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 Grafana 和 Prometheus 搭建监控</title>
+    <url>/2023/11/18/setup-monitoring-using-grafana-and-prometheus/</url>
+    <content><![CDATA[<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a>Grafana</h3><h4 id="docker-compose-部署"><a href="#docker-compose-部署" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">grafana:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">grafana/grafana:9.5.6</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">grafana</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">3000</span><span class="string">:3000</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">grafana-storage:/var/lib/grafana</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">grafana-storage:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a>Prometheus</h3><h4 id="docker-compose-部署-1"><a href="#docker-compose-部署-1" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">prometheus:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">bitnami/prometheus:2.45.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">prometheus</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">19090</span><span class="string">:9090</span></span><br><span class="line">    <span class="attr">volumes:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">prometheus-data:/opt/bitnami/prometheus/data</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/conf/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">prometheus-data:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="配置文件-prometheus-yml"><a href="#配置文件-prometheus-yml" class="headerlink" title="配置文件 prometheus.yml"></a>配置文件 prometheus.yml</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="comment"># Ubuntu</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">node</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.135:9100&#x27;</span>]</span><br><span class="line"><span class="comment"># Windows</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">windows</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.1:9182&#x27;</span>]</span><br><span class="line"><span class="comment"># Redis</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">redis-exporter</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;redis-exporter:9121&#x27;</span>]</span><br><span class="line"><span class="comment"># MySQL</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">mysqld-exporter</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;mysqld-exporter:9104&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Ubuntu-监控"><a href="#Ubuntu-监控" class="headerlink" title="Ubuntu 监控"></a>Ubuntu 监控</h3><h4 id="node-exporter"><a href="#node-exporter" class="headerlink" title="node_exporter"></a>node_exporter</h4><p>node_exporter 被设计为监控主机系统，因为它需要访问主机系统，所以不推荐使用 Docker 容器部署。</p>
+<ul>
+<li><a href="https://github.com/prometheus/node_exporter">node_exporter Github 仓库</a></li>
+<li><a href="https://prometheus.io/download/#node_exporter">node_exporter 下载地址</a></li>
+<li><a href="https://prometheus.io/docs/guides/node-exporter/">node_exporter 使用指南</a></li>
+</ul>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>下载解压得到 node_exporter 二进制可执行文件。</li>
+<li><code>./node_exporter</code> 启动</li>
+<li>Prometheus 配置文件<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">node</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;localhost:9100&#x27;</span>]</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="设置-node-exporter-自启动"><a href="#设置-node-exporter-自启动" class="headerlink" title="设置 node_exporter 自启动"></a>设置 node_exporter 自启动</h4><ol>
+<li>路径 <code>/etc/systemd/system</code></li>
+<li>创建 <code>node_exporter.service</code><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=node_exporter</span><br><span class="line">After=network-online.target</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line">Restart=on-failure</span><br><span class="line">ExecStart=/opt/node_exporter</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></li>
+</ol>
+<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-11-22.png" class="" title="Ubuntu 监控">
+
+<h3 id="Windows-监控"><a href="#Windows-监控" class="headerlink" title="Windows 监控"></a>Windows 监控</h3><h4 id="windows-exporter"><a href="#windows-exporter" class="headerlink" title="windows_exporter"></a>windows_exporter</h4><ul>
+<li><a href="https://github.com/prometheus-community/windows_exporter">windows_exporter Github 仓库</a></li>
+<li><a href="https://github.com/prometheus-community/windows_exporter/releases">windows_exporter 下载地址</a></li>
+<li><a href="https://prometheus.io/docs/guides/node-exporter/">windows_exporter 使用指南</a></li>
+</ul>
+<h4 id="步骤-1"><a href="#步骤-1" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>下载得到 windows_exporter-0.24.0-amd64.msi 安装程序。</li>
+<li>以默认方式安装</li>
+<li>Prometheus 配置文件<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">windows</span></span><br><span class="line"><span class="comment"># Windows</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.1:9182&#x27;</span>]</span><br></pre></td></tr></table></figure></li>
+</ol>
+<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-16-05.png" class="" title="Windows 监控">
+
+<h3 id="Redis-监控"><a href="#Redis-监控" class="headerlink" title="Redis 监控"></a>Redis 监控</h3><h4 id="redis-exporter"><a href="#redis-exporter" class="headerlink" title="redis_exporter"></a>redis_exporter</h4><ul>
+<li><a href="https://github.com/oliver006/redis_exporter">redis_exporter Github 仓库</a></li>
+<li><a href="https://hub.docker.com/r/oliver006/redis_exporter/">redis_exporter Docker 官方镜像</a></li>
+<li><a href="https://hub.docker.com/r/oliver006/redis_exporter/">redis_exporter Docker bitnami 镜像</a></li>
+</ul>
+<h4 id="docker-compose-部署-2"><a href="#docker-compose-部署-2" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><p>使用 bitnami 提供的镜像代替官方镜像并没有特殊考量。使用环境变量 REDIS_ADDR 指定目标 Redis。</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;2&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">redis:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&#x27;redis:4.0&#x27;</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">6379</span><span class="string">:6379</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">redis-data:/data</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">  <span class="attr">redis-exporter:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">bitnami/redis-exporter:1.55.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">redis-exporter</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">REDIS_ADDR=redis://redis:6379</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">redis</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">redis-data:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-16-54.png" class="" title="Redis 监控">
+
+<h3 id="MySQL-监控"><a href="#MySQL-监控" class="headerlink" title="MySQL 监控"></a>MySQL 监控</h3><h4 id="mysqld-exporter"><a href="#mysqld-exporter" class="headerlink" title="mysqld_exporter"></a>mysqld_exporter</h4><ul>
+<li><a href="https://github.com/prometheus/mysqld_exporter">mysqld_exporter Github 仓库</a></li>
+<li><a href="https://registry.hub.docker.com/r/prom/mysqld-exporter/">mysqld_exporter Docker 官方镜像</a></li>
+</ul>
+<h4 id="docker-compose-部署-3"><a href="#docker-compose-部署-3" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><ol>
+<li>使用 volume 将配置文件 .my.cnf 挂载到容器中</li>
+<li>使用 command 指定启动时的参数</li>
+</ol>
+<blockquote>
+<p><strong>坑！！！</strong>在文档中找配置文件的默认挂载路径或者如何配置启动时的配置文件，找了好久都没找到。搭配上后来的坑，直接迷失数小时。</p>
+</blockquote>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;1.0&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mysql_57:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5.7</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mysql_57</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">13306</span><span class="string">:3306</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">MYSQL_ROOT_PASSWORD=123456</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">TZ=Asia/Shanghai</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/opt/mysql_5.7/data:/var/lib/mysql</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/opt/mysql_5.7/conf/my.cnf:/etc/my.cnf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./sql:/docker-entrypoint-initdb.d</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">  <span class="attr">mysqld-exporter:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">prom/mysqld-exporter:v0.15.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mysqld-exporter</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">19104</span><span class="string">:9104</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./exporter/.my.cnf:/cfg/.my.cnf</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">command:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">--config.my-cnf=/cfg/.my.cnf</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">mysql_57</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="mysqld-exporter-配置文件"><a href="#mysqld-exporter-配置文件" class="headerlink" title="mysqld_exporter 配置文件"></a>mysqld_exporter 配置文件</h4><p>创建一个专用的 MySQL 用户。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE USER &#x27;exporter&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;XXXXXXXX&#x27; WITH MAX_USER_CONNECTIONS 3;</span><br><span class="line">GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO &#x27;exporter&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[client]</span><br><span class="line">host=mysql_57</span><br><span class="line">port=3306</span><br><span class="line">user=exporter</span><br><span class="line">password=123456</span><br></pre></td></tr></table></figure>
+
+<p><strong>坑！！！</strong>根据 <a href="https://github.com/prometheus/mysqld_exporter/releases/tag/v0.15.0">0.15.0 CHANGE LOG</a>，不再支持使用环境变量 DATA_SOURCE_NAME 设置 MySQL 的信息。Docker 镜像的文档未及时更新。需使用 <code>.my.cnf</code> 或命令行参数进行配置。<br>Docker 镜像文档更新不及时。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">Error parsing host config&quot; file=.my.cnf err=&quot;no configuration found</span><br></pre></td></tr></table></figure>
+
+<p><strong>坑！！！</strong>带字符的复杂密码不能被正确解析。MySQL 使用了随机生成的复杂密码，怎么都连接不上。</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">caller=exporter.go:152 level=error msg=&quot;Error pinging mysqld&quot; err=&quot;Error 1045 (28000): Access denied for user &#x27;exporter&#x27;@&#x27;172.19.0.13&#x27; (using password: YES)&quot;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>数坑并发，搜遍全网，折腾半夜，痛不欲生。</p>
+</blockquote>
+<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-17-25.png" class="" title="MySQL 监控">]]></content>
+      <tags>
+        <tag>grafana</tag>
+        <tag>prometheus</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java 垃圾收集</title>
     <url>/2023/11/07/garbage-collection-in-Java/</url>
     <content><![CDATA[<blockquote>
@@ -1924,233 +2151,6 @@
       </tags>
   </entry>
   <entry>
-    <title>关于 Java 字节码指令的一些例子分析</title>
-    <url>/2023/11/09/some-examples-of-Java-bytecode-instruction-analysis/</url>
-    <content><![CDATA[<h2 id="演示字节码指令的执行"><a href="#演示字节码指令的执行" class="headerlink" title="演示字节码指令的执行"></a>演示字节码指令的执行</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> Short.MAX_VALUE + <span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> a + b;</span><br><span class="line">        System.out.println(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="操作数栈和本地变量表的大小"><a href="#操作数栈和本地变量表的大小" class="headerlink" title="操作数栈和本地变量表的大小"></a>操作数栈和本地变量表的大小</h3><p>在编译期间就可计算得到操作数栈和本地变量表的大小。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">stack=2, locals=4, args_size=1</span><br></pre></td></tr></table></figure>
-
-<h3 id="本地变量表"><a href="#本地变量表" class="headerlink" title="本地变量表"></a>本地变量表</h3><p>Slot，即槽位，可理解为索引。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">Start  Length  Slot  Name   Signature</span><br><span class="line">    0      18     0  args   [Ljava/lang/String;</span><br><span class="line">    3      15     1     a   I</span><br><span class="line">    6      12     2     b   I</span><br><span class="line">   10       8     3     c   I</span><br></pre></td></tr></table></figure>
-
-<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">3 = Integer            32768</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">4 = Fieldref           <span class="comment">#27.#28        // java/lang/System.out:Ljava/io/PrintStream;</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">5 = Methodref          <span class="comment">#29.#30        // java/io/PrintStream.println:(I)V</span></span> </span><br></pre></td></tr></table></figure>
-
-<img src="/2023/11/09/some-examples-of-Java-bytecode-instruction-analysis/Snipaste_2023-11-10_00-28-14.png" class="" title="字节码指令执行栈帧示意图">
-
-<h3 id="字节码指令"><a href="#字节码指令" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: bipush        10</span><br><span class="line"> 2: istore_1</span><br><span class="line"> 3: ldc           #3             // int 32768</span><br><span class="line"> 5: istore_2</span><br><span class="line"> 6: iload_1</span><br><span class="line"> 7: iload_2</span><br><span class="line"> 8: iadd</span><br><span class="line"> 9: istore_3</span><br><span class="line">10: getstatic     #4             // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">13: iload_3</span><br><span class="line">14: invokevirtual #5             // Method java/io/PrintStream.println:(I)V</span><br><span class="line">17: return</span><br></pre></td></tr></table></figure>
-<ul>
-<li>bipush，将一个 byte，推入操作数栈。<ul>
-<li>short 范围内的数是和字节码指令一起存储的，范围外的数是存储在运行时常量池中的。</li>
-<li>操作数栈的宽度是 4 个字节，short 范围内的数在推入操作数栈前会经过符号扩展成为 int。</li>
-</ul>
-</li>
-<li>istore_1，将栈顶的 int，存入局部变量表，槽位 1。</li>
-<li>ldc，从运行时常量池中将指定常量推入操作数栈。</li>
-<li>istore_2，将栈顶的 int，存入局部变量表，槽位 2。</li>
-<li>iload_1 iload_2，依次从局部变量表将两个 int 推入操作数栈，槽位分别是 1 和 2。</li>
-<li>iadd，将栈顶的两个 int 弹出并相加，将结果推入操作数栈。</li>
-<li>istore_3，将栈顶的 int，存入局部变量表，槽位 3。</li>
-<li>getstatic，获取类的静态属性，推入操作数栈。</li>
-<li>iload_3，从局部变量表将 int 推入操作数栈，槽位 3。</li>
-<li>invokevirtual，将栈顶的参数依次弹出，调用实例方法。</li>
-<li>return，返回 void</li>
-</ul>
-<h2 id="分析-a-和-a"><a href="#分析-a-和-a" class="headerlink" title="分析 a++ 和 ++a"></a>分析 a++ 和 ++a</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_3</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> a++ + ++a + a--;</span><br><span class="line">        System.out.println(a);</span><br><span class="line">        System.out.println(b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="字节码指令-1"><a href="#字节码指令-1" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: bipush        10</span><br><span class="line"> 2: istore_1</span><br><span class="line"> 3: iload_1</span><br><span class="line"> 4: iinc          1, 1</span><br><span class="line"> 7: iinc          1, 1</span><br><span class="line">10: iload_1</span><br><span class="line">11: iadd</span><br><span class="line">12: iload_1</span><br><span class="line">13: iinc          1, -1</span><br><span class="line">16: iadd</span><br><span class="line">17: istore_2</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>a++ 和 ++a 的区别是先 load 还是先 iinc。</li>
-<li>iinc，将局部变量表指定槽位的数加上一个常数。</li>
-<li>注意 a 只 load 到操作数栈并没有 store 回局部变量表。</li>
-<li>b &#x3D; 10 + 12 + 12 &#x3D; 34</li>
-<li>a &#x3D; 10 + 1 + 1 - 1 &#x3D; 11</li>
-</ul>
-<h2 id="分析判断条件"><a href="#分析判断条件" class="headerlink" title="分析判断条件"></a>分析判断条件</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ByteCodeTest_4</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// ifeq, goto</span></span><br><span class="line">        <span class="keyword">if</span> (a == <span class="number">0</span>) &#123;</span><br><span class="line">            a = <span class="number">10</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            a = <span class="number">20</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="字节码指令-2"><a href="#字节码指令-2" class="headerlink" title="字节码指令"></a>字节码指令</h3><figure class="highlight console"><table><tr><td class="code"><pre><span class="line"> 0: iconst_0</span><br><span class="line"> 1: istore_1</span><br><span class="line"> 2: iload_1</span><br><span class="line"> 3: ifne          12</span><br><span class="line"> 6: bipush        10</span><br><span class="line"> 8: istore_1</span><br><span class="line"> 9: goto          15</span><br><span class="line">12: bipush        20</span><br><span class="line">14: istore_1</span><br><span class="line">15: return</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>iconst，将一个 int 常量推入操作数栈。</li>
-<li>if<code>&lt;cond&gt;</code>，一个 int 和 0 的比较成立时进入分支，跳转到指定行号。</li>
-<li>goto，总是进入的分支，跳转到指定行号。</li>
-</ul>
-<h2 id="涉及的字节码指令"><a href="#涉及的字节码指令" class="headerlink" title="涉及的字节码指令"></a>涉及的字节码指令</h2><ul>
-<li>bipush，将一个 byte 符号扩展为一个 int，推入操作数栈。</li>
-<li>istore，将栈顶的 int，存入局部变量表的指定槽位。</li>
-<li>iload，将局部变量表指定槽位的 int，推入操作数栈。</li>
-<li>ldc，从运行时常量池将指定常量推入操作数栈。</li>
-<li>iadd，将栈顶的两个 int 弹出并相加，将结果推入操作数栈。</li>
-<li>getstatic，获取类的静态属性，推入操作数栈。</li>
-<li>invokevirtual，将栈顶的参数依次弹出，调用实例方法。</li>
-<li>return，返回 void。</li>
-<li>iinc，将局部变量表中指定槽位的数加一个常量。</li>
-<li>if<code>&lt;cond&gt;</code>，一个 int 和 0 的比较成立时进入分支，跳转到指定行号。<ul>
-<li>ifeq，equals</li>
-<li>ifne，not equals</li>
-<li>iflt，less than</li>
-<li>ifge，greater than or equals</li>
-<li>ifgt，great than</li>
-<li>ifle，less than or equals</li>
-</ul>
-</li>
-<li>goto，总是进入的分支，跳转到指定行号。</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>java</tag>
-        <tag>bytecode</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于 Redis 的分布式锁的简单实现</title>
-    <url>/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/</url>
-    <content><![CDATA[<p>在分布式应用中，并发访问资源需要谨慎考虑。比如读取和修改保存并不是一个原子操作，在并发时，就可能发生修改的结果被覆盖的问题。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110180458.png" class="" title="分布式应用中的并发问题">
-
-<p>很多人都了解在必要的时候需要使用分布式锁来限制程序的并发执行，但是在具体的细节上，往往并不正确。</p>
-<h2 id="基于-Redis-的分布式锁简单实现"><a href="#基于-Redis-的分布式锁简单实现" class="headerlink" title="基于 Redis 的分布式锁简单实现"></a>基于 Redis 的分布式锁简单实现</h2><p>本质上要实现的目标就是在 Redis 中占坑，告诉后来者资源已经被锁定，放弃或者稍后重试。Redis 原生支持 set if not exists 的语义。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">setnx lock:user1 <span class="literal">true</span></span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
-
-<h3 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h3><h4 id="问题一：异常引发死锁-1"><a href="#问题一：异常引发死锁-1" class="headerlink" title="问题一：异常引发死锁 1"></a>问题一：异常引发死锁 1</h4><p>如果在处理过程中，程序出现异常，将导致 del 指令没有执行成功。锁无法释放，其他线程将无法再获取锁。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110182254.png" class="" title="异常引发死锁 1">
-
-<h4 id="改进一：设置超时时间"><a href="#改进一：设置超时时间" class="headerlink" title="改进一：设置超时时间"></a>改进一：设置超时时间</h4><p>对 key 设置过期时间，如果在处理过程中，程序出现异常，导致 del 指令没有执行成功，设置的过期时间一到，key 将自动被删除，锁也就等于被释放了。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">setnx lock:user1 <span class="literal">true</span></span></span><br><span class="line">OK</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">expire lock:user1 5</span></span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
-
-<h4 id="问题二：异常引发死锁-2"><a href="#问题二：异常引发死锁-2" class="headerlink" title="问题二：异常引发死锁 2"></a>问题二：异常引发死锁 2</h4><p>事实上，上述措施并没有彻底解决问题。如果在设置 key 的超时时间之前，程序出现异常，一切仍旧会发生。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110190407.png" class="" title="异常引发死锁 2">
-
-<p>本质原因是 setnx 和 expire 两个指令不是一个原子操作。那么是否可以使用 Redis 的事务解决呢？不行。因为 expire 依赖于 setnx 的执行结果，如果 setnx 没有成功，expire 就不应该执行。</p>
-<h4 id="改进二：setnx-expire-的原子指令"><a href="#改进二：setnx-expire-的原子指令" class="headerlink" title="改进二：setnx + expire 的原子指令"></a>改进二：setnx + expire 的原子指令</h4><p>如果 setnx 和 expire 可以用一个原子指令实现就好了。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110190442.png" class="" title="setnx + expire 原子指令">
-
-<h5 id="基于原生指令的实现"><a href="#基于原生指令的实现" class="headerlink" title="基于原生指令的实现"></a>基于原生指令的实现</h5><p>在 Redis 2.8 版本中，Redis 的作者加入 set 指令扩展参数，允许 setnx 和 expire 组合成一个原子指令。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash"><span class="built_in">set</span> lock:user1 <span class="literal">true</span> ex 5 nx</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">... do something</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">del lock:user1</span></span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
-
-<h5 id="基于-Lua-脚本的实现"><a href="#基于-Lua-脚本的实现" class="headerlink" title="基于 Lua 脚本的实现"></a>基于 Lua 脚本的实现</h5><p>除了使用原生的指令外，还可以使用 Lua 脚本，将多个 Redis 指令组合成一个原子指令。</p>
-<figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&#x27;setnx&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]) == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">  redis.call(<span class="string">&#x27;expire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="超时问题"><a href="#超时问题" class="headerlink" title="超时问题"></a>超时问题</h3><p>基于 Redis 的分布式锁还会面临超时问题。如果在加锁和释放之间的处理逻辑过于耗时，以至于超出了 key 的过期时间，锁将在处理结束前被释放，就可能发生问题。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110191738.png" class="" title="其他线程提前进入临界区">
-
-<h4 id="问题一：其他线程提前进入临界区"><a href="#问题一：其他线程提前进入临界区" class="headerlink" title="问题一：其他线程提前进入临界区"></a>问题一：其他线程提前进入临界区</h4><p>如果第一个线程因为处理逻辑过于耗时导致在处理结束前锁已经被释放，其他线程将可以提前获得锁，临界区的代码将不能保证严格串行执行。</p>
-<h4 id="问题二：错误释放其他线程的锁"><a href="#问题二：错误释放其他线程的锁" class="headerlink" title="问题二：错误释放其他线程的锁"></a>问题二：错误释放其他线程的锁</h4><p>如果在第二个线程获得锁后，第一个线程刚好处理逻辑结束去释放锁，将导致第二个线程的锁提前被释放，引发连锁问题。</p>
-<h4 id="改进一：不要用于较长时间的任务"><a href="#改进一：不要用于较长时间的任务" class="headerlink" title="改进一：不要用于较长时间的任务"></a>改进一：不要用于较长时间的任务</h4><p>与其说是改进，不如说是注意事项。如果真的出现问题，造成的数据错误可能需要人工介入解决。</p>
-<p>如果真的存在这样的业务场景，应考虑使用其他解决方案加以优化。</p>
-<h4 id="改进二：使用-watchdog-实现锁续期"><a href="#改进二：使用-watchdog-实现锁续期" class="headerlink" title="改进二：使用 watchdog 实现锁续期"></a>改进二：使用 watchdog 实现锁续期</h4><p>为 Redis 的 key 设置过期时间，其实是为了解决死锁问题而做出的兜底措施。可以为获得的锁设置定时任务定期地为锁续期，以避免锁被提前释放。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">scheduleRenewal</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> lockValue.get();</span><br><span class="line">    ScheduledFuture&lt;?&gt; scheduledFuture = sScheduler.scheduleAtFixedRate(</span><br><span class="line">        () -&gt; <span class="built_in">this</span>.renewal(value), RENEWAL_INTERVAL, RENEWAL_INTERVAL, TimeUnit.MILLISECONDS</span><br><span class="line">    );</span><br><span class="line">    renewalTask.set(scheduledFuture);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>但是这个方式仍然不能避免解锁失败时的其他线程的等待时间。</p>
-<h4 id="改进三：加锁时指定-tag"><a href="#改进三：加锁时指定-tag" class="headerlink" title="改进三：加锁时指定 tag"></a>改进三：加锁时指定 tag</h4><p>可以将 set 指令的 value 参数设置为一个随机数，释放锁时先匹配持有的 tag 是否和 value 一致，如果一致再删除 key，以此避免锁被其他线程错误释放。</p>
-<h5 id="基于原生指令的实现-1"><a href="#基于原生指令的实现-1" class="headerlink" title="基于原生指令的实现"></a>基于原生指令的实现</h5><figure class="highlight console"><table><tr><td class="code"><pre><span class="line">tag = random.nextint()</span><br><span class="line">if redis.set(key, tag, nx= True, ex=5):</span><br><span class="line">	do_something()</span><br><span class="line">	redis.delifequals(key, tag)</span><br></pre></td></tr></table></figure>
-
-<p>但是注意，Redis 并没有提供语义为 delete if equals 的原子指令，这样的话问题并不能被彻底解决。如果在第一个线程判断 tag 是否和 value 相等之后，第二个线程刚好获得了锁，然后第一个线程因为匹配成功执行删除 key 操作，仍然将导致第二个线程获得的锁被第一个线程错误释放。</p>
-<img src="/2023/11/13/simple-implementation-of-distributed-lock-based-on-Redis/Pasted%20image%2020231110193919.png" class="" title="错误释放其他线程的锁">
-
-<h5 id="基于-Lua-脚本的实现-1"><a href="#基于-Lua-脚本的实现-1" class="headerlink" title="基于 Lua 脚本的实现"></a>基于 Lua 脚本的实现</h5><figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&quot;get&quot;</span>, KEYS[<span class="number">1</span>]) == ARGV[<span class="number">1</span>] <span class="keyword">then</span></span><br><span class="line">  <span class="keyword">return</span> redis.call(<span class="string">&quot;del&quot;</span>, KEYS[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="可重入性"><a href="#可重入性" class="headerlink" title="可重入性"></a>可重入性</h3><p>可重入性是指线程在已经持有锁的情况下再次请求加锁，如果一个锁支持同一个线程多次加锁，那么就称这个锁是可重入的，类似 Java 的 ReentrantLock。</p>
-<h4 id="使用-ThreadLocal-实现锁计数"><a href="#使用-ThreadLocal-实现锁计数" class="headerlink" title="使用 ThreadLocal 实现锁计数"></a>使用 ThreadLocal 实现锁计数</h4><p>Redis 分布式锁如果要支持可重入，可以使用线程的 ThreadLocal 变量存储当前持有的锁计数。但是在多次获得锁后，过期时间并没有得到延长，后续获得锁后持有锁的时间其实比设置的时间更短。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> ThreadLocal&lt;Integer&gt; lockCount = ThreadLocal.withInitial(() -&gt; <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">()</span> &#123;  </span><br><span class="line">    <span class="type">Integer</span> <span class="variable">count</span> <span class="operator">=</span> lockCount.get();  </span><br><span class="line">    <span class="keyword">if</span> (count != <span class="literal">null</span> &amp;&amp; count &gt; <span class="number">0</span>) &#123;  </span><br><span class="line">        lockCount.set(count + <span class="number">1</span>);   </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;    </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> commands.set(lockKey, lockValue.get(), SetArgs.Builder.nx().px(RedisLockManager.LOCK_EXPIRE));  </span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;OK&quot;</span>.equals(result)) &#123;  </span><br><span class="line">        lockCount.set(<span class="number">1</span>);  </span><br><span class="line">        scheduleRenewal();  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;    </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="使用-Redis-hash-实现锁计数"><a href="#使用-Redis-hash-实现锁计数" class="headerlink" title="使用 Redis hash 实现锁计数"></a>使用 Redis hash 实现锁计数</h4><p>还可以使用 Redis 的 hash 数据结构实现锁计数，支持重新获取锁后重置过期时间。</p>
-<figure class="highlight lua"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;exists&#x27;</span>, KEYS[<span class="number">1</span>]) == <span class="number">0</span>) <span class="keyword">then</span> </span><br><span class="line">	redis.call(<span class="string">&#x27;hset&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">	redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">end</span>;</span><br><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;hexists&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>]) == <span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">	redis.call(<span class="string">&#x27;hincrby&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">	redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line"><span class="keyword">return</span> redis.call(<span class="string">&#x27;pttl&#x27;</span>, KEYS[<span class="number">1</span>]);</span><br></pre></td></tr></table></figure>
-
-<p>书的作者<strong>不推荐使用可重入锁</strong>，他提出可重入锁会加重客户端的复杂度，如果在编写代码时注意在逻辑结构上进行调整，完全可以避免使用可重入锁。</p>
-<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p><a href="https://github.com/moralok/redis-lock">redis-lock</a></p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
-<li>《Redis 深度历险，核心原理与应用实践》</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>distributed lock</tag>
-        <tag>redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>使用 Grafana 和 Prometheus 搭建监控</title>
-    <url>/2023/11/18/setup-monitoring-using-grafana-and-prometheus/</url>
-    <content><![CDATA[<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a>Grafana</h3><h4 id="docker-compose-部署"><a href="#docker-compose-部署" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">grafana:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">grafana/grafana:9.5.6</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">grafana</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">3000</span><span class="string">:3000</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">grafana-storage:/var/lib/grafana</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">grafana-storage:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a>Prometheus</h3><h4 id="docker-compose-部署-1"><a href="#docker-compose-部署-1" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">prometheus:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">bitnami/prometheus:2.45.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">prometheus</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">19090</span><span class="string">:9090</span></span><br><span class="line">    <span class="attr">volumes:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">prometheus-data:/opt/bitnami/prometheus/data</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/conf/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">prometheus-data:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="配置文件-prometheus-yml"><a href="#配置文件-prometheus-yml" class="headerlink" title="配置文件 prometheus.yml"></a>配置文件 prometheus.yml</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="comment"># Ubuntu</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">node</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.135:9100&#x27;</span>]</span><br><span class="line"><span class="comment"># Windows</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">windows</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.1:9182&#x27;</span>]</span><br><span class="line"><span class="comment"># Redis</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">redis-exporter</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;redis-exporter:9121&#x27;</span>]</span><br><span class="line"><span class="comment"># MySQL</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">mysqld-exporter</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;mysqld-exporter:9104&#x27;</span>]</span><br></pre></td></tr></table></figure>
-
-<h3 id="Ubuntu-监控"><a href="#Ubuntu-监控" class="headerlink" title="Ubuntu 监控"></a>Ubuntu 监控</h3><h4 id="node-exporter"><a href="#node-exporter" class="headerlink" title="node_exporter"></a>node_exporter</h4><p>node_exporter 被设计为监控主机系统，因为它需要访问主机系统，所以不推荐使用 Docker 容器部署。</p>
-<ul>
-<li><a href="https://github.com/prometheus/node_exporter">node_exporter Github 仓库</a></li>
-<li><a href="https://prometheus.io/download/#node_exporter">node_exporter 下载地址</a></li>
-<li><a href="https://prometheus.io/docs/guides/node-exporter/">node_exporter 使用指南</a></li>
-</ul>
-<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
-<li>下载解压得到 node_exporter 二进制可执行文件。</li>
-<li><code>./node_exporter</code> 启动</li>
-<li>Prometheus 配置文件<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">node</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;localhost:9100&#x27;</span>]</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h4 id="设置-node-exporter-自启动"><a href="#设置-node-exporter-自启动" class="headerlink" title="设置 node_exporter 自启动"></a>设置 node_exporter 自启动</h4><ol>
-<li>路径 <code>/etc/systemd/system</code></li>
-<li>创建 <code>node_exporter.service</code><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=node_exporter</span><br><span class="line">After=network-online.target</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line">Restart=on-failure</span><br><span class="line">ExecStart=/opt/node_exporter</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></li>
-</ol>
-<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-11-22.png" class="" title="Ubuntu 监控">
-
-<h3 id="Windows-监控"><a href="#Windows-监控" class="headerlink" title="Windows 监控"></a>Windows 监控</h3><h4 id="windows-exporter"><a href="#windows-exporter" class="headerlink" title="windows_exporter"></a>windows_exporter</h4><ul>
-<li><a href="https://github.com/prometheus-community/windows_exporter">windows_exporter Github 仓库</a></li>
-<li><a href="https://github.com/prometheus-community/windows_exporter/releases">windows_exporter 下载地址</a></li>
-<li><a href="https://prometheus.io/docs/guides/node-exporter/">windows_exporter 使用指南</a></li>
-</ul>
-<h4 id="步骤-1"><a href="#步骤-1" class="headerlink" title="步骤"></a>步骤</h4><ol>
-<li>下载得到 windows_exporter-0.24.0-amd64.msi 安装程序。</li>
-<li>以默认方式安装</li>
-<li>Prometheus 配置文件<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">global:</span></span><br><span class="line">  <span class="attr">scrape_interval:</span> <span class="string">15s</span></span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">windows</span></span><br><span class="line"><span class="comment"># Windows</span></span><br><span class="line">  <span class="attr">static_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">targets:</span> [<span class="string">&#x27;192.168.46.1:9182&#x27;</span>]</span><br></pre></td></tr></table></figure></li>
-</ol>
-<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-16-05.png" class="" title="Windows 监控">
-
-<h3 id="Redis-监控"><a href="#Redis-监控" class="headerlink" title="Redis 监控"></a>Redis 监控</h3><h4 id="redis-exporter"><a href="#redis-exporter" class="headerlink" title="redis_exporter"></a>redis_exporter</h4><ul>
-<li><a href="https://github.com/oliver006/redis_exporter">redis_exporter Github 仓库</a></li>
-<li><a href="https://hub.docker.com/r/oliver006/redis_exporter/">redis_exporter Docker 官方镜像</a></li>
-<li><a href="https://hub.docker.com/r/oliver006/redis_exporter/">redis_exporter Docker bitnami 镜像</a></li>
-</ul>
-<h4 id="docker-compose-部署-2"><a href="#docker-compose-部署-2" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><p>使用 bitnami 提供的镜像代替官方镜像并没有特殊考量。使用环境变量 REDIS_ADDR 指定目标 Redis。</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;2&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">redis:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&#x27;redis:4.0&#x27;</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">6379</span><span class="string">:6379</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">redis-data:/data</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">  <span class="attr">redis-exporter:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">bitnami/redis-exporter:1.55.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">redis-exporter</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">REDIS_ADDR=redis://redis:6379</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">redis</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">redis-data:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-
-<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-16-54.png" class="" title="Redis 监控">
-
-<h3 id="MySQL-监控"><a href="#MySQL-监控" class="headerlink" title="MySQL 监控"></a>MySQL 监控</h3><h4 id="mysqld-exporter"><a href="#mysqld-exporter" class="headerlink" title="mysqld_exporter"></a>mysqld_exporter</h4><ul>
-<li><a href="https://github.com/prometheus/mysqld_exporter">mysqld_exporter Github 仓库</a></li>
-<li><a href="https://registry.hub.docker.com/r/prom/mysqld-exporter/">mysqld_exporter Docker 官方镜像</a></li>
-</ul>
-<h4 id="docker-compose-部署-3"><a href="#docker-compose-部署-3" class="headerlink" title="docker-compose 部署"></a>docker-compose 部署</h4><ol>
-<li>使用 volume 将配置文件 .my.cnf 挂载到容器中</li>
-<li>使用 command 指定启动时的参数</li>
-</ol>
-<blockquote>
-<p><strong>坑！！！</strong>在文档中找配置文件的默认挂载路径或者如何配置启动时的配置文件，找了好久都没找到。搭配上后来的坑，直接迷失数小时。</p>
-</blockquote>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;1.0&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mysql_57:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5.7</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mysql_57</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">13306</span><span class="string">:3306</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">MYSQL_ROOT_PASSWORD=123456</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">TZ=Asia/Shanghai</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/opt/mysql_5.7/data:/var/lib/mysql</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/opt/mysql_5.7/conf/my.cnf:/etc/my.cnf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./sql:/docker-entrypoint-initdb.d</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">  <span class="attr">mysqld-exporter:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">prom/mysqld-exporter:v0.15.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mysqld-exporter</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">19104</span><span class="string">:9104</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./exporter/.my.cnf:/cfg/.my.cnf</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">command:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">--config.my-cnf=/cfg/.my.cnf</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">mysql_57</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="mysqld-exporter-配置文件"><a href="#mysqld-exporter-配置文件" class="headerlink" title="mysqld_exporter 配置文件"></a>mysqld_exporter 配置文件</h4><p>创建一个专用的 MySQL 用户。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE USER &#x27;exporter&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;XXXXXXXX&#x27; WITH MAX_USER_CONNECTIONS 3;</span><br><span class="line">GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO &#x27;exporter&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[client]</span><br><span class="line">host=mysql_57</span><br><span class="line">port=3306</span><br><span class="line">user=exporter</span><br><span class="line">password=123456</span><br></pre></td></tr></table></figure>
-
-<p><strong>坑！！！</strong>根据 <a href="https://github.com/prometheus/mysqld_exporter/releases/tag/v0.15.0">0.15.0 CHANGE LOG</a>，不再支持使用环境变量 DATA_SOURCE_NAME 设置 MySQL 的信息。Docker 镜像的文档未及时更新。需使用 <code>.my.cnf</code> 或命令行参数进行配置。<br>Docker 镜像文档更新不及时。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">Error parsing host config&quot; file=.my.cnf err=&quot;no configuration found</span><br></pre></td></tr></table></figure>
-
-<p><strong>坑！！！</strong>带字符的复杂密码不能被正确解析。MySQL 使用了随机生成的复杂密码，怎么都连接不上。</p>
-<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">caller=exporter.go:152 level=error msg=&quot;Error pinging mysqld&quot; err=&quot;Error 1045 (28000): Access denied for user &#x27;exporter&#x27;@&#x27;172.19.0.13&#x27; (using password: YES)&quot;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>数坑并发，搜遍全网，折腾半夜，痛不欲生。</p>
-</blockquote>
-<img src="/2023/11/18/setup-monitoring-using-grafana-and-prometheus/Snipaste_2023-11-19_01-17-25.png" class="" title="MySQL 监控">]]></content>
-      <tags>
-        <tag>grafana</tag>
-        <tag>prometheus</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>JDK 动态代理和 CGLib</title>
     <url>/2023/11/19/JDK-dynamic-proxy-and-CGLib/</url>
     <content><![CDATA[<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="JDK-动态代理"><a href="#JDK-动态代理" class="headerlink" title="JDK 动态代理"></a>JDK 动态代理</h3><p>Java 标准库提供了动态代理功能，允许程序在运行期动态创建指定接口的实例。</p>
@@ -2367,6 +2367,120 @@
         <tag>java</tag>
         <tag>spring</tag>
         <tag>aop</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Spring 中的循环依赖</title>
+    <url>/2023/11/22/circular-dependencies-in-Spring/</url>
+    <content><![CDATA[<h2 id="循环依赖的介绍和讨论"><a href="#循环依赖的介绍和讨论" class="headerlink" title="循环依赖的介绍和讨论"></a>循环依赖的介绍和讨论</h2><h3 id="什么是循环依赖？"><a href="#什么是循环依赖？" class="headerlink" title="什么是循环依赖？"></a>什么是循环依赖？</h3><p>当 bean A 依赖另一个 bean B，bean B 也依赖了 bean A，我们称之为循环依赖：</p>
+<figure class="highlight console"><table><tr><td class="code"><pre><span class="line">Bean A -&gt; bean B -&gt; bean A</span><br></pre></td></tr></table></figure>
+
+<p>首先，我们应该将循环依赖和 Spring 中的循环依赖问题分开看待。循环依赖是一个正常的现象，一个 employee 依赖他的 department，department 拥有许多 employee。先实例化 employee 后实例化 department，然后为它们设置依赖，或者颠倒顺序进行操作，并不会发生什么问题。</p>
+<h3 id="Spring-中的循环依赖问题"><a href="#Spring-中的循环依赖问题" class="headerlink" title="Spring 中的循环依赖问题"></a>Spring 中的循环依赖问题</h3><p>当 Spring 加载所有的 beans 时，会进行<strong>依赖注入</strong>处理。Spring 并不是先将所有的 bean 实例化，再去进行依赖注入，而是实例化一个 bean 后，立即对它进行依赖注入，为此它会递归地实例化 bean 的依赖。<br>实际上，以上的过程同样并不会产生什么大问题，在<strong>实例化和依赖注入分成两个阶段</strong>的情况下，你可以<strong>轻而易举地保存和获取已经实例化的 bean</strong>。唯一的问题是，获取的已经实例化的 bean 可能尚未初始化完毕（比如依赖尚未全部注入），那么你只需要确保它在初始化完毕前不被使用即可。<br>这样你通过两个 map，一个保存已经初始化完毕、可用的完成品 bean，一个保存尚未初始化完毕、不可用的半成品 bean，就能解决问题了。</p>
+<blockquote>
+<p>在一些资料中，你会看到有人强调如果只是想要解决常规的循环引用，那么只需要两个缓存。</p>
+</blockquote>
+<img src="/2023/11/22/circular-dependencies-in-Spring/Pasted%20image%2020231122210105.png" class="" title="循环引用-常规情况的解决方案">
+
+<p>但是问题并不总是那么简单，如果实例化和依赖注入不能分为两个阶段，如果 B 依赖的不再是简单的 A 对象，而是 A 的代理，那么上述方案就不再适用了。</p>
+<h4 id="构造器方法形成的循环依赖"><a href="#构造器方法形成的循环依赖" class="headerlink" title="构造器方法形成的循环依赖"></a>构造器方法形成的循环依赖</h4><p>如果 A 的构造器方法需要 B，B 的构造器方法需要 A，那么在 A 的实例化阶段就需要 B 的实例，B 的实例化阶段又需要 A，这就陷入了死循环。</p>
+<blockquote>
+<p>虽然我们常说 Spring 解决了循环依赖问题，但实际上，Spring 并没有解决所有情形的循环依赖问题。<br>在构造器方法形成的循环依赖中，需要人为地介入，使用 @Lazy 注解告诉 Spring，延迟初始化 Bean 来解决。<br>如果是 prototype 类型的 bean 发生循环依赖，Spring 也会抛出异常。显然每次都创建新的 bean 必然会导致无限循环。</p>
+</blockquote>
+<h4 id="循环依赖中出现代理"><a href="#循环依赖中出现代理" class="headerlink" title="循环依赖中出现代理"></a>循环依赖中出现代理</h4><p>Spring 鼎鼎大名的核心功能，除了 IOC，还有 AOP。在 AOP 的场景中，bean A 的完成品不是简单的 A 对象，而是一个 A 的代理。</p>
+<p>思路其实并不难，既然需要 A 的代理，那么在获取 B 依赖的 A 时，直接根据已有的半成品 A 创建代理就好了。</p>
+<h4 id="解决方案的思路小结"><a href="#解决方案的思路小结" class="headerlink" title="解决方案的思路小结"></a>解决方案的思路小结</h4><p>当我们脱离 Spring 具体的代码讨论循环依赖问题，我们会发现解决的思路是简单、清晰和理所当然的。事实上 Spring 的解决方案也是如此。</p>
+<ol>
+<li>循环依赖本身是普通的，手动可解决的。</li>
+<li>Spring 依赖注入时，虽然 bean B 依赖的 bean A 尚未初始化完毕，但是已经实例化，可以用来赋值</li>
+<li>Spring AOP 中，既然 bean B 依赖的 bean A 需要是 A 对象的代理，那么就创建代理，再用来赋值</li>
+</ol>
+<h2 id="测试用例和流程图预览"><a href="#测试用例和流程图预览" class="headerlink" title="测试用例和流程图预览"></a>测试用例和流程图预览</h2><img src="/2023/11/22/circular-dependencies-in-Spring/Pasted%20image%2020231122233750.png" class="" title="循环引用-流程图">
+
+<ul>
+<li>CircularA<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CircularA</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> CircularB circularB;</span><br><span class="line">    <span class="keyword">public</span> CircularB <span class="title function_">getCircularB</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> circularB;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setCircularB</span><span class="params">(CircularB circularB)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.circularB = circularB;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>CircularB<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CircularB</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> CircularA circularA;</span><br><span class="line">    <span class="keyword">public</span> CircularA <span class="title function_">getCircularA</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> circularA;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setCircularA</span><span class="params">(CircularA circularA)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.circularA = circularA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>circular-reference-test.xml<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">beans</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;circularA&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.moralok.bean.CircularA&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;circularB&quot;</span> <span class="attr">ref</span>=<span class="string">&quot;circularB&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;circularB&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.moralok.bean.CircularB&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;circularA&quot;</span> <span class="attr">ref</span>=<span class="string">&quot;circularA&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>测试类<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CircularReferenceTest</span> &#123;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testRegular</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassPathXmlApplicationContext</span>(<span class="string">&quot;circular-reference-test.xml&quot;</span>);</span><br><span class="line">        <span class="type">CircularA</span> <span class="variable">circularA</span> <span class="operator">=</span> (CircularA) applicationContext.getBean(<span class="string">&quot;circularA&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="第一次获取-circularA"><a href="#第一次获取-circularA" class="headerlink" title="第一次获取 circularA"></a>第一次获取 circularA</h2><h3 id="AbstractBeanFactory-doGetBean-circularA"><a href="#AbstractBeanFactory-doGetBean-circularA" class="headerlink" title="AbstractBeanFactory#doGetBean(circularA)"></a>AbstractBeanFactory#doGetBean(circularA)</h3><ol>
+<li>从缓存中获取 circularA（先不看具体代码）</li>
+<li>因缓存中不存在，就创建 circularA</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> &lt;T&gt; T <span class="title function_">doGetBean</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="keyword">final</span> String name, <span class="keyword">final</span> Class&lt;T&gt; requiredType, <span class="keyword">final</span> Object[] args, <span class="type">boolean</span> typeCheckOnly)</span></span><br><span class="line">        <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">    <span class="comment">// 尝试从缓存中获取 circularA，结果为 null</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">sharedInstance</span> <span class="operator">=</span> getSingleton(beanName);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 再次从缓存中获取 circularA，如果为 null，就创建</span></span><br><span class="line">    sharedInstance = getSingleton(beanName, <span class="keyword">new</span> <span class="title class_">ObjectFactory</span>&lt;Object&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Object <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> createBean(beanName, mbd, args);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">return</span> (T) bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="标记-bean-是否正在创建中"><a href="#标记-bean-是否正在创建中" class="headerlink" title="标记 bean 是否正在创建中"></a>标记 bean 是否正在创建中</h3><p>在创建 bean circularA 之前，会再次调用 getSingleton(String, ObjectFactory) 尝试获取，这个方法包裹住了 createBean 方法，也在一前一后处理 bean 是否正在创建中的标志。在后续，circularB 怎么判断 circularA 是否属于正在创建中就是依靠于此。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">isSingletonCurrentlyInCreation(beanName)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里的是否正在创建中，并不是狭义地指代 bean 对象是否已经实例化，而是指代 bean 是否已经实例化和初始化完毕。circular A 在初始化阶段，去获取 circularB，在 circularB 视角中，circular A 就处于正在创建中。</p>
+</blockquote>
+<img src="/2023/11/22/circular-dependencies-in-Spring/Pasted%20image%2020231122210026.png" class="" title="循环引用-是否正在创建中">
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">getSingleton</span><span class="params">(String beanName, ObjectFactory&lt;?&gt; singletonFactory)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 标记为正在创建中</span></span><br><span class="line">    beforeSingletonCreation(beanName);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">newSingleton</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        singletonObject = singletonFactory.getObject();</span><br><span class="line">        newSingleton = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 从正在创建中的集合移除</span></span><br><span class="line">    afterSingletonCreation(beanName);</span><br><span class="line">    <span class="keyword">if</span> (newSingleton) &#123;</span><br><span class="line">        addSingleton(beanName, singletonObject);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (singletonObject != NULL_OBJECT ? singletonObject : <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建-circularA"><a href="#创建-circularA" class="headerlink" title="创建 circularA"></a>创建 circularA</h2><ol>
+<li>实例化 circularA</li>
+<li>初始化 circularA<ul>
+<li>对 circularA 进行依赖注入时：getBean(circularB)</li>
+</ul>
+</li>
+</ol>
+<p>很重要的是，在实例化 circularA 之后，尚未进行初始化工作之前，如果 circularA 允许早期暴露，将会被包装为 ObjectFactory 缓存到 singletonFactory（三级缓存） 中。</p>
+<p>值得注意的是：</p>
+<ul>
+<li>如果 circularA 不需要早期暴露，那么这个 ObjectFactory 是不会被使用到的</li>
+<li>如果 circularA 需要早期暴露，比如它依赖的 circularB 同时依赖它，circularB 将回调 getEarlyBeanReference 方法获得 circular A 的早期 bean 引用。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> Object <span class="title function_">doCreateBean</span><span class="params">(<span class="keyword">final</span> String beanName, <span class="keyword">final</span> RootBeanDefinition mbd, <span class="keyword">final</span> Object[] args)</span></span><br><span class="line">        <span class="keyword">throws</span> BeanCreationException &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 实例化 bean</span></span><br><span class="line">    instanceWrapper = createBeanInstance(beanName, mbd, args);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 如果单例允许提前暴露的话，就将实例包装为 ObjectFactory 保存在 map singletonFactories 中</span></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">earlySingletonExposure</span> <span class="operator">=</span> (mbd.isSingleton() &amp;&amp; <span class="built_in">this</span>.allowCircularReferences &amp;&amp;</span><br><span class="line">            isSingletonCurrentlyInCreation(beanName));</span><br><span class="line">    <span class="keyword">if</span> (earlySingletonExposure) &#123;</span><br><span class="line">        addSingletonFactory(beanName, <span class="keyword">new</span> <span class="title class_">ObjectFactory</span>&lt;Object&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> Object <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">                <span class="keyword">return</span> getEarlyBeanReference(beanName, mbd, bean);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 初始化 bean，对 bean 的属性进行依赖注入</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">exposedObject</span> <span class="operator">=</span> bean;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        populateBean(beanName, mbd, instanceWrapper);</span><br><span class="line">        <span class="keyword">if</span> (exposedObject != <span class="literal">null</span>) &#123;</span><br><span class="line">            exposedObject = initializeBean(beanName, exposedObject, mbd);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">return</span> exposedObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="依赖注入时获取-circularB"><a href="#依赖注入时获取-circularB" class="headerlink" title="依赖注入时获取 circularB"></a>依赖注入时获取 circularB</h2><h3 id="填充-Bean-属性"><a href="#填充-Bean-属性" class="headerlink" title="填充 Bean 属性"></a>填充 Bean 属性</h3><p>填充 Bean 属性的 populateBean 方法很复杂，这里只关注它对 circularA 的依赖注入将间接地调用 getBean(circularB)。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">populateBean</span><span class="params">(String beanName, RootBeanDefinition mbd, BeanWrapper bw)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 应用属性值</span></span><br><span class="line">    applyPropertyValues(beanName, mbd, bw, pvs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">applyPropertyValues</span><span class="params">(String beanName, BeanDefinition mbd, BeanWrapper bw, PropertyValues pvs)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 如果有必要解析 value</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">resolvedValue</span> <span class="operator">=</span> valueResolver.resolveValueIfNecessary(pv, originalValue);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    bw.setPropertyValues(<span class="keyword">new</span> <span class="title class_">MutablePropertyValues</span>(deepCopy));</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">resolveValueIfNecessary</span><span class="params">(Object argName, Object value)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 如果是 RuntimeBeanReference 类型，就解析引用</span></span><br><span class="line">    <span class="keyword">if</span> (value <span class="keyword">instanceof</span> RuntimeBeanReference) &#123;</span><br><span class="line">        <span class="type">RuntimeBeanReference</span> <span class="variable">ref</span> <span class="operator">=</span> (RuntimeBeanReference) value;</span><br><span class="line">        <span class="keyword">return</span> resolveReference(argName, ref);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> Object <span class="title function_">resolveReference</span><span class="params">(Object argName, RuntimeBeanReference ref)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 解析引用将调用 getBean</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">bean</span> <span class="operator">=</span> <span class="built_in">this</span>.beanFactory.getBean(refName);</span><br><span class="line">    <span class="built_in">this</span>.beanFactory.registerDependentBean(refName, <span class="built_in">this</span>.beanName);</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取-circularB"><a href="#获取-circularB" class="headerlink" title="获取 circularB"></a>获取 circularB</h3><p>AbstractBeanFactory#doGetBean(circularB)，获取 circularB 将经过和 circularA 一样的流程，进入 populateBean(circularB) 对其进行依赖注入，进而再次去获取 circularA。</p>
+<h2 id="第二次获取-circularA"><a href="#第二次获取-circularA" class="headerlink" title="第二次获取 circularA"></a>第二次获取 circularA</h2><h3 id="AbstractBeanFactory-doGetBean-circularA-1"><a href="#AbstractBeanFactory-doGetBean-circularA-1" class="headerlink" title="AbstractBeanFactory#doGetBean(circularA)"></a>AbstractBeanFactory#doGetBean(circularA)</h3><ol>
+<li>第二次获取 circularA 时，仍然先尝试从缓存中获取<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> &lt;T&gt; T <span class="title function_">doGetBean</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="keyword">final</span> String name, <span class="keyword">final</span> Class&lt;T&gt; requiredType, <span class="keyword">final</span> Object[] args, <span class="type">boolean</span> typeCheckOnly)</span></span><br><span class="line">        <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 尝试从缓存中获取 circularA，结果为 null</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">sharedInstance</span> <span class="operator">=</span> getSingleton(beanName);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>这次将从缓存中得到先前创建的 circularA。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> Object <span class="title function_">getSingleton</span><span class="params">(String beanName, <span class="type">boolean</span> allowEarlyReference)</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">singletonObject</span> <span class="operator">=</span> <span class="built_in">this</span>.singletonObjects.get(beanName);</span><br><span class="line">    <span class="comment">// 如果 singletonObjects 中不存在，且 bean 正在创建过程中</span></span><br><span class="line">    <span class="keyword">if</span> (singletonObject == <span class="literal">null</span> &amp;&amp; isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="built_in">this</span>.singletonObjects) &#123;</span><br><span class="line">            <span class="comment">// 从 earlySingletonObjects 获取</span></span><br><span class="line">            singletonObject = <span class="built_in">this</span>.earlySingletonObjects.get(beanName);</span><br><span class="line">            <span class="keyword">if</span> (singletonObject == <span class="literal">null</span> &amp;&amp; allowEarlyReference) &#123;</span><br><span class="line">                <span class="comment">// 如果 earlySingletonObjects 中不存在，且允许早期引用，就从 singletonFactories 中获取</span></span><br><span class="line">                ObjectFactory&lt;?&gt; singletonFactory = <span class="built_in">this</span>.singletonFactories.get(beanName);</span><br><span class="line">                <span class="keyword">if</span> (singletonFactory != <span class="literal">null</span>) &#123;</span><br><span class="line">                    singletonObject = singletonFactory.getObject();</span><br><span class="line">                    <span class="built_in">this</span>.earlySingletonObjects.put(beanName, singletonObject);</span><br><span class="line">                    <span class="built_in">this</span>.singletonFactories.remove(beanName);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (singletonObject != NULL_OBJECT ? singletonObject : <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>在第一次获取 circularA 时，我们跳过了查看 getSingleton(String) 的代码。其实代码的逻辑并不复杂，但是要理解为什么这么做，却需要回过头来反复品味和思考。</p>
+<h2 id="从缓存中获取-circularA"><a href="#从缓存中获取-circularA" class="headerlink" title="从缓存中获取 circularA"></a>从缓存中获取 circularA</h2><ol>
+<li>从 singletonObjects（一级缓存） 获取 circularA，不存在</li>
+<li>circularA 属于正在创建中，从 earlySingletonObjects（二级缓存） 获取，仍然不存在</li>
+<li>allowEarlyReference 为真，从 singletonFactories（三级缓存） 获取（circularA 实例化后被包装为 ObjectFactory 保存在这里）</li>
+<li>调用 getObject 获得对象</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">addSingletonFactory(beanName, <span class="keyword">new</span> <span class="title class_">ObjectFactory</span>&lt;Object&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">        <span class="keyword">return</span> getEarlyBeanReference(beanName, mbd, bean);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="回调-getEarlyBeanReference"><a href="#回调-getEarlyBeanReference" class="headerlink" title="回调 getEarlyBeanReference"></a>回调 getEarlyBeanReference</h3><p>如果存在 SmartInstantiationAwareBeanPostProcessor，将使用这些后处理器获得早期 bean 引用。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> Object <span class="title function_">getEarlyBeanReference</span><span class="params">(String beanName, RootBeanDefinition mbd, Object bean)</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">exposedObject</span> <span class="operator">=</span> bean;</span><br><span class="line">    <span class="keyword">if</span> (bean != <span class="literal">null</span> &amp;&amp; !mbd.isSynthetic() &amp;&amp; hasInstantiationAwareBeanPostProcessors()) &#123;</span><br><span class="line">        <span class="comment">// 如果存在 InstantiationAwareBeanPostProcessors</span></span><br><span class="line">        <span class="keyword">for</span> (BeanPostProcessor bp : getBeanPostProcessors()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (bp <span class="keyword">instanceof</span> SmartInstantiationAwareBeanPostProcessor) &#123;</span><br><span class="line">                <span class="comment">// 如果 bp 是 SmartInstantiationAwareBeanPostProcessor 类型</span></span><br><span class="line">                <span class="type">SmartInstantiationAwareBeanPostProcessor</span> <span class="variable">ibp</span> <span class="operator">=</span> (SmartInstantiationAwareBeanPostProcessor) bp;</span><br><span class="line">                <span class="comment">// 尝试创建代理</span></span><br><span class="line">                exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);</span><br><span class="line">                <span class="keyword">if</span> (exposedObject == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> exposedObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取早期-bean-引用"><a href="#获取早期-bean-引用" class="headerlink" title="获取早期 bean 引用"></a>获取早期 bean 引用</h2><p>了解<a href="/2023/11/19/how-does-Spring-AOP-create-proxy-beans/" title="Spring AOP 如何创建代理 beans">Spring AOP 如何创建代理 beans</a>，才能更好地理解这部分内容。</p>
+<p>通过后处理器 getEarlyBeanReference 获取早期 bean 引用时，可能返回的就是 circularA 对象，但是如果 circularA 属于需要创建代理的 bean，就会在这时候立即为它创建代理，而在之后 BeanPostProcessor 处理时就不会再创建代理了。</p>
+<p>以 AbstractAutoProxyCreator 为例，它是自动代理创建者的抽象类，同时实现了 SmartInstantiationAwareBeanPostProcessor 和 BeanPostProcessor 接口。</p>
+<h3 id="SmartInstantiationAwareBeanPostProcessor-的方法实现"><a href="#SmartInstantiationAwareBeanPostProcessor-的方法实现" class="headerlink" title="SmartInstantiationAwareBeanPostProcessor 的方法实现"></a>SmartInstantiationAwareBeanPostProcessor 的方法实现</h3><p>SmartInstantiationAwareBeanPostProcessor 接口允许在获取 circularA 的早期引用时，就尝试将 circular A 包装为代理。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">getEarlyBeanReference</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">cacheKey</span> <span class="operator">=</span> getCacheKey(bean.getClass(), beanName);</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">this</span>.earlyProxyReferences.contains(cacheKey)) &#123;</span><br><span class="line">        <span class="built_in">this</span>.earlyProxyReferences.add(cacheKey);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如有必要，包装为代理</span></span><br><span class="line">    <span class="keyword">return</span> wrapIfNecessary(bean, beanName, cacheKey);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="BeanPostProcessor-的方法实现"><a href="#BeanPostProcessor-的方法实现" class="headerlink" title="BeanPostProcessor 的方法实现"></a>BeanPostProcessor 的方法实现</h3><p>BeanPostProcessor 接口允许在初始化时，调用初始化方法后，尝试将 circular A 包装为代理。如果已经在获取 circularA 的早期引用时就将其包装为代理，则不再进行包装。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">    <span class="keyword">if</span> (bean != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">cacheKey</span> <span class="operator">=</span> getCacheKey(bean.getClass(), beanName);</span><br><span class="line">        <span class="comment">// 判断早期代理引用中是否存在</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.earlyProxyReferences.contains(cacheKey)) &#123;</span><br><span class="line">            <span class="keyword">return</span> wrapIfNecessary(bean, beanName, cacheKey);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="再思-Spring-bean-的三级缓存"><a href="#再思-Spring-bean-的三级缓存" class="headerlink" title="再思 Spring bean 的三级缓存"></a>再思 Spring bean 的三级缓存</h2><p>著名的“三级缓存”，实际上就是三个存放 Bean 的 map：</p>
+<ul>
+<li>singletonObjects</li>
+<li>earlySingletonObjects</li>
+<li>singletonFactories</li>
+</ul>
+<p>在很多网上的资料中，都称 Spring 通过使用三级缓存的设计解决了循环引用问题。<br>同时我也看到有人反思，这样翻译对学习者造成了很大的困扰，代码中并没有多级 cache 的意味，称之为“三个缓存”比“三级缓存”更合理也更容易理解。<br>三个存放 Bean 的 map 事实上是相互独立的，甚至说它们是互斥的，<strong>一个 Bean 在同一时间最多只能存在于其中一个 map 中</strong>。</p>
+<p>对我个人而言，我对反对者的观点深有同感，如果我没有看过面经，即时我熟读并理解代码，我可能都无法回答 Spring 中的三级缓存是什么。甚至我会被三级缓存这个名词所震慑，在了解它之前在心里放大它的复杂性。<br>但是在不断阅读的过程中（可能也有已有记忆的加持），我也会感受到称之为“三级缓存”的合理性。这里的分级含义更多体现的是 Bean 的晋升过程。</p>
+]]></content>
+      <tags>
+        <tag>java</tag>
+        <tag>spring</tag>
       </tags>
   </entry>
 </search>

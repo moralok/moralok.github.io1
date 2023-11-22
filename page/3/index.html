@@ -152,7 +152,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,127 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" class="post-title-link" itemprop="url">在 Windows 10 上安装 OpenVPN 服务器</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-07 15:18:02" itemprop="dateCreated datePublished" datetime="2023-06-07T15:18:02+08:00">2023-06-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-22 23:52:40" itemprop="dateModified" datetime="2023-11-22T23:52:40+08:00">2023-11-22</time>
+    </span>
+
+  
+    <span id="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" class="post-meta-item leancloud_visitors" data-flag-title="在 Windows 10 上安装 OpenVPN 服务器" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>615</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装-OpenVPN-server"><a href="#安装-OpenVPN-server" class="headerlink" title="安装 OpenVPN server"></a>安装 OpenVPN server</h2><p>从 <a target="_blank" rel="noopener" href="https://openvpn.net/community-downloads/">OpenVPN 社区</a> 下载 Windows 64-bit MSI installer。本次安装的版本为 OpenVPN 2.6.4。</p>
+<blockquote>
+<p>注意事项：在选择安装类型时选择 Customize 而不要选择 Install Now。额外勾选 OpenVPN -&gt; OpenVPN Service -&gt; Entire feature will be installed on local hard drive 和 OpenSSL Utilities -&gt; EasyRSA 3 Certificate Management Scripts -&gt; Entire feature will be installed on local hard drive。</p>
+</blockquote>
+<p>安装完毕后，会弹出一条消息提示未找到可读的连接配置文件，暂时忽略。<br>此时在 控制面板\网络和 Internet\网络连接 中可以看到创建了两个新的网络适配器 OpenVPN TAP-Windows6 和 OpenVPN Wintun。</p>
+<h2 id="配置-OpenVPN-server"><a href="#配置-OpenVPN-server" class="headerlink" title="配置 OpenVPN server"></a>配置 OpenVPN server</h2><p>打开 Windows 10 终端程序。<br>进入 OpenVPN 默认安装目录中的 easy-rsa 目录。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd &#x27;C:\Program Files\OpenVPN\easy-rsa&#x27;</span><br></pre></td></tr></table></figure>
+<p>执行命令进入 Easy-RSA 3 Shell</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\EasyRSA-Start.bat</span><br></pre></td></tr></table></figure>
+<p>初始化公钥基础设施目录 pki</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa init-pki</span><br></pre></td></tr></table></figure>
+<p>构建证书颁发机构（CA）密钥，CA 根证书文件将在后续用于对其他证书和密钥进行签名。该命令要求输入 Common Name，输入主机名即可。创建的 ca.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki</code> 中，ca.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-ca nopass</span><br></pre></td></tr></table></figure>
+<p>构建服务器证书和密钥。创建的 server.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，server.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-server-full server nopass</span><br></pre></td></tr></table></figure>
+<p>构建客户端证书和密钥。创建的 client.crt 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\issued</code> 中，client.key 保存在目录 <code>C：\Program Files\OpenVPN\easy-rsa\pki\private</code> 中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa build-client-full client nopass</span><br></pre></td></tr></table></figure>
+<p>生成 Diffie-Hellman 参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./easyrsa gen-dh</span><br></pre></td></tr></table></figure>
+<p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制服务端配置文件模板 server.ovpn 到目录 <code>C：\Program Files\OpenVPN\config</code> 中，修改以下配置：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">port 1194</span><br><span class="line">dh dh.pem</span><br><span class="line">duplicate-cn</span><br><span class="line"><span class="comment">;tls-auth ta.key 0</span></span><br></pre></td></tr></table></figure>
+<p>端口号按需修改，默认为1194，需要保证 OpenVPN 的网络流量可以通过防火墙，设置 Windows 10 Defender 允许 OpenVPN 通过即可。dh2048.pem 修改为生成的文件名 dh.pem。取消注释 duplicate-cn，让多个客户端使用同一个客户端证书。注释掉 tls-auth ta.key 0。复制 ca.crt，dh.pem，server.crt 和 server.key 到目录 C：\Program Files\OpenVPN\config 中。</p>
+<h2 id="启动与连接"><a href="#启动与连接" class="headerlink" title="启动与连接"></a>启动与连接</h2><p>启动 OpenVPN，点击连接，系统提示分配 IP 10.8.0.1。按配置，每次 OpenVPN server 都将为自己分配 10.8.0.1。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.eyyyye.com/article/39#menu_3">openvpn安装配置说明(windows系统)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/525197398">如何在Windows 10上安装和配置OpenVPN</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +353,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-22 02:22:27" itemprop="dateModified" datetime="2023-11-22T02:22:27+08:00">2023-11-22</time>
+      <time title="修改时间：2023-11-22 23:52:40" itemprop="dateModified" datetime="2023-11-22T23:52:40+08:00">2023-11-22</time>
     </span>
 
   
@@ -365,7 +486,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-22 02:22:27" itemprop="dateModified" datetime="2023-11-22T02:22:27+08:00">2023-11-22</time>
+      <time title="修改时间：2023-11-22 23:52:40" itemprop="dateModified" datetime="2023-11-22T23:52:40+08:00">2023-11-22</time>
     </span>
 
   
@@ -886,13 +1007,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">48k</span>
+    <span title="站点总字数">51k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:40</span>
+    <span title="站点阅读时长">2:49</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
