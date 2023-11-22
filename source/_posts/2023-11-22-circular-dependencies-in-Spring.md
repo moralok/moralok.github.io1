@@ -104,7 +104,7 @@ public class CircularReferenceTest {
 
 ## 第一次获取 circularA
 
-### AbstractBeanFactory#doGetBean(circularA)
+### doGetBean(circularA)
 
 1. 从缓存中获取 circularA（先不看具体代码）
 2. 因缓存中不存在，就创建 circularA
@@ -163,7 +163,7 @@ public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 }
 ```
 
-## 创建 circularA
+### 创建 circularA
 
 1. 实例化 circularA
 2. 初始化 circularA
@@ -261,9 +261,11 @@ AbstractBeanFactory#doGetBean(circularB)，获取 circularB 将经过和 circula
 
 ## 第二次获取 circularA
 
-### AbstractBeanFactory#doGetBean(circularA)
+### doGetBean(circularA)
 
 1. 第二次获取 circularA 时，仍然先尝试从缓存中获取
+2. 这次将从缓存中得到先前创建的 circularA。
+
 ```java
 protected <T> T doGetBean(
         final String name, final Class<T> requiredType, final Object[] args, boolean typeCheckOnly)
@@ -274,7 +276,11 @@ protected <T> T doGetBean(
     // ...
 }
 ```
-2. 这次将从缓存中得到先前创建的 circularA。
+
+在第一次获取 circularA 时，我们跳过了查看 getSingleton(String) 的代码。其实代码的逻辑并不复杂，但是要理解为什么这么做，却需要回过头来反复品味和思考。
+
+### 从缓存中获取 circularA
+
 ```java
 protected Object getSingleton(String beanName, boolean allowEarlyReference) {
     Object singletonObject = this.singletonObjects.get(beanName);
@@ -297,10 +303,6 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
     return (singletonObject != NULL_OBJECT ? singletonObject : null);
 }
 ```
-
-在第一次获取 circularA 时，我们跳过了查看 getSingleton(String) 的代码。其实代码的逻辑并不复杂，但是要理解为什么这么做，却需要回过头来反复品味和思考。
-
-## 从缓存中获取 circularA
 
 1. 从 singletonObjects（一级缓存） 获取 circularA，不存在
 2. circularA 属于正在创建中，从 earlySingletonObjects（二级缓存） 获取，仍然不存在
@@ -341,7 +343,7 @@ protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, 
 }
 ```
 
-## 获取早期 bean 引用
+### 获取早期 bean 引用
 
 了解{% post_link how-does-Spring-AOP-create-proxy-beans 'Spring AOP 如何创建代理 beans' %}，才能更好地理解这部分内容。
 
@@ -349,7 +351,7 @@ protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, 
 
 以 AbstractAutoProxyCreator 为例，它是自动代理创建者的抽象类，同时实现了 SmartInstantiationAwareBeanPostProcessor 和 BeanPostProcessor 接口。
 
-### SmartInstantiationAwareBeanPostProcessor 的方法实现
+#### SmartInstantiationAwareBeanPostProcessor 的方法实现
 
 SmartInstantiationAwareBeanPostProcessor 接口允许在获取 circularA 的早期引用时，就尝试将 circular A 包装为代理。
 
@@ -364,7 +366,7 @@ public Object getEarlyBeanReference(Object bean, String beanName) throws BeansEx
 }
 ```
 
-### BeanPostProcessor 的方法实现
+#### BeanPostProcessor 的方法实现
 
 BeanPostProcessor 接口允许在初始化时，调用初始化方法后，尝试将 circular A 包装为代理。如果已经在获取 circularA 的早期引用时就将其包装为代理，则不再进行包装。
 
@@ -383,6 +385,8 @@ public Object postProcessAfterInitialization(Object bean, String beanName) throw
 
 ## 再思 Spring bean 的三级缓存
 
+### 三级缓存还是三个缓存
+
 著名的“三级缓存”，实际上就是三个存放 Bean 的 map：
 
 - singletonObjects
@@ -393,6 +397,96 @@ public Object postProcessAfterInitialization(Object bean, String beanName) throw
 同时我也看到有人反思，这样翻译对学习者造成了很大的困扰，代码中并没有多级 cache 的意味，称之为“三个缓存”比“三级缓存”更合理也更容易理解。
 三个存放 Bean 的 map 事实上是相互独立的，甚至说它们是互斥的，**一个 Bean 在同一时间最多只能存在于其中一个 map 中**。
 
-对我个人而言，我对反对者的观点深有同感，如果我没有看过面经，即时我熟读并理解代码，我可能都无法回答 Spring 中的三级缓存是什么。甚至我会被三级缓存这个名词所震慑，在了解它之前在心里放大它的复杂性。
-但是在不断阅读的过程中（可能也有已有记忆的加持），我也会感受到称之为“三级缓存”的合理性。这里的分级含义更多体现的是 Bean 的晋升过程。
+对我个人而言，我对反对者的观点深有同感，如果我没有看过面经，即使我熟读并理解代码，我可能都无法回答 Spring 中的三级缓存是什么。甚至我会被三级缓存这个名词所震慑，在了解它之前在心里放大它的复杂性。
+但是在不断阅读的过程中（可能也有已有记忆的加持），我也会感受到称之为“三级缓存”的合理性。这里的分级含义更多体现的是 Bean 的“晋升”过程。
 
+### 缓存中的添加和删除
+
+网上很多资料在讨论 Bean 在缓存中的添加和删除时，大多一笔带过，并没有谈到细节。但是 Bean 并不是在这三个缓存中连续晋级，甚至有时候，添加和移除的都不是一个对象。
+
+```java
+protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final Object[] args)
+        throws BeanCreationException {
+    // 实例化
+    instanceWrapper = createBeanInstance(beanName, mbd, args);
+
+    // 单例+允许循环引用+当前正在被创建=可能需要提前暴露
+    boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
+            isSingletonCurrentlyInCreation(beanName));
+    if (earlySingletonExposure) {
+        addSingletonFactory(beanName, new ObjectFactory<Object>() {
+            @Override
+            public Object getObject() throws BeansException {
+                return getEarlyBeanReference(beanName, mbd, bean);
+            }
+        });
+    }
+
+    Object exposedObject = bean;
+    try {
+        // 这里面会进行依赖注入
+        populateBean(beanName, mbd, instanceWrapper);
+        if (exposedObject != null) {
+            // 这里面会尝试创建代理
+            exposedObject = initializeBean(beanName, exposedObject, mbd);
+        }
+    }
+
+    if (earlySingletonExposure) {
+        // 如果允许早期暴露，尝试获取早期 bean 引用
+        Object earlySingletonReference = getSingleton(beanName, false);
+        // 如果为 null 说明没有早期暴露，返回的其实还是最初的 exposedObject
+        // 三级缓存里的 ObjectFactory 完全没用上，会在 exposedObject 添加到一级缓存时直接删除
+        if (earlySingletonReference != null) {
+            // 如果不为 null，说明确实早期暴露过
+            if (exposedObject == bean) {
+                // 如果早期暴露过，常规情况下，exposedObject 不会再创建代理，应 == bean
+                // 如果没有代理，exposedObject == bean == earlySingletonReference
+                // 如果创建过代理，earlySingletonReference 才是包装过的代理
+                exposedObject = earlySingletonReference;
+            }
+            else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
+                // 如果 exposedObject 在 initializeBean 中再次被创建代理
+                // 但是存在 Bean 依赖了这个 Bean（由于拿到的是早期引用），它们拿到的和最终的是不同的对象
+                // 如果不允许尽管会被包装仍然注入原始类型，就需要抛出异常
+                String[] dependentBeans = getDependentBeans(beanName);
+                Set<String> actualDependentBeans = new LinkedHashSet<String>(dependentBeans.length);
+                for (String dependentBean : dependentBeans) {
+                    if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
+                        actualDependentBeans.add(dependentBean);
+                    }
+                }
+                if (!actualDependentBeans.isEmpty()) {
+                    // 抛异常
+                }
+            }
+        }
+    }
+    return exposedObject;
+}
+```
+
+{% asset_img "Pasted image 20231123013242.png" 循环引用-三级缓存添加和删除 %}
+
+#### 无需早期暴露的情况
+
+在无需早期暴露的情况下，二级缓存没有用到，虽然三级缓存中保存了一个 ObjectFactory，但是也是没有用到的。bean 直接保存到了一级缓存。
+
+#### 需要早期暴露但无需代理
+
+在需要早期暴露但无需代理的情况下，尽管获取早期引用后保存在二级缓存中，以供重复使用，但是二级缓存中和原始的 bean 仍然是同一个对象，bean 仍然是直接保存到了一级缓存，再删掉二级缓存。
+
+#### 需要早期暴露也需要代理
+
+只有在需要早期暴露和需要代理的情况下，二级缓存中保存的是代理对象，需要从二级缓存中获取再保存到一级缓存中，然后再删除二级缓存。
+
+### 必须要三个缓存吗
+
+网上有很多资料在分析为什么需要三个缓存，才能解决在需要创建代理的情况下发生的循环依赖问题。
+但是个人觉得有些分析缺乏逻辑，也有点违和感。将当前的解决方案套到只有两个缓存的情况下去分析不太合理，就像你把四轮机动车卸掉一个轮子，说机动车必须要四个轮子才可以，不然不平衡，事实上三个轮子的机动车是存在的。
+
+在分析两个缓存如何解决在需要创建代理的情况下发生的循环依赖问题时，应该抛开现有的处理逻辑，回归本质问题：既然 circularA 需要创建代理，如果 circularA 依赖的 beans 也依赖了 circular A，在为它们获取 circularA 时立即创建代理即可。
+一个 map 必须用于存放完成品，另一个 map 用于存放半成品。创建的代理作为升级版的半成品，完全可以覆盖原始的半成品继续存放在第二个 map 中。为了避免重复创建代理，只要能够标识半成品是已经经过代理包装的即可。beanDefinition、bean 自身、创建代理的地方，都有能力实现标识一个 bean 的半成品是否经过包装，最不济使用一个 map 存放标识（但是这也就等同于使用三个 map 了，从这个角度看，三级缓存的缓存意味更加淡了）。
+甚至可以将半成品 circularA 直接尝试包装成代理，再存放入半成品 map 中。本质上是将创建代理的步骤从初始化 Bean 中分离到初始化 Bean 之前。
+
+综上，使用两个 map 解决在技术上是没有问题的，很多分析中考虑的问题相当于把 Spring 现有的处理逻辑当成枷锁限制了自己。既然你都在问不这么打地基可不可以，我难道不得考虑挪一挪上面的砖墙吗？当然我不能保证这么设计不会破坏 Spring 现有全部功能的兼容性和扩展性，但是这并不是代理为循环依赖引入的问题。
