@@ -232,7 +232,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -558,7 +558,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -775,7 +775,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -1003,7 +1003,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -1020,14 +1020,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>860</span>
+      <span>2.4k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
+      <span>8 分钟</span>
     </span>
 </div>
 
@@ -1071,41 +1071,73 @@
 <li>测试类<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CglibTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">UserServiceMethodInterceptor</span> <span class="variable">methodInterceptor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserServiceMethodInterceptor</span>();</span><br><span class="line">        <span class="type">Enhancer</span> <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>();</span><br><span class="line">        enhancer.setSuperclass(HelloServiceImpl.class);</span><br><span class="line">        enhancer.setCallback(methodInterceptor);</span><br><span class="line"></span><br><span class="line">        <span class="type">HelloService</span> <span class="variable">proxy</span> <span class="operator">=</span> (HelloService) enhancer.create();</span><br><span class="line">        proxy.sayHello(<span class="string">&quot;Tom&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;=================&quot;</span>);</span><br><span class="line">        proxy.sayHello(<span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 <li>结果<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">do sth. before invocation</span><br><span class="line">Hello Tom</span><br><span class="line">do sth. after invocation</span><br><span class="line">do sth. finally</span><br><span class="line">=================</span><br><span class="line">do sth. before invocation</span><br><span class="line">do sth. when exception occurs</span><br><span class="line">do sth. finally</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.IllegalArgumentException: name can not be null</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl.sayHello(HelloServiceImpl.java:8)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31.CGLIB$sayHello$0(&lt;generated&gt;)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31$$FastClassByCGLIB$$c068b511.invoke(&lt;generated&gt;)</span><br><span class="line">	at net.sf.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:228)</span><br><span class="line">	at com.moralok.proxy.cglib.UserServiceMethodInterceptor.intercept(UserServiceMethodInterceptor.java:14)</span><br><span class="line">	at com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31.sayHello(&lt;generated&gt;)</span><br><span class="line">	at com.moralok.proxy.cglib.CglibTest.main(CglibTest.java:18)</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h2 id="总结和思考"><a href="#总结和思考" class="headerlink" title="总结和思考"></a>总结和思考</h2><p>两者在使用上是相仿的。</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>JDK 动态代理</th>
-<th>CGLib 动态代理</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>差异</td>
-<td>必须实现接口</td>
-<td>子类继承，不适用 final 方法</td>
-</tr>
-<tr>
-<td>拦截器</td>
-<td>InvocationHandler</td>
-<td>MethodInterceptor</td>
-</tr>
-<tr>
-<td>额外信息</td>
-<td>ClassLoader、interfaces</td>
-<td>Class</td>
-</tr>
-<tr>
-<td>创建代理</td>
-<td>Proxy.newProxyInstance</td>
-<td>Enhancer.create</td>
-</tr>
-</tbody></table>
+<h2 id="查看-CGLib-生成的子类"><a href="#查看-CGLib-生成的子类" class="headerlink" title="查看 CGLib 生成的子类"></a>查看 CGLib 生成的子类</h2><p>使用以下语句，将 CGLib 生成的子类的 Class 文件输出到指定目录，会发现出现了 3 个 Class 文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY, <span class="string">&quot;C:\\Users\\username\\Class&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <ul>
-<li>对于两者的源码，读得不多。有时候会感慨，看别人这么多年前的代码，还是感觉吃力，一下子会失去动力和信息。</li>
+<li>HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31.class，代理类</li>
+<li>HelloServiceImpl$$FastClassByCGLIB$$a5654167.class，被代理类的 FastClass</li>
+<li>HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31$$FastClassByCGLIB$$c068b511.class，代理类的 FastClass</li>
+</ul>
+<img src="/2023/11/19/JDK-dynamic-proxy-and-CGLib/Snipaste_2023-11-28_02-01-40.png" class="" title="CGLib 生成的子类的 Class 文件">
+
+<h3 id="代理类定义"><a href="#代理类定义" class="headerlink" title="代理类定义"></a>代理类定义</h3><p>继承了被代理类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31</span> <span class="keyword">extends</span> <span class="title class_">HelloServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">Factory</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="静态代码块"><a href="#静态代码块" class="headerlink" title="静态代码块"></a>静态代码块</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    <span class="comment">// 调用静态钩子方法</span></span><br><span class="line">    CGLIB$STATICHOOK1();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> CGLIB$STATICHOOK1() &#123;</span><br><span class="line">    CGLIB$THREAD_CALLBACKS = <span class="keyword">new</span> <span class="title class_">ThreadLocal</span>();</span><br><span class="line">    CGLIB$emptyArgs = <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>];</span><br><span class="line">    <span class="type">Class</span> <span class="variable">var0</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;com.moralok.proxy.HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31&quot;</span>);</span><br><span class="line">    Class var1;</span><br><span class="line">    <span class="comment">// 获取 Object 类的 equals、toString、hashCode、clone 这几个特定方法的 Method 对象</span></span><br><span class="line">    Method[] var10000 = ReflectUtils.findMethods(<span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;equals&quot;</span>, <span class="string">&quot;(Ljava/lang/Object;)Z&quot;</span>, <span class="string">&quot;toString&quot;</span>, <span class="string">&quot;()Ljava/lang/String;&quot;</span>, <span class="string">&quot;hashCode&quot;</span>, <span class="string">&quot;()I&quot;</span>, <span class="string">&quot;clone&quot;</span>, <span class="string">&quot;()Ljava/lang/Object;&quot;</span>&#125;, (var1 = Class.forName(<span class="string">&quot;java.lang.Object&quot;</span>)).getDeclaredMethods());</span><br><span class="line">    <span class="comment">// 还生成了相对应的 Method 属性保存（为了减少一次寻址吗？）</span></span><br><span class="line">    CGLIB$equals$<span class="number">1</span>$Method = var10000[<span class="number">0</span>];</span><br><span class="line">    <span class="comment">// 为每一个 Method 创建一个 MethodProxy</span></span><br><span class="line">    CGLIB$equals$<span class="number">1</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;(Ljava/lang/Object;)Z&quot;</span>, <span class="string">&quot;equals&quot;</span>, <span class="string">&quot;CGLIB$equals$1&quot;</span>);</span><br><span class="line">    CGLIB$toString$<span class="number">2</span>$Method = var10000[<span class="number">1</span>];</span><br><span class="line">    CGLIB$toString$<span class="number">2</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;()Ljava/lang/String;&quot;</span>, <span class="string">&quot;toString&quot;</span>, <span class="string">&quot;CGLIB$toString$2&quot;</span>);</span><br><span class="line">    CGLIB$hashCode$<span class="number">3</span>$Method = var10000[<span class="number">2</span>];</span><br><span class="line">    CGLIB$hashCode$<span class="number">3</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;()I&quot;</span>, <span class="string">&quot;hashCode&quot;</span>, <span class="string">&quot;CGLIB$hashCode$3&quot;</span>);</span><br><span class="line">    CGLIB$clone$<span class="number">4</span>$Method = var10000[<span class="number">3</span>];</span><br><span class="line">    CGLIB$clone$<span class="number">4</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;()Ljava/lang/Object;&quot;</span>, <span class="string">&quot;clone&quot;</span>, <span class="string">&quot;CGLIB$clone$4&quot;</span>);</span><br><span class="line">    <span class="comment">// 被代理类的方法也做相同处理</span></span><br><span class="line">    CGLIB$sayHello$<span class="number">0</span>$Method = ReflectUtils.findMethods(<span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;sayHello&quot;</span>, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>&#125;, (var1 = Class.forName(<span class="string">&quot;com.moralok.proxy.HelloServiceImpl&quot;</span>)).getDeclaredMethods())[<span class="number">0</span>];</span><br><span class="line">    CGLIB$sayHello$<span class="number">0</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>, <span class="string">&quot;sayHello&quot;</span>, <span class="string">&quot;CGLIB$sayHello$0&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MethodProxy 稍后再做介绍。</p>
+<h3 id="构造器方法"><a href="#构造器方法" class="headerlink" title="构造器方法"></a>构造器方法</h3><p>构造器方法内，调用了绑定回调（Callbacks）方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31() &#123;</span><br><span class="line">    CGLIB$BIND_CALLBACKS(<span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 标识是否已经绑定过回调</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> CGLIB$BOUND;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> CGLIB$BIND_CALLBACKS(Object var0) &#123;</span><br><span class="line">    <span class="type">HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31</span> <span class="variable">var1</span> <span class="operator">=</span> (HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31)var0;</span><br><span class="line">    <span class="keyword">if</span> (!var1.CGLIB$BOUND) &#123;</span><br><span class="line">        <span class="comment">// 未绑定过回调则进行绑定，更新标识</span></span><br><span class="line">        var1.CGLIB$BOUND = <span class="literal">true</span>;</span><br><span class="line">        <span class="comment">// 先获取 THREAD_CALLBACKS</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">var10000</span> <span class="operator">=</span> CGLIB$THREAD_CALLBACKS.get();</span><br><span class="line">        <span class="keyword">if</span> (var10000 == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果为 null，再获取 STATIC_CALLBACKS</span></span><br><span class="line">            var10000 = CGLIB$STATIC_CALLBACKS;</span><br><span class="line">            <span class="keyword">if</span> (var10000 == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 如果仍然为 null，直接返回</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 每一个 Callback （像之前的 Method 一样）都有专门的属性保存</span></span><br><span class="line">        var1.CGLIB$CALLBACK_0 = (MethodInterceptor)((Callback[])var10000)[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="生成的代理方法"><a href="#生成的代理方法" class="headerlink" title="生成的代理方法"></a>生成的代理方法</h3><p>CGLib 会为每一个代理方法生成两个对应的方法，一个直接调用父类方法，一个则调用回调（拦截器）的 intercept 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">void</span> CGLIB$sayHello$<span class="number">0</span>(String var1) &#123;</span><br><span class="line">    <span class="built_in">super</span>.sayHello(var1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(String var1)</span> &#123;</span><br><span class="line">    <span class="comment">// 获取回调（拦截器）</span></span><br><span class="line">    <span class="type">MethodInterceptor</span> <span class="variable">var10000</span> <span class="operator">=</span> <span class="built_in">this</span>.CGLIB$CALLBACK_0;</span><br><span class="line">    <span class="keyword">if</span> (var10000 == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果为 null，先进行回调绑定</span></span><br><span class="line">        CGLIB$BIND_CALLBACKS(<span class="built_in">this</span>);</span><br><span class="line">        var10000 = <span class="built_in">this</span>.CGLIB$CALLBACK_0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (var10000 != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果回调（拦截器）不为 null，则调用 intercept 方法</span></span><br><span class="line">        var10000.intercept(<span class="built_in">this</span>, CGLIB$sayHello$<span class="number">0</span>$Method, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;var1&#125;, CGLIB$sayHello$<span class="number">0</span>$Proxy);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 否则直接调用父类方法</span></span><br><span class="line">        <span class="built_in">super</span>.sayHello(var1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CGLib 通过继承实现动态代理的过程，在查看生成的子类的 Class 后，是非常容易理解的。拦截器的参数有代理对象、Method、方法参数和 MethodProxy 对象。</p>
+<h2 id="分析-MethodProxy"><a href="#分析-MethodProxy" class="headerlink" title="分析 MethodProxy"></a>分析 MethodProxy</h2><p>如何在拦截器中调用被代理的方法呢？就是通过 MethodProxy 实现的。</p>
+<h3 id="创建-MethodProxy"><a href="#创建-MethodProxy" class="headerlink" title="创建 MethodProxy"></a>创建 MethodProxy</h3><p>MethodProxy 是 CGLib 为每一个代理方法创建的方法代理，当调用拦截的方法时，它被传递给 MethodInterceptor 对象的 intercept 方法。它可以用于调用原始方法，或对同一类型的不同对象调用相同方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">CGLIB$sayHello$<span class="number">0</span>$Proxy = MethodProxy.create(var1, var0, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>, <span class="string">&quot;sayHello&quot;</span>, <span class="string">&quot;CGLIB$sayHello$0&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> MethodProxy <span class="title function_">create</span><span class="params">(Class c1, Class c2, String desc, String name1, String name2)</span> &#123;</span><br><span class="line">    <span class="type">MethodProxy</span> <span class="variable">proxy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MethodProxy</span>();</span><br><span class="line">    <span class="comment">// sayHello 方法签名</span></span><br><span class="line">    proxy.sig1 = <span class="keyword">new</span> <span class="title class_">Signature</span>(name1, desc);</span><br><span class="line">    <span class="comment">// CGLIB$sayHello$0 方法签名</span></span><br><span class="line">    proxy.sig2 = <span class="keyword">new</span> <span class="title class_">Signature</span>(name2, desc);</span><br><span class="line">    <span class="comment">// 被代理类和代理类</span></span><br><span class="line">    proxy.createInfo = <span class="keyword">new</span> <span class="title class_">CreateInfo</span>(c1, c2);</span><br><span class="line">    <span class="keyword">return</span> proxy;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CreateInfo 静态内部类，保存被代理类和代理类以及其他一些信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">CreateInfo</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 被代理类</span></span><br><span class="line">    Class c1;</span><br><span class="line">    <span class="comment">// 代理类</span></span><br><span class="line">    Class c2;</span><br><span class="line">    NamingPolicy namingPolicy;</span><br><span class="line">    GeneratorStrategy strategy;</span><br><span class="line">    <span class="type">boolean</span> attemptLoad;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">CreateInfo</span><span class="params">(Class c1, Class c2)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">this</span>.c1 = c1;</span><br><span class="line">        <span class="built_in">this</span>.c2 = c2;</span><br><span class="line">        <span class="type">AbstractClassGenerator</span> <span class="variable">fromEnhancer</span> <span class="operator">=</span> AbstractClassGenerator.getCurrent();</span><br><span class="line">        <span class="keyword">if</span> (fromEnhancer != <span class="literal">null</span>) &#123;</span><br><span class="line">            namingPolicy = fromEnhancer.getNamingPolicy();</span><br><span class="line">            strategy = fromEnhancer.getStrategy();</span><br><span class="line">            attemptLoad = fromEnhancer.getAttemptLoad();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="FastClass-和方法索引对"><a href="#FastClass-和方法索引对" class="headerlink" title="FastClass 和方法索引对"></a>FastClass 和方法索引对</h3><h4 id="调用原始方法-invokeSuper"><a href="#调用原始方法-invokeSuper" class="headerlink" title="调用原始方法 invokeSuper"></a>调用原始方法 invokeSuper</h4><p>MethodProxy 通过 invokeSuper 调用原始方法（父类方法）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// invoke 方法的代码相似</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">invokeSuper</span><span class="params">(Object obj, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 初始化，生成 FastClassInfo</span></span><br><span class="line">        init();</span><br><span class="line">        <span class="type">FastClassInfo</span> <span class="variable">fci</span> <span class="operator">=</span> fastClassInfo;</span><br><span class="line">        <span class="comment">// 调用原始（父类）方法</span></span><br><span class="line">        <span class="keyword">return</span> fci.f2.invoke(fci.i2, obj, args);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvocationTargetException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e.getTargetException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="生成-FastClass-信息"><a href="#生成-FastClass-信息" class="headerlink" title="生成 FastClass 信息"></a>生成 FastClass 信息</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 双重校验锁，生成 FastClass 和方法索引对</span></span><br><span class="line">    <span class="keyword">if</span> (fastClassInfo == <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (initLock)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (fastClassInfo == <span class="literal">null</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="type">CreateInfo</span> <span class="variable">ci</span> <span class="operator">=</span> createInfo;</span><br><span class="line"></span><br><span class="line">                <span class="type">FastClassInfo</span> <span class="variable">fci</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FastClassInfo</span>();</span><br><span class="line">                <span class="comment">// 生成 FastClass</span></span><br><span class="line">                fci.f1 = helper(ci, ci.c1);</span><br><span class="line">                fci.f2 = helper(ci, ci.c2);</span><br><span class="line">                <span class="comment">// 获取方法索引</span></span><br><span class="line">                fci.i1 = fci.f1.getIndex(sig1);</span><br><span class="line">                fci.i2 = fci.f2.getIndex(sig2);</span><br><span class="line">                fastClassInfo = fci;</span><br><span class="line">                createInfo = <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="FastClass-信息"><a href="#FastClass-信息" class="headerlink" title="FastClass 信息"></a>FastClass 信息</h4><ul>
+<li>f1 是被代理类的 FastClass 对象，i1 是 <code>CGLIB$sayHello$0</code> 方法在生成的 FastClass 中的索引。</li>
+<li>f2 是代理类的 FastClass 对象，i2 是 <code>sayHello</code> 方法在生成的 FastClass 中的索引。</li>
+</ul>
+<p>invoke 方法根据传入的方法索引，快速定位要调用对象 obj 的哪个方法。</p>
+<blockquote>
+<p>CGLib 完全有能力获得 <code>CGLIB$sayHello$0</code> 的 Method 对象，通过反射实现调用，这样处理逻辑更加清楚。但是早期 Java 反射的性能并不好，通过 FastClass 机制避免使用反射从而提升了性能。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FastClassInfo</span></span><br><span class="line">&#123;</span><br><span class="line">    FastClass f1;</span><br><span class="line">    FastClass f2;</span><br><span class="line">    <span class="type">int</span> i1;</span><br><span class="line">    <span class="type">int</span> i2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="FastClass-的-invoke-方法"><a href="#FastClass-的-invoke-方法" class="headerlink" title="FastClass 的 invoke 方法"></a>FastClass 的 invoke 方法</h3><p>以代理类的 FastClass <code>HelloServiceImpl$$EnhancerByCGLIB$$c51b2c31$$FastClassByCGLIB$$c068b511</code> 为例，当传入的方法索引为 16 时，就会调用 <code>CGLIB$sayHello$0</code> 方法。</p>
+<ol>
+<li>获取代理对象</li>
+<li>根据传入的方法索引，调用</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(<span class="type">int</span> var1, Object var2, Object[] var3)</span> <span class="keyword">throws</span> InvocationTargetException &#123;</span><br><span class="line">    HelloServiceImpl..EnhancerByCGLIB..<span class="type">c51b2c31</span> <span class="variable">var10000</span> <span class="operator">=</span> (HelloServiceImpl..EnhancerByCGLIB..c51b2c31)var2;</span><br><span class="line">    <span class="type">int</span> <span class="variable">var10001</span> <span class="operator">=</span> var1;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> (var10001) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Boolean</span>(var10000.equals(var3[<span class="number">0</span>]));</span><br><span class="line">            <span class="comment">// ...</span></span><br><span class="line">            <span class="keyword">case</span> <span class="number">16</span>:</span><br><span class="line">                var10000.CGLIB$sayHello$<span class="number">0</span>((String)var3[<span class="number">0</span>]);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            <span class="comment">// ...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable var4) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InvocationTargetException</span>(var4);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Cannot find matching method/constructor&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="获取方法索引"><a href="#获取方法索引" class="headerlink" title="获取方法索引"></a>获取方法索引</h4><p>怎么知道方法的索引呢？在初始化 FastClass 信息时，不仅生成了 FastClass，还通过 getIndex 获取方法的索引。</p>
+<blockquote>
+<p>在 JDK 7 之后，switch 不仅可以支持 int、enum，还能支持 String，CGLib 这样实现是出于兼容性的考虑还是说有什么性能提升？</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getIndex</span><span class="params">(Signature var1)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">var10000</span> <span class="operator">=</span> var1.toString();</span><br><span class="line">    <span class="keyword">switch</span> (var10000.hashCode()) &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">case</span> -<span class="number">1721191351</span>:</span><br><span class="line">            <span class="keyword">if</span> (var10000.equals(<span class="string">&quot;CGLIB$sayHello$0(Ljava/lang/String;)V&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="number">16</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结和思考"><a href="#总结和思考" class="headerlink" title="总结和思考"></a>总结和思考</h2><p>两者在使用上是相仿的。</p>
+<ul>
+<li>对于两者的源码，读得不多。有时候会感慨，看这么多年前的代码，还是感觉吃力。有时候想，如果不好好看源码，心里不踏实；如果花很多时间理清楚了，但是发现更多只是知道了一些细节，于整体理解的提升不大，又会感觉不值得。</li>
 <li>但也提醒自己，不要太在意，用得本就不多，涉及源码的机会更是没有，如果方方面面都要细究，人生太短，智商不够，等涉足相关问题再回头研究。</li>
 <li>基础的用法和概念应该了解，不然看到 Spring AOP 源码时，分不清 Spring 封装的边界在哪里。</li>
 </ul>
+<blockquote>
+<p>借着梳理 Spring 的机会回头再看，又感觉轻松不少。</p>
+</blockquote>
 
       
     </div>
@@ -1168,7 +1200,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -1337,7 +1369,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -1491,7 +1523,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -1659,7 +1691,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -2092,7 +2124,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -2325,7 +2357,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-27 23:56:22" itemprop="dateModified" datetime="2023-11-27T23:56:22+08:00">2023-11-27</time>
+      <time title="修改时间：2023-11-28 04:03:14" itemprop="dateModified" datetime="2023-11-28T04:03:14+08:00">2023-11-28</time>
     </span>
 
   
@@ -2505,13 +2537,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">59k</span>
+    <span title="站点总字数">60k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:16</span>
+    <span title="站点阅读时长">3:21</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
