@@ -101,8 +101,9 @@ node_exporter 被设计为监控主机系统，因为它需要访问主机系统
 #### 步骤
 
 1. 下载解压得到 node_exporter 二进制可执行文件。
-2. `./node_exporter` 启动
-3. Prometheus 配置文件
+2. 修改权限，`chmod u+x node_exporter`
+3. `./node_exporter` 启动
+4. Prometheus 配置文件
 ```yaml
 global:
   scrape_interval: 15s

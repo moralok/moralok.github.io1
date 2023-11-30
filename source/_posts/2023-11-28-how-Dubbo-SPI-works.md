@@ -4,27 +4,27 @@ date: 2023-11-28 16:09:28
 tags: [java, dubbo, spi]
 ---
 
-SPI 作为一种服务发现机制，允许程序在运行时动态地加载具体实现类。因其强大的可拓展性，SPI 被广泛应用于各类技术框架中，例如 JDBC 驱动、Spring 和 Dubbo 等等。Dubbo 并未使用原生的 Java SPI，而是重新实现了一套更加强大的 **Dubbo SPI**。本文将简单介绍 SPI 的设计理念，通过示例带你体会 SPI 的作用，通过 **Dubbo 获取拓展的流程图**和**源码分析**带你理解 Dubbo SPI 的工作原理。深入了解 Dubbo SPI，你将能更好地利用这一机制为你的程序提供灵活的拓展功能。
+`SPI` 作为一种服务发现机制，允许程序在运行时动态地加载具体实现类。因其强大的可拓展性，`SPI` 被广泛应用于各类技术框架中，例如 `JDBC` 驱动、`Spring` 和 `Dubbo` 等等。`Dubbo` 并未使用原生的 `Java SPI`，而是重新实现了一套更加强大的 **`Dubbo SPI`**。本文将简单介绍 `SPI` 的设计理念，通过示例带你体会 `SPI` 的作用，通过 **`Dubbo` 获取拓展的流程图**和**源码分析**带你理解 `Dubbo SPI` 的工作原理。深入了解 `Dubbo SPI`，你将能更好地利用这一机制为你的程序提供灵活的拓展功能。
 
 <!-- more -->
 
 ## SPI 简介
 
-SPI 的全称是 `Service Provider Interface`，是一种服务发现机制。一般情况下，一项服务的接口和具体实现，都是服务提供者编写的。在 SPI 机制中，一项服务的接口是服务使用者编写的，不同的服务提供者编写不同的具体实现。在程序运行时，服务加载器动态地为接口加载具体实现类。因为 SPI 具备“动态加载”的特性，我们很容易通过它为程序提供拓展功能。以 Java 的 JDBC 驱动为例，JDK 提供了 `java.sql.Driver` 接口，各个数据库厂商，例如 MySQL、Oracle 提供具体的实现。
+`SPI` 的全称是 `Service Provider Interface`，是一种服务发现机制。一般情况下，一项服务的接口和具体实现，都是服务提供者编写的。在 `SPI` 机制中，一项服务的接口是服务使用者编写的，不同的服务提供者编写不同的具体实现。在程序运行时，服务加载器动态地为接口加载具体实现类。因为 `SPI` 具备“动态加载”的特性，我们很容易通过它为程序提供拓展功能。以 `Java` 的 `JDBC` 驱动为例，JDK 提供了 `java.sql.Driver` 接口，各个数据库厂商，例如 `MySQL`、`Oracle` 提供具体的实现。
 
 {% asset_img "Pasted image 20231129010505.png" SPI 机制 %}
 
 目前 **SPI 的实现方式**大多是将接口实现类的全限定名配置在文件中，并由服务加载器读取配置文件，加载实现类：
 
-- Java SPI：META-INF/services/full.qualified.interface.name
-- Dubbo SPI：META-INF/dubbo/full.qualified.interface.name（还有其他目录可供选择）
-- Spring SPI: META-INF/spring.factories
+- Java SPI：`META-INF/services/full.qualified.interface.name`
+- Dubbo SPI：`META-INF/dubbo/full.qualified.interface.name`（还有其他目录可供选择）
+- Spring SPI: `META-INF/spring.factories`
 
 ## SPI 示例
 
 ### Java SPI 示例
 
-定义一个接口 Animal。
+定义一个接口 `Animal`。
 
 ```java
 public interface Animal {
@@ -32,7 +32,7 @@ public interface Animal {
 }
 ```
 
-定义两个实现类 Dog 和 Cat。
+定义两个实现类 `Dog` 和 `Cat`。
 
 ```java
 public class Dog implements Animal {
@@ -50,7 +50,7 @@ public class Cat implements Animal {
 }
 ```
 
-在 **`META-INF/services`** 文件夹下创建一个文件，名称为 Animal 的全限定名 `com.moralok.dubbo.spi.test.Animal`，文件内容为实现类的全限定名，实现类的全限定名之间用换行符分隔。
+在 **`META-INF/services`** 文件夹下创建一个文件，名称为 `Animal` 的全限定名 `com.moralok.dubbo.spi.test.Animal`，文件内容为实现类的全限定名，实现类的全限定名之间用换行符分隔。
 
 ```file
 com.moralok.dubbo.spi.test.Dog
@@ -82,7 +82,7 @@ Cat bark...
 
 ### Dubbo SPI 示例
 
-Dubbo 并未使用原生的 Java SPI，而是重新实现了一套功能更加强大的 SPI 机制。Dubbo SPI 的配置文件放在 **`META-INF/dubbo`** 文件夹下，名称仍然是接口的全限定名，但是内容是“名称-实现类的全限定名”的键值对，另外接口需要标注 @SPI 注解。
+`Dubbo` 并未使用原生的 `Java SPI`，而是重新实现了一套功能更加强大的 `SPI` 机制。`Dubbo SPI` 的配置文件放在 **`META-INF/dubbo`** 文件夹下，名称仍然是接口的全限定名，但是内容是“名称->实现类的全限定名”的键值对，另外接口需要标注 `SPI` 注解。
 
 ```file
 dog = com.moralok.dubbo.spi.test.Dog
@@ -152,11 +152,11 @@ public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
 这个方法包含了如下步骤：
 
 1. 参数校验。
-2. 从缓存 `EXTENSION_LOADERS` 中获取与拓展类对应的 ExtensionLoader，如果缓存未命中，则创建一个新的实例，保存到缓存并返回。
+2. 从缓存 `EXTENSION_LOADERS` 中获取与拓展类对应的 `ExtensionLoader`，如果缓存未命中，则创建一个新的实例，保存到缓存并返回。
 
-> “**从缓存中获取，如果缓存未命中，则创建，保存到缓存并返回**”，类似的 `getOrCreate` 的处理模式在 Dubbo 的源码中经常出现。
+> “**从缓存中获取，如果缓存未命中，则创建，保存到缓存并返回**”，类似的 `getOrCreate` 的处理模式在 `Dubbo` 的源码中经常出现。
 
-`EXTENSION_LOADERS` 是 ExtensionLoader 的静态变量，保存了“拓展类->ExtensionLoader”的映射关系。
+`EXTENSION_LOADERS` 是 `ExtensionLoader` 的静态变量，保存了“拓展类->`ExtensionLoader`”的映射关系。
 
 ### 根据 name 获取 Extension
 
@@ -202,9 +202,9 @@ private Holder<Object> getOrCreateHolder(String name) {
 }
 ```
 
-这个方法中获取 Holder 和获取拓展实例都是使用 `getOrCreate` 的模式。
+这个方法中获取 `Holder` 和获取拓展实例都是使用 `getOrCreate` 的模式。
 
-Holder 用于持有拓展实例。`cachedInstances` 是 ExtensionLoader 的成员变量，保存了“name->Holder(拓展实例)”的映射关系。
+`Holder` 用于持有拓展实例。`cachedInstances` 是 `ExtensionLoader` 的成员变量，保存了“`name->Holder`(拓展实例)”的映射关系。
 
 ### 创建 Extension
 
@@ -264,10 +264,10 @@ private T createExtension(String name, boolean wrap) {
 1. 通过 `getExtensionClasses` 获取所有拓展类
 2. 通过反射创建拓展实例
 3. 向拓展实例中注入依赖
-4. 将拓展实例包装在适配的 Wrapper 对象中
+4. 将拓展实例包装在适配的 `Wrapper` 对象中
 5. 初始化拓展实例
 
-第一步是加载拓展类的关键，第三步和第四步是 **Dubbo IOC 和 AOP** 的具体实现。
+第一步是加载拓展类的关键，第三步和第四步是 **`Dubbo IOC`** 和 **`AOP`** 的具体实现。
 
 最后拓展实例的结构如下图。
 
@@ -343,11 +343,11 @@ loadDirectory(extensionClasses, DUBBO_DIRECTORY);
 loadDirectory(extensionClasses, SERVICES_DIRECTORY);
 ```
 
-新版本使用原生的 Java SPI 加载 LoadingStrategy，允许用户自定义加载策略。
+新版本使用原生的 `Java SPI` 加载 `LoadingStrategy`，允许用户自定义加载策略。
 
-1. DubboInternalLoadingStrategy，目录 `META-INF/dubbo/internal/`，优先级最高
-2. DubboLoadingStrategy，目录 `META-INF/dubbo/`，优先级普通
-3. ServicesLoadingStrategy，目录 `META-INF/services/`，优先级最低
+1. `DubboInternalLoadingStrategy`，目录 `META-INF/dubbo/internal/`，优先级最高
+2. `DubboLoadingStrategy`，目录 `META-INF/dubbo/`，优先级普通
+3. `ServicesLoadingStrategy`，目录 `META-INF/services/`，优先级最低
 
 ```java
 private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
@@ -360,15 +360,15 @@ private static LoadingStrategy[] loadLoadingStrategies() {
 }
 ```
 
-LoadingStrategy 的 Java SPI 配置文件
+`LoadingStrategy` 的 `Java SPI` 配置文件
 
 {% asset_img "Snipaste_2023-11-29_03-25-54.png" LoadingStrategy 的 Java SPI 配置文件 %}
 
 #### loadDirectory 方法
 
-loadDirectory 方法先通过 classLoader 获取所有的资源链接，然后再通过 loadResource 方法加载资源。
+`loadDirectory` 方法先通过 `classLoader` 获取所有的资源链接，然后再通过 `loadResource` 方法加载资源。
 
-新版本中 `extensionLoaderClassLoaderFirst` 可以设置是否优先使用 ExtensionLoader's ClassLoader 获取资源链接。
+新版本中 `extensionLoaderClassLoaderFirst` 可以设置是否优先使用 `ExtensionLoader's ClassLoader` 获取资源链接。
 
 ```java
 private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type,
@@ -412,7 +412,7 @@ private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, S
 
 #### loadResource 方法
 
-loadResource 方法用于读取和解析配置文件，并通过反射加载类，最后调用 loadClass 方法进行其他操作。loadClass 方法用于操作缓存。
+`loadResource` 方法用于读取和解析配置文件，并通过反射加载类，最后调用 `loadClass` 方法进行其他操作。`loadClass` 方法用于操作缓存。
 
 新版本中 `excludedPackages` 可以设置将指定包内的类都排除。
 
@@ -465,9 +465,9 @@ private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader cl
 
 #### loadClass 方法
 
-loadClass 方法设置了多个缓存，比如 cachedAdaptiveClass、cachedWrapperClasses、cachedNames 和 cachedClasses。
+`loadClass` 方法设置了多个缓存，比如 `cachedAdaptiveClass`、`cachedWrapperClasses`、`cachedNames` 和 `cachedClasses`。
 
-新版本中 `overridden` 可以设置是否覆盖 cachedAdaptiveClass、cachedClasses 的 name->clazz。
+新版本中 `overridden` 可以设置是否覆盖 `cachedAdaptiveClass`、`cachedClasses` 的 `name->clazz`。
 
 ```java
 private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name,
@@ -548,9 +548,9 @@ private void cacheActivateClass(Class<?> clazz, String name) {
 
 ### Dubbo IOC
 
-Dubbo IOC 是通过 setter 方法注入依赖。Dubbo 首先通过反射获取目标类的所有方法，然后遍历方法列表，检测方法名是否具有 setter 方法特征并满足条件，若有，则通过 ObjectFactory 获取依赖对象，最后通过反射调用 setter 方法将依赖设置到目标对象中。
+`Dubbo IOC` 是通过 `setter` 方法注入依赖。`Dubbo` 首先通过反射获取目标类的所有方法，然后遍历方法列表，检测方法名是否具有 `setter` 方法特征并满足条件，若有，则通过 `objectFactory` 获取依赖对象，最后通过反射调用 `setter` 方法将依赖设置到目标对象中。
 
-> 与 Spring IOC 相比，Dubbo IOC 实现的依赖注入功能更加简单，代码也更加容易理解。
+> 与 `Spring IOC` 相比，`Dubbo IOC` 实现的依赖注入功能更加简单，代码也更加容易理解。
 
 ```java
 private T injectExtension(T instance) {
@@ -627,6 +627,20 @@ private void injectValue(T instance, Method method, Class<?> pt, String property
         logger.error("Failed to inject via method " + method.getName()
                 + " of interface " + type.getName() + ": " + e.getMessage(), e);
     }
+}
+```
+
+`objectFactory` 是 `ExtensionFactory` 的自适应拓展，通过它获取依赖对象，本质上是根据目标拓展类获取 `ExtensionLoader`，然后获取其自适应拓展，过程代码如下。具体我们不再深入分析，可以参考{% post_link 'how-Dubbo-SPI-adaptive-extension-works' 'Dubbo SPI 自适应拓展的工作原理' %}。
+
+```java
+public <T> T getExtension(Class<T> type, String name) {
+    if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+        ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
+        if (!loader.getSupportedExtensions().isEmpty()) {
+            return loader.getAdaptiveExtension();
+        }
+    }
+    return null;
 }
 ```
 

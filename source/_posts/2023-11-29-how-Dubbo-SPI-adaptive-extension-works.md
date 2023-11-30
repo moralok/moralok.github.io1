@@ -4,11 +4,17 @@ date: 2023-11-29 13:40:07
 tags: [java, dubbo, spi]
 ---
 
-> 官网的技术博客中，关于原理的部分是直接从生成的自适应拓展类会是什么样子的角度切入，展示了它的功能和原理。这样的介绍方式确实如作者所说，让人对自适应拓展有更加感性的认识。但是个人认为这仍然带着一种站在现有设计回头看的视角，这个视角展现了为什么这样设计很好，却没有展现不这样设计有什么问题，以至于会有种很妙，但妙在哪里体会不够深的感觉。思考一项技术如何从原始状态发展进化，也许并不完全符合历史的发展事实，但仍然会让人更加深刻地认识已经解决的痛点，现有设计中的巧思，同时避免陷入庞杂的细节处理中而忘却本来想要解决的核心问题。
+直接展示一个具体的 `Dubbo SPI` 自适应拓展是什么样子，是一种非常好的表现其作用的方式。正如官方博客中所说的，它让人对自适应拓展有更加感性的认识，避免读者一开始就陷入复杂的代码生成逻辑。本文在此基础上，从更原始的使用方式上展现“动态加载”技术对“按需加载”的天然倾向，从更普遍的角度解释自适应拓展的本质目的，在介绍 `Dubbo` 的具体实现是如何约束自身从而规避缺点之后，详细梳理了 `Dubbo SPI` 自适应拓展的相关源码和工作原理。
+
+<!-- more -->
+
+> 站在现有设计回头看的视角更偏向于展现为什么这样设计很好，却并不好展现如果不这样设计会有什么问题，以至于有时候会有种这个设计很妙，但妙在哪里体会不够深的感觉。思考一项技术如何从最初发展到现在，解决以及试图解决哪些问题，因此可能引入哪些问题，也许脑补的并不完全符合历史事实，但仍然会让人更加深刻地认识这项技术本身，体会设计中的巧思，并避免一直陷在庞杂的细节处理中。
 
 ## 原理
 
 在 `Dubbo` 中，很多拓展都是通过 `SPI` 机制动态加载的，比如 `Protocol`、`Cluster` 和 `LoadBalance` 等。有些拓展我们并不想在框架启动阶段被加载，而是希望在拓展方法被调用时，根据运行时参数进行加载。为了让大家对自适应拓展有一个感性的认识，下面我们通过一个实例进行演示。
+
+### 示例
 
 定义一个接口 `Animal`。
 
@@ -50,7 +56,9 @@ public void bark(String type) {
 }
 ```
 
-是不是感觉平平无奇？没错，当你拥有动态加载的能力后，按需加载是自然而然会产生的想法，并不是什么高大上的设计。在正常场景中，这样一段代码也并不需要进一步被抽象和重构，它本身就很简洁。现在设想一下，你的应用中，有大量的拓展需要动态加载，你可能需要写很多根据运行时参数动态加载拓展并调用方法的代码，就像下面这样：
+### 改进
+
+是不是感觉平平无奇？没错，当你拥有动态加载的能力后，按需加载是自然而然会产生的想法，并不是什么高大上的设计。两者甚至不仅仅是天性相合，可能更像是你中有我，我中有你。在正常场景中，这样一段代码也并不需要进一步被抽象和重构，它本身就很简洁。现在设想一下，你的应用中，有大量的拓展需要动态加载，你可能需要在很多地方写很多根据运行时参数动态加载拓展并调用方法的代码，就像下面这样：
 
 ```java
 Animal animal = ExtensionLoader.getExtensionLoader(Animal.class).getExtension(type);
@@ -65,7 +73,50 @@ loadBalance.select();
 // ...
 ```
 
-这会带来一些小问题，总是需要写 `ExtensionLoader.getExtensionLoader(XXX.class).getExtension(parameter)` 这样重复的代码；引入了 `ExtensionLoader` 这个“中介”，不能直面拓展本身。`Dubbo` 采用了一种称为“自适应拓展”的巧妙设计，通过代理的方式，将动态加载拓展的代码整合到代理类（具体实现类）中。使用方调用代理对象，代理对象根据参数动态加载拓展并调用。例如 `Animal` 的自适应拓展，就像下面这样（注意：这并非实际情况中自适应拓展的样子）：
+这会带来一些小问题，总是需要写 `ExtensionLoader.getExtensionLoader(XXX.class).getExtension(parameter)` 这样重复的代码；引入了 `ExtensionLoader` 这个“中介”，不能直面拓展本身。后者可能有点难以体会，以动物园 `Zoo` 和 动物 `Animal` 举例。
+
+在非动态加载情况下，我们可能会这样写：
+
+```java
+public class Zoo {
+    private List<Animal> animals;
+
+    public void bark(String type) {
+        for (Animal animal : animals) {
+            if (type.equals(animal.name)) {
+                animal.bark();
+            }
+        }
+    }
+}
+```
+
+在动态加载情况下，我们可能会这样写。在这种情况下，`Zoo` 没有合适的方式直接持有 `Animal`，而是通过 `ExtensionLoader` 间接地持有。
+
+```java
+public class Zoo {
+    private ExtensionLoader<Animal> extensionLoader = ExtensionLoader.getExtensionLoader(Animal.class);
+
+    public void bark(String type) {
+        Animal animal = extensionLoader.getExtension(type);
+        animal.bark();
+    }
+}
+```
+
+我们更想要以下这种直接持有 `Animal` 的方式，在运行时 `animal` 可以是 `Dog`，也可以是 `Cat`，还可以是其他的动物。
+
+```java
+public class Zoo {
+    private Animal animal;
+
+    public void bark(String type) {
+        animal.bark();
+    }
+}
+```
+
+`Dubbo` 采用了一种称为“自适应拓展”的巧妙设计，通过代理的方式，将动态加载拓展的代码整合到代理类（具体实现类）中。使用方调用代理对象，代理对象根据参数动态加载拓展并调用。例如 `Animal` 的自适应拓展，就像下面这样：
 
 ```java
 public class AdaptiveAnimal implements Animal {
@@ -83,7 +134,43 @@ Animal animal = new AdaptiveAnimal();
 animal.bark(type);
 ```
 
-当然，我们不希望需要手动地为每一个拓展编写 `Adaptive` 代理类，事实上，我们以往接触到的代理方案，都是自动生成代理的，应该也不会有人会接受手写的方式。然而你可能会注意到一个不够和谐的缺点，`bark` 方法的参数列表中新增了 `type` 类型，这不太符合面向对象的设计原则。想象一个更奇怪的场景，我们要为一个方法引入与它本身格格不入的参数用于获取拓展。另外，我们可能需要通过一些标记或约定来告诉代理生成器，方法参数列表中哪一个参数是用于获取拓展的。事实上，`Dubbo` 的另一个设计规避了这一缺点，`Dubbo` 在[公共契约](https://cn.dubbo.apache.org/zh-cn/docsv2.7/dev/contract/)中提到：**所有扩展点参数都包含 `URL` 参数，`URL` 作为上下文信息贯穿整个扩展点设计体系**。因此围绕着 `Dubbo` 以 `URL` 为中心的拓展体系，你很难设计出 `Animal.bark(URL url)` 这样不和谐的方法签名。如何确定用于获取扩展的参数也是围绕着 `URL` 加上其他一些标记和约定实现的，并不用担心参数列表千奇百怪的情况。
+当然，我们不希望需要手动地为每一个拓展编写 `Adaptive` 代理类，事实上，我们以往接触到的代理方案，大都是自动生成代理的，应该也不会有人会接受完全手写的方式。然而你可能会注意到一个不够和谐的缺点，`bark` 方法的参数列表中新增了 `type` 类型，这不太符合面向对象的设计原则。想象一个更奇怪的场景，我们要为一个方法引入与它本身格格不入的参数用于获取拓展。另外，我们可能需要通过一些标记或约定来告诉代理生成器，方法参数列表中哪一个参数是用于获取拓展的。事实上，`Dubbo` 的另一个设计规避了这一缺点，`Dubbo` 在[公共契约](https://cn.dubbo.apache.org/zh-cn/docsv2.7/dev/contract/)中提到：**所有扩展点参数都包含 `URL` 参数，`URL` 作为上下文信息贯穿整个扩展点设计体系**。因此围绕着 `Dubbo` 以 `URL` 为中心的拓展体系，你很难设计出 `Animal.bark(URL url)` 这样不和谐的方法签名，也不用担心参数列表千奇百怪的情况。同时 `Dubbo` 并未完全抛弃手工编写自适应拓展的方式，而是予以保留。
+
+### 手工编码的自适应拓展
+
+在在 `Dubbo` 中，尽管很少但仍然存在手工编码的自适应拓展，**这类拓展允许你不使用 `URL` 作为参数**，查看它们的代码可以帮助我们更好地理解自适应拓展是如何在真实的应用场景中发挥作用的。以下是 `ExtensionFactory` 的自适应拓展，当你调用它的 `getExtension` 方法时，它就是将工作全权委托给 `factory.getExtension(type, name)` 完成的，而 `factories` 在创建 `AdaptiveExtensionFactory` 时就已经获取了。
+
+```java
+@Adaptive
+public class AdaptiveExtensionFactory implements ExtensionFactory {
+
+    private final List<ExtensionFactory> factories;
+
+    public AdaptiveExtensionFactory() {
+        // 获取 ExtensionFactory 的 ExtensionLoader
+        ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
+        List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
+        // 获取全部支持的（不包含自适应拓展）拓展名称，依次获取拓展加入 factories
+        for (String name : loader.getSupportedExtensions()) {
+            list.add(loader.getExtension(name));
+        }
+        factories = Collections.unmodifiableList(list);
+    }
+
+    @Override
+    public <T> T getExtension(Class<T> type, String name) {
+        for (ExtensionFactory factory : factories) {
+            // 委托给其他 ExtensionFactory 拓展获取，比如 SpiExtensionFactory
+            T extension = factory.getExtension(type, name);
+            if (extension != null) {
+                return extension;
+            }
+        }
+        return null;
+    }
+
+}
+```
 
 至此，我们提到了按需加载是具备动态加载能力后自然的倾向，介绍了在拥有大量拓展情况下演变而来的自适应拓展设计，它的缺点和 Dubbo 是如何规避的。接下来，我们将进入源码分析部分。
 
@@ -169,7 +256,7 @@ private T createAdaptiveExtension() {
 2. 检查缓存 `cachedAdaptiveClass`，如果不为 `null`，则返回缓存。
 3. 如果缓存为 `null`，则调用 `createAdaptiveExtensionClass` 创建自适应拓展类（代理类）。
 
-在{% post_link 'how-Dubbo-SPI-works' 'Dubbo SPI 的工作原理' %}中我们分析过 `getExtensionClasses` 方法，在获取拓展的所有实现类时，如果某个实现类被 `Adaptive` 注解标注了，那么该类就会被赋值给 `cachedAdaptiveClass` 变量。按前文所说，在绝大多数情况下，`Adaptive` 注解都是用于标注方法而非标注具体的实现类，因此在大多数情况下程序都会走第三个步骤，由框架自动生成自适应拓展类（代理类）。
+在{% post_link 'how-Dubbo-SPI-works' 'Dubbo SPI 的工作原理' %}中我们分析过 `getExtensionClasses` 方法，在获取拓展的所有实现类时，如果某个实现类被 `Adaptive` 注解标注了，那么该类就会被赋值给 `cachedAdaptiveClass` 变量。“原理”部分介绍的 `AdaptiveExtensionFactory` 就属于这种情况，我们不再细谈。按前文所说，在绝大多数情况下，`Adaptive` 注解都是用于标注方法而非标注具体的实现类，因此在大多数情况下程序都会走第三个步骤，由框架自动生成自适应拓展类（代理类）。
 
 ```java
 private Class<?> getAdaptiveExtensionClass() {
