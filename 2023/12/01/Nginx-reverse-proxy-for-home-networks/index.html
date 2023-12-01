@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="原先在使用 Cloudflare Tunnel 访问家庭网络中的服务时，是直接将域名解析到相应服务。尽管 Cloudflare 已经提供相关的请求统计和安全防护功能，部分服务自身也有访问日志，但是为了更好地监控和跟踪对外服务的使用情况，采集 Cloudlfare 统计中缺少的新，决定使用 Nginx 反向代理内部服务，统一内部服务的访问入口。简而言之就是，又折腾一些有的没的。以上修改带来的一个附加">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx 反向代理在家庭网络中的应用">
+<meta property="og:url" content="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="原先在使用 Cloudflare Tunnel 访问家庭网络中的服务时，是直接将域名解析到相应服务。尽管 Cloudflare 已经提供相关的请求统计和安全防护功能，部分服务自身也有访问日志，但是为了更好地监控和跟踪对外服务的使用情况，采集 Cloudlfare 统计中缺少的新，决定使用 Nginx 反向代理内部服务，统一内部服务的访问入口。简而言之就是，又折腾一些有的没的。以上修改带来的一个附加">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202859.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202645.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202654.png">
+<meta property="article:published_time" content="2023-12-01T02:31:05.000Z">
+<meta property="article:modified_time" content="2023-12-01T15:19:01.318Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="nginx">
+<meta property="article:tag" content="reverse proxy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202859.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/","path":"2023/12/01/Nginx-reverse-proxy-for-home-networks/","title":"Nginx 反向代理在家庭网络中的应用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Nginx 反向代理在家庭网络中的应用 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="nav-number">1.</span> <span class="nav-text">网络结构示意图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#docker-compose-yml"><span class="nav-number">2.1.</span> <span class="nav-text">docker-compose.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etc-nginx-nginx-conf"><span class="nav-number">2.2.</span> <span class="nav-text">&#x2F;etc&#x2F;nginx&#x2F;nginx.conf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etc-nginx-conf-d"><span class="nav-number">2.3.</span> <span class="nav-text">&#x2F;etc&#x2F;nginx&#x2F;conf.d</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">正向代理和反向代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%90%86%EF%BC%88%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">代理（正向代理）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">3.1.1.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-number">3.2.</span> <span class="nav-text">反向代理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94"><span class="nav-number">3.3.</span> <span class="nav-text">对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/01/Nginx-reverse-proxy-for-home-networks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Nginx 反向代理在家庭网络中的应用 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Nginx 反向代理在家庭网络中的应用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-12-01 10:31:05 / 修改时间：23:19:01" itemprop="dateCreated datePublished" datetime="2023-12-01T10:31:05+08:00">2023-12-01</time>
+    </span>
+
+  
+    <span id="/2023/12/01/Nginx-reverse-proxy-for-home-networks/" class="post-meta-item leancloud_visitors" data-flag-title="Nginx 反向代理在家庭网络中的应用" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>原先在使用 <code>Cloudflare Tunnel</code> 访问家庭网络中的服务时，是直接将域名解析到相应服务。尽管 <code>Cloudflare</code> 已经提供相关的请求统计和安全防护功能，部分服务自身也有访问日志，但是为了更好地监控和跟踪对外服务的使用情况，采集 <code>Cloudlfare</code> 统计中缺少的新，决定使用 <code>Nginx</code> 反向代理内部服务，统一内部服务的访问入口。简而言之就是，又折腾一些有的没的。以上修改带来的一个附加好处是在局域网内访问服务时，通过在 <code>hosts</code> 文件中添加域名映射，可以用更加容易记忆的域名代替 <code>IP + port</code> 的形式去访问。</p>
+<span id="more"></span>
+
+<blockquote>
+<p><code>Cloudflare Tunnel</code> 相较于 <code>Zerotier</code> 和 <code>OpenVPN</code>，尽管它们三者都能避免直接开放家庭网络，但前者可以让用户直接使用域名访问到局域网中的服务，便于分享。但它的速度和延迟并不理想，还有人反馈存在网络不稳定的现象，但作为个人玩具还是够用的。有朋友使用公网服务器配合打洞软件和家庭网络中的服务器组网，实现相同目标的同时效果更好。</p>
+</blockquote>
+<h2 id="网络结构示意图"><a href="#网络结构示意图" class="headerlink" title="网络结构示意图"></a>网络结构示意图</h2><p>客户端发起请求，请求经 <code>Cloudflare</code> 转发到局域网中的 <code>Tunnel</code>。原先，<code>Tunnel</code> 如虚线箭头所示，直接将请求发向目标服务，如今改为发向 <code>Nginx</code>，由 <code>Nginx</code> 反向代理，发向目标服务。</p>
+<img src="/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202859.png" class="" title="网络结构示意图">
+
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="docker-compose-yml"><a href="#docker-compose-yml" class="headerlink" title="docker-compose.yml"></a>docker-compose.yml</h3><p><code>Nginx</code> 和 <code>Tunnel</code> 还有其他内部服务应处于同一个网络中。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx:1.25.3</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">80</span><span class="string">:80</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/etc/nginx/conf.d:/etc/nginx/conf.d</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/etc/nginx/nginx.conf:/etc/nginx/nginx.conf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/log:/var/log/nginx</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="etc-nginx-nginx-conf"><a href="#etc-nginx-nginx-conf" class="headerlink" title="&#x2F;etc&#x2F;nginx&#x2F;nginx.conf"></a>&#x2F;etc&#x2F;nginx&#x2F;nginx.conf</h3><p>在最后新增了拒绝未匹配成功的域名，在 <code>Cloudflare Tunnel</code> 的使用场景中，其实用处不大，因为未经配置的域名也无法解析到 <code>Nginx</code> 服务。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">user  nginx;</span><br><span class="line">worker_processes  auto;</span><br><span class="line"></span><br><span class="line">error_log  /var/log/nginx/error.log notice;</span><br><span class="line">pid        /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line"></span><br><span class="line">    #以上是默认的配置内容，新增拒绝未匹配成功的域名</span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80 default_server;</span><br><span class="line">        server_name _;</span><br><span class="line"></span><br><span class="line">        return 404;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="etc-nginx-conf-d"><a href="#etc-nginx-conf-d" class="headerlink" title="&#x2F;etc&#x2F;nginx&#x2F;conf.d"></a>&#x2F;etc&#x2F;nginx&#x2F;conf.d</h3><p>本目录下，配置 server 块。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    listen  [::]:80;</span><br><span class="line">    server_name  your.domain.com;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        #转发请求</span><br><span class="line">        proxy_pass http://your-service;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="正向代理和反向代理"><a href="#正向代理和反向代理" class="headerlink" title="正向代理和反向代理"></a>正向代理和反向代理</h2><h3 id="代理（正向代理）"><a href="#代理（正向代理）" class="headerlink" title="代理（正向代理）"></a>代理（正向代理）</h3><p><strong>代理</strong>（Proxy）也称为网络代理，是一种特殊的网络服务，允许一个终端通过这个服务与另一个终端进行非直接的连接。一般认为代理服务有利于保障网络终端的隐私或安全，在一定程度上能够阻止网络攻击。</p>
+<img src="/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202645.png" class="" title="正向代理">
+
+<h4 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h4><ul>
+<li>提高访问速度</li>
+<li>隐藏真实IP</li>
+<li>突破网站的区域限制</li>
+<li>突破网络审查</li>
+<li>……</li>
+</ul>
+<h3 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h3><p>反向代理（Reverse Proxy）在电脑网络中是代理服务器的一种。服务器根据客户端的请求，从其关联的一组或多组后端服务器上获取资源，然后再将这些资源返回给客户端，客户端只会得知反向代理的 <code>IP</code> 地址，而不知道在代理服务器后面的服务器集群的存在。</p>
+<img src="/2023/12/01/Nginx-reverse-proxy-for-home-networks/Pasted%20image%2020231201202654.png" class="" title="反向代理">
+
+<h4 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h4><ul>
+<li>对客户端隐藏服务器（集群）的 IP 地址</li>
+<li>安全，可作为应用层防火墙</li>
+<li><strong>负载均衡</strong></li>
+<li>缓存服务，缓存静态内容和短时间内大量访问请求的动态内容</li>
+<li>压缩内容，节省带宽</li>
+<li>……</li>
+</ul>
+<h3 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h3><table>
+<thead>
+<tr>
+<th>正向代理</th>
+<th>反向代理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>客户端的代理</td>
+<td>服务端的代理</td>
+</tr>
+<tr>
+<td>客户端一般需要特别设置</td>
+<td>客户端不用做任何设置</td>
+</tr>
+<tr>
+<td>请求发向目标服务器</td>
+<td>请求发向代理</td>
+</tr>
+<tr>
+<td>服务端知道代理不知道客户端</td>
+<td>客户端知道代理不知道服务器</td>
+</tr>
+</tbody></table>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8">代理服务器</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86">反向代理</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/nginx/" rel="tag"># nginx</a>
+              <a href="/tags/reverse-proxy/" rel="tag"># reverse proxy</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/29/how-Dubbo-SPI-adaptive-extension-works/" rel="prev" title="Dubbo SPI 自适应拓展的工作原理">
+                  <i class="fa fa-chevron-left"></i> Dubbo SPI 自适应拓展的工作原理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">70k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:54</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

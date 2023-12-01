@@ -152,13 +152,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-count">27</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,156 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/23/how-to-install-Minikube-on-Ubuntu-20-04/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/06/23/how-to-install-Minikube-on-Ubuntu-20-04/" class="post-title-link" itemprop="url">如何在 Ubuntu 20.04 上安装 Minikube</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-23 21:04:20" itemprop="dateCreated datePublished" datetime="2023-06-23T21:04:20+08:00">2023-06-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
+    </span>
+
+  
+    <span id="/2023/06/23/how-to-install-Minikube-on-Ubuntu-20-04/" class="post-meta-item leancloud_visitors" data-flag-title="如何在 Ubuntu 20.04 上安装 Minikube" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="安装-Ubuntu-20-04"><a href="#安装-Ubuntu-20-04" class="headerlink" title="安装 Ubuntu 20.04"></a>安装 Ubuntu 20.04</h3><p>使用 Vmware Workstation 通过 <code>ubuntu-20.04.6-live-server-amd64.iso</code> 安装。需要满足条件如下：</p>
+<ul>
+<li>2 个或更多 CPU（2 CPU）。</li>
+<li>2GB 可用内存（4GB）。</li>
+<li>20GB 可用磁盘空间（30GB）。</li>
+<li>网络连接</li>
+<li>容器或虚拟机管理器（Docker）。</li>
+</ul>
+<h3 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h3><p>参考官方文档：<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/install/ubuntu/">Install Docker Engine on Ubuntu</a>。</p>
+<h3 id="安装-Minikube"><a href="#安装-Minikube" class="headerlink" title="安装 Minikube"></a>安装 Minikube</h3><p>参考官方文档：<a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">minikube start</a>。</p>
+<h3 id="安装-kubectl-并启动-kubectl-自动补全功能"><a href="#安装-kubectl-并启动-kubectl-自动补全功能" class="headerlink" title="安装 kubectl 并启动 kubectl 自动补全功能"></a>安装 kubectl 并启动 kubectl 自动补全功能</h3><p>参考官方文档：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/tasks/tools/install-kubectl-linux/">在 Linux 系统中安装并设置 kubectl</a>。</p>
+<h3 id="开始使用"><a href="#开始使用" class="headerlink" title="开始使用"></a>开始使用</h3><p>创建集群：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建集群时的权限问题"><a href="#创建集群时的权限问题" class="headerlink" title="创建集群时的权限问题"></a>创建集群时的权限问题</h4><h5 id="不加-sudo"><a href="#不加-sudo" class="headerlink" title="不加 sudo"></a>不加 sudo</h5><p>不加 <code>sudo</code> 的时候，创建集群失败，提示无法选择默认 driver。可能是 docker 处于不健康状态或者用户权限不足。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ minikube start</span><br><span class="line">* minikube v1.30.1 on Ubuntu 20.04</span><br><span class="line">* Unable to pick a default driver. Here is what was considered, in preference order:</span><br><span class="line">  - docker: Not healthy: &quot;docker version --format &#123;&#123;.Server.Os&#125;&#125;-&#123;&#123;.Server.Version&#125;&#125;:&#123;&#123;.Server.Platform.Name&#125;&#125;&quot; exit status 1: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get &quot;http://%2Fvar%2Frun%2Fdocker.sock/v1.24/version&quot;: dial unix /var/run/docker.sock: connect: permission denied</span><br><span class="line">  - docker: Suggestion: Add your user to the &#x27;docker&#x27; group: &#x27;sudo usermod -aG docker $USER &amp;&amp; newgrp docker&#x27; &lt;https://docs.docker.com/engine/install/linux-postinstall/&gt;</span><br><span class="line">* Alternatively you could install one of these drivers:</span><br><span class="line">  - kvm2: Not installed: exec: &quot;virsh&quot;: executable file not found in $PATH</span><br><span class="line">  - podman: Not installed: exec: &quot;podman&quot;: executable file not found in $PATH</span><br><span class="line">  - qemu2: Not installed: exec: &quot;qemu-system-x86_64&quot;: executable file not found in $PATH</span><br><span class="line">  - virtualbox: Not installed: unable to find VBoxManage in $PATH</span><br><span class="line"></span><br><span class="line">X Exiting due to DRV_NOT_HEALTHY: Found driver(s) but none were healthy. See above for suggestions how to fix installed drivers.</span><br></pre></td></tr></table></figure>
+
+<h5 id="使用-sudo"><a href="#使用-sudo" class="headerlink" title="使用 sudo"></a>使用 sudo</h5><p>使用 <code>sudo</code> 的时候，会提示不建议通过 <code>root</code> 权限使用 <code>docker</code>，如果还是想要继续，可以使用选项 <code>--force</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo minikube start</span></span><br><span class="line">* minikube v1.30.1 on Ubuntu 20.04</span><br><span class="line">* Automatically selected the docker driver. Other choices: none, ssh</span><br><span class="line">* The &quot;docker&quot; driver should not be used with root privileges. If you wish to continue as root, use --force.</span><br><span class="line">* If you are running minikube within a VM, consider using --driver=none:</span><br><span class="line">*   https://minikube.sigs.k8s.io/docs/reference/drivers/none/</span><br><span class="line"></span><br><span class="line">X Exiting due to DRV_AS_ROOT: The &quot;docker&quot; driver should not be used with root privileges.</span><br></pre></td></tr></table></figure>
+
+<h5 id="使用选项-–force"><a href="#使用选项-–force" class="headerlink" title="使用选项 –force"></a>使用选项 –force</h5><p>考虑到仅用于测试，尝试通过 <code>sudo minikube start --force</code> 启动集群，成功启动集群但是提示使用该选项可能会引发未知行为。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo minikube start --force</span></span><br><span class="line">* minikube v1.30.1 on Ubuntu 20.04</span><br><span class="line">! minikube skips various validations when --force is supplied; this may lead to unexpected behavior</span><br><span class="line">* Automatically selected the docker driver. Other choices: ssh, none</span><br><span class="line">* The &quot;docker&quot; driver should not be used with root privileges. If you wish to continue as root, use --force.</span><br><span class="line">* If you are running minikube within a VM, consider using --driver=none:</span><br><span class="line">*   https://minikube.sigs.k8s.io/docs/reference/drivers/none/</span><br><span class="line">* Using Docker driver with root privileges</span><br><span class="line">* Starting control plane node minikube in cluster minikube</span><br><span class="line">* Pulling base image ...</span><br><span class="line">* Downloading Kubernetes v1.26.3 preload ...</span><br><span class="line">    &gt; preloaded-images-k8s-v18-v1...:  397.02 MiB / 397.02 MiB  100.00% 25.89 M</span><br><span class="line">    &gt; index.docker.io/kicbase/sta...:  373.53 MiB / 373.53 MiB  100.00% 7.17 Mi</span><br><span class="line">! minikube was unable to download gcr.io/k8s-minikube/kicbase:v0.0.39, but successfully downloaded docker.io/kicbase/stable:v0.0.39 as a fallback image</span><br><span class="line">* Creating docker container (CPUs=2, Memory=2200MB) ...</span><br><span class="line">* Preparing Kubernetes v1.26.3 on Docker 23.0.2 ...</span><br><span class="line">  - Generating certificates and keys ...</span><br><span class="line">  - Booting up control plane ...</span><br><span class="line">  - Configuring RBAC rules ...</span><br><span class="line">* Configuring bridge CNI (Container Networking Interface) ...</span><br><span class="line">  - Using image gcr.io/k8s-minikube/storage-provisioner:v5</span><br><span class="line">* Verifying Kubernetes components...</span><br><span class="line">* Enabled addons: default-storageclass, storage-provisioner</span><br><span class="line">* Done! kubectl is now configured to use &quot;minikube&quot; cluster and &quot;default&quot; namespace by default</span><br></pre></td></tr></table></figure>
+
+<p>成功启动集群后，使用 <code>kubectl get pod</code> 测试，提示连接被拒绝。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl get pod</span></span><br><span class="line">E0622 21:55:27.400754   18561 memcache.go:265] couldn&#x27;t get current server API group list: Get &quot;http://localhost:8080/api?timeout=32s&quot;: dial tcp 127.0.0.1:8080: connect: connection refused</span><br><span class="line">E0622 21:55:27.401000   18561 memcache.go:265] couldn&#x27;t get current server API group list: Get &quot;http://localhost:8080/api?timeout=32s&quot;: dial tcp 127.0.0.1:8080: connect: connection refused</span><br><span class="line">E0622 21:55:27.410464   18561 memcache.go:265] couldn&#x27;t get current server API group list: Get &quot;http://localhost:8080/api?timeout=32s&quot;: dial tcp 127.0.0.1:8080: connect: connection refused</span><br><span class="line">E0622 21:55:27.410951   18561 memcache.go:265] couldn&#x27;t get current server API group list: Get &quot;http://localhost:8080/api?timeout=32s&quot;: dial tcp 127.0.0.1:8080: connect: connection refused</span><br><span class="line">E0622 21:55:27.412076   18561 memcache.go:265] couldn&#x27;t get current server API group list: Get &quot;http://localhost:8080/api?timeout=32s&quot;: dial tcp 127.0.0.1:8080: connect: connection refused</span><br><span class="line">The connection to the server localhost:8080 was refused - did you specify the right host or port?</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>minikube dashboard</code> 启动控制台，在访问时同样提示连接被拒绝：<code>dial tcp 127.0.0.1:8080: connect: connection refused</code>。</p>
+<p>考虑到可能还有别的问题，决定采用官方建议将用户添加到 <code>docker</code> 用户组。</p>
+<h5 id="将用户添加到-docker-用户组"><a href="#将用户添加到-docker-用户组" class="headerlink" title="将用户添加到 docker 用户组"></a>将用户添加到 docker 用户组</h5><p>使用 <code>sudo usermod -aG docker $USER &amp;&amp; newgrp docker</code> 将当前用户添加到 <code>docker</code> 用户组并切换当前用户组到 <code>docker</code> 用户组后，正常启动集群。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">minikube start</span></span><br><span class="line">* minikube v1.30.1 on Ubuntu 20.04</span><br><span class="line">* Automatically selected the docker driver. Other choices: ssh, none</span><br><span class="line">* Using Docker driver with root privileges</span><br><span class="line">* Starting control plane node minikube in cluster minikube</span><br><span class="line">* Pulling base image ...</span><br><span class="line">* Downloading Kubernetes v1.26.3 preload ...</span><br><span class="line">    &gt; preloaded-images-k8s-v18-v1...:  393.36 MiB / 397.02 MiB  99.08% 19.35 Mi! minikube was unable to download gcr.io/k8s-minikube/kicbase:v0.0.39, but successfully downloaded docker.io/kicbase/stable:v0.0.39 as a fallback image</span><br><span class="line">    &gt; preloaded-images-k8s-v18-v1...:  397.02 MiB / 397.02 MiB  100.00% 21.44 M</span><br><span class="line">* Creating docker container (CPUs=2, Memory=2200MB) ...</span><br><span class="line">* Preparing Kubernetes v1.26.3 on Docker 23.0.2 ...</span><br><span class="line">  - Generating certificates and keys ...</span><br><span class="line">  - Booting up control plane ...</span><br><span class="line">  - Configuring RBAC rules ...</span><br><span class="line">* Configuring bridge CNI (Container Networking Interface) ...</span><br><span class="line">  - Using image gcr.io/k8s-minikube/storage-provisioner:v5</span><br><span class="line">* Verifying Kubernetes components...</span><br><span class="line">* Enabled addons: storage-provisioner, default-storageclass</span><br><span class="line">* Done! kubectl is now configured to use &quot;minikube&quot; cluster and &quot;default&quot; namespace by default</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建集群时下载镜像失败"><a href="#创建集群时下载镜像失败" class="headerlink" title="创建集群时下载镜像失败"></a>创建集群时下载镜像失败</h4><p>在解决问题的过程中，发现有人存在下载镜像失败的情况。从启动日志可以看到，由于 minikube 下载 <code>gcr.io/k8s-minikube/kicbase:v0.0.39</code> 镜像失败，自动下载 <code>docker.io/kicbase/stable:v0.0.39</code> 镜像作为备选。如果从 <code>docker.io</code> 下载镜像也很困难，还可以通过指定镜像仓库启动集群。可以通过查看帮助内关于仓库的信息，获取官方建议中国大陆用户使用的镜像仓库地址。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">minikube start --<span class="built_in">help</span> | grep repo</span></span><br><span class="line">    --image-repository=&#x27;&#x27;:</span><br><span class="line">	Alternative image repository to pull docker images from. This can be used when you have limited access to gcr.io. Set it to &quot;auto&quot; to let minikube decide one for you. For Chinese mainland users, you may use local gcr.io mirrors such as registry.cn-hangzhou.aliyuncs.com/google_containers</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">minikube start --image-repository=<span class="string">&#x27;registry.cn-hangzhou.aliyuncs.com/google_containers&#x27;</span></span></span><br></pre></td></tr></table></figure>
+
+<h4 id="如何通过宿主机进行访问-minikube-控制台"><a href="#如何通过宿主机进行访问-minikube-控制台" class="headerlink" title="如何通过宿主机进行访问 minikube 控制台"></a>如何通过宿主机进行访问 minikube 控制台</h4><p>启动控制台：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">minikube dashboard</span></span><br><span class="line">* Enabling dashboard ...</span><br><span class="line">  - Using image docker.io/kubernetesui/dashboard:v2.7.0</span><br><span class="line">  - Using image docker.io/kubernetesui/metrics-scraper:v1.0.8</span><br><span class="line">* Some dashboard features require the metrics-server addon. To enable all features please run:</span><br><span class="line"></span><br><span class="line">	minikube addons enable metrics-server	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">* Verifying dashboard health ...</span><br><span class="line">* Launching proxy ...</span><br><span class="line">* Verifying proxy health ...</span><br><span class="line">* Opening http://127.0.0.1:35967/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/ in your default browser...</span><br><span class="line">  http://127.0.0.1:35967/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果虚拟机安装的 Ubuntu 是 Desktop 版本，那么你可以在 Ubuntu 里直接通过浏览器访问。但是如果你安装的 Ubuntu 是 server 版本，除了使用 <code>curl</code> 访问 url 外，你也许想要在宿主机的浏览器访问：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl proxy --port=your-port --address=&#x27;your-virtual-machine-ip&#x27; --accept-hosts=&#x27;^.*&#x27; &amp;</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用过程中下载镜像失败"><a href="#使用过程中下载镜像失败" class="headerlink" title="使用过程中下载镜像失败"></a>使用过程中下载镜像失败</h4><h5 id="从其他镜像仓库下载代替"><a href="#从其他镜像仓库下载代替" class="headerlink" title="从其他镜像仓库下载代替"></a>从其他镜像仓库下载代替</h5><p>一般是在需要从 <code>gcr.io</code> 镜像仓库下载时发生，比如官方教程中需要执行以下命令，会发现 <code>deployment</code> 和 <code>pod</code> 迟迟不能达到目标状态。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl get deployments</span></span><br><span class="line">NAME         READY   UP-TO-DATE   AVAILABLE   AGE</span><br><span class="line">hello-node   0/1     1            0           19s</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kubectl get pods</span></span><br><span class="line">NAME                          READY   STATUS             RESTARTS   AGE</span><br><span class="line">hello-node-7b87cd5f68-zwd4g   0/1     ImagePullBackOff   0          38s</span><br></pre></td></tr></table></figure>
+<p>仅作为测试用途，可以从 Docker 官方仓库搜索镜像，找到排名靠前，版本相同或相近的可靠镜像代替。</p>
+<h5 id="配置代理"><a href="#配置代理" class="headerlink" title="配置代理"></a>配置代理</h5><p>对于这类网络连接不通的情况，配置代理是通用的解决方案。开始使用后发现从其他镜像仓库下载代替的方法有点麻烦，于是决定设置代理。<br>刚开始我以为给 Ubuntu 上的 <code>dockerd</code> 配置代理帮助加速 <code>docker pull</code> 即可，后来发现仍然下载失败。即使我通过 <code>docker pull</code> 先下载镜像到本地，配置 <code>imagePullPolicy</code> 为 <code>Never</code> 或者 <code>IfNotPresent</code>，minikube 还是不能识别到本地已有的镜像。猜测 minikube 的机制和我想象的是不同的，需要直接为 minikube 容器配置代理。搜索到以下命令满足需求：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start --docker-env http_proxy=http://proxyAddress:port --docker-env https_proxy=http://proxyAddress:port --docker-env no_proxy=localhost,127.0.0.1,your-virtual-machine-ip/24</span><br></pre></td></tr></table></figure>
+
+<h4 id="需要使用自定义镜像"><a href="#需要使用自定义镜像" class="headerlink" title="需要使用自定义镜像"></a>需要使用自定义镜像</h4><p>测试过程中遇到需要使用自定义镜像的场景。在上一个问题中，我们已经发现 Minikube 不能直接使用本地已有的镜像，但是有两种方法可以解决该问题。</p>
+<h5 id="minikube-image-load"><a href="#minikube-image-load" class="headerlink" title="minikube image load"></a>minikube image load</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube image load &lt;IMAGE_NAME&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="minikube-image-build"><a href="#minikube-image-build" class="headerlink" title="minikube image build"></a>minikube image build</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube image build -t &lt;IMAGE_NAME&gt; .</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://docs.docker.com/engine/install/ubuntu/">Install Docker Engine on Ubuntu</a><br><a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">minikube start</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/429690423">k8s的迷你版——minikube+docker的安装</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68984450/minikube-why-the-docker-driver-should-not-be-used-with-root-privileges">minikube - Why The “docker” driver should not be used with root privileges</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/pack27/p/12202687.html">安装Minikube无法访问k8s.gcr.io的简单解决办法</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liyuanhong/p/13799404.html">让其他电脑访问minikube dashboard</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43762191/article/details/122709763">【问题解决】This container is having trouble accessing https://k8s.gcr.io | 如何解决从k8s.gcr.io拉取镜像失败问题？</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/Leo_wl/p/15775077.html">K8S(kubernetes)镜像源</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/goerzh/p/12827588.html">minikube 设置代理</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/486384757">两种在Minikube中运行本地Docker镜像的简单方式</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +382,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -372,7 +522,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -520,7 +670,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -636,7 +786,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -757,7 +907,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -890,7 +1040,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-01 00:48:05" itemprop="dateModified" datetime="2023-12-01T00:48:05+08:00">2023-12-01</time>
+      <time title="修改时间：2023-12-01 23:19:01" itemprop="dateModified" datetime="2023-12-01T23:19:01+08:00">2023-12-01</time>
     </span>
 
   
@@ -1411,13 +1561,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">69k</span>
+    <span title="站点总字数">70k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:50</span>
+    <span title="站点阅读时长">3:54</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
