@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Nginx 没有提供开箱即用的日志滚动功能，而是将其交给使用者自己实现。你既可以按照官方文档的建议通过编写脚本实现，也可以使用 logrotate 管理日志。但是和在普通场景下不同，在使用 Docker 运行 Nginx 时，你可能需要额外考虑一点细节。本文记录了在为 Docker 中的 Nginx 的日志文件配置滚动功能过程中遇到的一些问题和思考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 logrotate 滚动 Docker 容器内的 Nginx 的日志">
+<meta property="og:url" content="https://www.moralok.com/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="Nginx 没有提供开箱即用的日志滚动功能，而是将其交给使用者自己实现。你既可以按照官方文档的建议通过编写脚本实现，也可以使用 logrotate 管理日志。但是和在普通场景下不同，在使用 Docker 运行 Nginx 时，你可能需要额外考虑一点细节。本文记录了在为 Docker 中的 Nginx 的日志文件配置滚动功能过程中遇到的一些问题和思考。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-02T05:26:20.000Z">
+<meta property="article:modified_time" content="2023-12-02T19:15:41.592Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="nginx">
+<meta property="article:tag" content="logrotate">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/","path":"2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/","title":"使用 logrotate 滚动 Docker 容器内的 Nginx 的日志"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 logrotate 滚动 Docker 容器内的 Nginx 的日志 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx-%E6%BB%9A%E5%8A%A8%E6%97%A5%E5%BF%97"><span class="nav-number">1.</span> <span class="nav-text">Nginx 滚动日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3"><span class="nav-number">1.1.</span> <span class="nav-text">官方文档</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.1.1.</span> <span class="nav-text">说明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-logrotate"><span class="nav-number">1.2.</span> <span class="nav-text">使用 logrotate</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">默认配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E6%89%80%E5%9C%A8%E7%9B%AE%E5%BD%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">配置信息所在目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA-Nginx-%E6%96%B0%E5%A2%9E%E9%85%8D%E7%BD%AE"><span class="nav-number">1.2.3.</span> <span class="nav-text">为 Nginx 新增配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE%E5%92%8C%E6%B5%8B%E8%AF%95"><span class="nav-number">1.2.4.</span> <span class="nav-text">验证配置和测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9D%91"><span class="nav-number">1.3.</span> <span class="nav-text">一些坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#var-lib-logrotate-%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98"><span class="nav-number">1.3.1.</span> <span class="nav-text">&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%A4%B9%E7%9A%84%E6%9D%83%E9%99%90"><span class="nav-number">1.3.2.</span> <span class="nav-text">日志文件夹的权限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%B1%E5%AE%BF%E4%B8%BB%E6%9C%BA%E8%BF%98%E6%98%AF%E5%AE%B9%E5%99%A8%E4%B8%BB%E5%AF%BC"><span class="nav-number">1.3.3.</span> <span class="nav-text">由宿主机还是容器主导</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#logrotate-%E5%A4%87%E5%BF%98"><span class="nav-number">2.</span> <span class="nav-text">logrotate 备忘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text">命令参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">常用配置文件参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用 logrotate 滚动 Docker 容器内的 Nginx 的日志 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 logrotate 滚动 Docker 容器内的 Nginx 的日志
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-02 13:26:20" itemprop="dateCreated datePublished" datetime="2023-12-02T13:26:20+08:00">2023-12-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-03 03:15:41" itemprop="dateModified" datetime="2023-12-03T03:15:41+08:00">2023-12-03</time>
+    </span>
+
+  
+    <span id="/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/" class="post-meta-item leancloud_visitors" data-flag-title="使用 logrotate 滚动 Docker 容器内的 Nginx 的日志" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><code>Nginx</code> 没有提供开箱即用的日志滚动功能，而是将其交给使用者自己实现。你既可以按照官方文档的建议通过编写脚本实现，也可以使用 <code>logrotate</code> 管理日志。但是和在普通场景下不同，在使用 <code>Docker</code> 运行 <code>Nginx</code> 时，你可能需要额外考虑一点细节。本文记录了在为 <code>Docker</code> 中的 <code>Nginx</code> 的日志文件配置滚动功能过程中遇到的一些问题和思考。</p>
+<span id="more"></span>
+
+<h2 id="Nginx-滚动日志"><a href="#Nginx-滚动日志" class="headerlink" title="Nginx 滚动日志"></a>Nginx 滚动日志</h2><h3 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h3><blockquote>
+<p>In order to rotate log files, they need to be renamed first. After that USR1 signal should be sent to the master process. The master process will then re-open all currently open log files and assign them an unprivileged user under which the worker processes are running, as an owner. After successful re-opening, the master process closes all open files and sends the message to worker process to ask them to re-open files. Worker processes also open new files and close old files right away. As a result, old files are almost immediately available for post processing, such as compression.</p>
+</blockquote>
+<p>根据官方文档的解释，滚动日志文件的流程应如下，你可以自己编写 <code>Shell</code> 脚本配合 <code>crontab</code> 实现定时滚动功能。</p>
+<ol>
+<li>首先重命名日志文件</li>
+<li>之后发送 <code>USR1</code> 信号给 <code>Nginx</code> 主进程，<code>Nginx</code> 将重新打开日志文件</li>
+<li>对日志文件进行后处理，比如压缩（可选）</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">mv</span> access.log access.log.0</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">kill</span> -USR1 `<span class="built_in">cat</span> master.nginx.pid`</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sleep</span> 1</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">gzip access.log.0    <span class="comment"># do something with access.log.0</span></span></span><br></pre></td></tr></table></figure>
+
+<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><ol>
+<li>在没有执行 <code>kill</code> 命令前，即便已经重命名了日志文件，<code>Nginx</code> 还是会向重命名后的文件写入日志。因为在 <code>Linux</code> 系统中，系统内核是根据文件描述符定位文件的。</li>
+<li><code>USR1</code> 是自定义信号，软件的作者自己确定收到该信号后做什么。在 <code>Nginx</code> 中，主进程收到信号后，会重新打开所有当前打开的日志文件并将它们分配给一个非特权用户作为所有者，工作进程就是在该所有者下运行的。成功重新打开后，主进程关闭所有打开的文件并向工作进程发送消息，要求它们重新打开文件。工作进程也打开新文件并立即关闭旧文件。</li>
+</ol>
+<h3 id="使用-logrotate"><a href="#使用-logrotate" class="headerlink" title="使用 logrotate"></a>使用 logrotate</h3><blockquote>
+<p>logrotate is designed to ease administration of systems that generate large numbers of log files. It allows automatic rotation, compression, removal, and mailing of log files. Each log file may be handled daily, weekly, monthly, or when it grows too large.</p>
+</blockquote>
+<p><code>logrotate</code> 旨在简化生成大量日志文件的系统的管理。它允许自动滚动、压缩、删除和邮寄日志文件。每个日志文件可以在每天、每周、每月或当它变得太大时处理。<code>Linux</code> 一般默认安装了 <code>logrotate</code>。</p>
+<h4 id="默认配置文件"><a href="#默认配置文件" class="headerlink" title="默认配置文件"></a>默认配置文件</h4><p>查看默认配置文件：<code>cat /etc/logrotate.conf</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># see &quot;man logrotate&quot; for details</span><br><span class="line"># 每周滚动日志文件</span><br><span class="line">weekly</span><br><span class="line"></span><br><span class="line"># 默认使用 adm group，因为这是 /var/log/syslog 的所属组</span><br><span class="line">su root adm</span><br><span class="line"></span><br><span class="line"># 保留 4 周的备份（其实是保留 4 个备份，对应 weekly 的设置，就是保留 4 周）</span><br><span class="line">rotate 4</span><br><span class="line"></span><br><span class="line"># 在滚动旧日志文件后，创建新的空日志文件</span><br><span class="line">create</span><br><span class="line"></span><br><span class="line"># 使用日期作为滚动日志文件的后缀</span><br><span class="line">#dateext</span><br><span class="line"></span><br><span class="line"># 如果你希望压缩日志文件，请取消注释</span><br><span class="line">#compress</span><br><span class="line"></span><br><span class="line"># 软件包将日志滚动的配置信息放入此目录中</span><br><span class="line">include /etc/logrotate.d</span><br><span class="line"></span><br><span class="line"># system-specific logs may be also be configured here.</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置信息所在目录"><a href="#配置信息所在目录" class="headerlink" title="配置信息所在目录"></a>配置信息所在目录</h4><p>查看日志滚动的配置信息所在的目录：<code>ls /etc/logrotate.d/</code>。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">alternatives  apport  apt  bootlog  btmp  dpkg  rsyslog  ubuntu-advantage-tools  ufw  unattended-upgrades  wtmp</span><br></pre></td></tr></table></figure>
+
+<h4 id="为-Nginx-新增配置"><a href="#为-Nginx-新增配置" class="headerlink" title="为 Nginx 新增配置"></a>为 Nginx 新增配置</h4><p>为 <code>Nginx</code> 新增日志滚动配置，<code>vim /etc/logrotate.d/nginx</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/path/to/your/nginx/logs/*.log &#123;</span><br><span class="line">    # 切换用户</span><br><span class="line">    su moralok moralok</span><br><span class="line">    # 每天滚动日志文件</span><br><span class="line">    daily</span><br><span class="line">    # 使用日期作为滚动日志文件的后缀</span><br><span class="line">    dateext</span><br><span class="line">    # 如果日志丢失，不报错继续滚动下一个日志</span><br><span class="line">    missingok</span><br><span class="line">    # 保留 31 个备份</span><br><span class="line">    rotate 31</span><br><span class="line">    # 不压缩</span><br><span class="line">    nocompress</span><br><span class="line">    # 整个日志组运行一次的脚本</span><br><span class="line">    sharedscripts</span><br><span class="line">    # 滚动后的处理</span><br><span class="line">    postrotate</span><br><span class="line">        # 重新打开日志文件        </span><br><span class="line">        docker exec nginx sh -c &quot;[ ! -f /var/run/nginx.pid ] || (kill -USR1 `docker exec nginx cat /var/run/nginx.pid`; echo &#x27;Successfully rotating nginx logs.&#x27;)&quot;</span><br><span class="line">    endscript</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="验证配置和测试"><a href="#验证配置和测试" class="headerlink" title="验证配置和测试"></a>验证配置和测试</h4><p>测试配置文件是否有错误，<code>logrotate -d /etc/logrotate.d/nginx</code>。</p>
+<p>强制滚动：<code>logrotate -f /etc/logrotate.d/nginx</code></p>
+<h3 id="一些坑"><a href="#一些坑" class="headerlink" title="一些坑"></a>一些坑</h3><h4 id="var-lib-logrotate-权限问题"><a href="#var-lib-logrotate-权限问题" class="headerlink" title="&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题"></a>&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</h4><p>当你使用校验过配置文件的正确性后，尝试强制滚动时，可能会遇到报错。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -f /etc/logrotate.d/nginx</span> </span><br><span class="line">error: error creating output file /var/lib/logrotate/status.tmp: Permission denied</span><br></pre></td></tr></table></figure>
+
+<p>这是因为 logrotate 会在 <code>/var/lib/logrotate/</code> 目录下创建 <code>status</code> 文件。查看目录权限可知，需要以 <code>root</code> 身份运行 <code>logrotate</code>。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ll /var/lib/logrotate</span></span><br><span class="line">total 12</span><br><span class="line">drwxr-xr-x  2 root root 4096 Dec  2 08:35 ./</span><br><span class="line">drwxr-xr-x 44 root root 4096 Jun 26 09:02 ../</span><br><span class="line">-rw-r--r--  1 root root 1395 Dec  2 08:35 status</span><br></pre></td></tr></table></figure>
+
+<p>事实上，<code>logrotate -d /etc/logrotate.d/nginx</code> 命令也会读取 <code>/var/lib/logrotate/status</code>，但是 <code>other</code> 对该目录也有 <code>r</code> 读取权限，所以没有报错。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -d /etc/logrotate.d/nginx</span> </span><br><span class="line">WARNING: logrotate in debug mode does nothing except printing debug messages!  Consider using verbose mode (-v) instead if this is not what you want.</span><br><span class="line"></span><br><span class="line">reading config file /etc/logrotate.d/nginx</span><br><span class="line">Reading state from file: /var/lib/logrotate/status</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h4 id="日志文件夹的权限"><a href="#日志文件夹的权限" class="headerlink" title="日志文件夹的权限"></a>日志文件夹的权限</h4><p>即使你使用 <code>root</code> 身份运行 <code>logrotate</code>，你可能还会遇到以下报错</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -f /etc/logrotate.d/nginx</span> </span><br><span class="line">error: skipping &quot;/path/to/your/nginx/logs/*.log&quot; because parent directory has insecure permissions (It&#x27;s world writable or writable by group which is not &quot;root&quot;) Set &quot;su&quot; directive in config file to tell logrotate which user/group should be used for rotation.</span><br></pre></td></tr></table></figure>
+
+<p>你需要在配置文件中，使用 <code>su &lt;user&gt; &lt;group&gt;</code> 指定日志所在文件夹所属的用户和组，<code>logrotate</code> 才能正确读写。</p>
+<h4 id="由宿主机还是容器主导"><a href="#由宿主机还是容器主导" class="headerlink" title="由宿主机还是容器主导"></a>由宿主机还是容器主导</h4><p>首先 <code>Nginx</code> 的日志文件夹通过挂载映射到宿主机，日志滚动既可以由宿主机主导，也可以由容器主导，不过不论如何我们都需要向 <code>Docker</code> 容器内的 <code>Nginx</code> 发送 <code>USR1</code> 信号。有人倾向于在容器内完成所有工作，和宿主机几乎完全隔离；我个人更青睐于由宿主机主导，因为容器内的环境并不总是拥有你想要使用的软件（除非你总是定制自己使用的镜像），甚至标准镜像往往非常精简。</p>
+<p>在 <code>logrotate</code> 配置中的 <code>postrotate</code> 部分添加脚本，使用 <code>docker exec</code> 在容器内执行命令，完成向 <code>Nginx</code> 发送信号的工作。脚本的处理逻辑大概是“如果存在 <code>/var/run/nginx.pid</code>，就执行 <code>kill -USR1 \`cat /var/run/nginx.pid\`</code> 命令，并打印成功的消息”。但是我看到很多文章中分享的配置类似下面这样：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec nginx sh -c &quot;if [ -f /var/run/nginx.pid ]; then kill -USR1 $(docker exec nginx cat /var/run/nginx.pid); fi&quot;</span><br><span class="line"></span><br><span class="line">docker exec nginx sh -c &quot;[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>经过测试都会有以下报错，我不清楚是否大多是抓取发布的文章，也不清楚他们是否测试过，对于 <code>Shell</code> 脚本写得不多的我来说，半夜测试反复排查错误真是头昏脑胀。在我原先的理解里，<code>-c</code> 后面的脚本是整体发到容器内部执行的，后来我才意识到，我对脚本内部的命令在宿主机还是容器里执行的理解是错误的。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat: /var/run/nginx.pid: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<h2 id="logrotate-备忘"><a href="#logrotate-备忘" class="headerlink" title="logrotate 备忘"></a>logrotate 备忘</h2><p><a target="_blank" rel="noopener" href="https://linux.die.net/man/8/logrotate">帮助文档</a></p>
+<h3 id="命令参数"><a href="#命令参数" class="headerlink" title="命令参数"></a>命令参数</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-d, --debug : 打开调试模式，这意味着不会对日志进行任何更改，并且 logrotate 状态文件不会更新。仅打印调试消息。</span><br><span class="line">-f, --force : 告诉 logrotate 强制滚动，即使它认为这没有必要。有时，在将新条目添加到 logrotate 配置文件后，或者如果已手动删除旧日志文件，这会很有用，因为将创建新文件，并且正确地继续记录日志。</span><br><span class="line">-m, --mail &lt;command&gt; : 告诉 logrotate 在邮寄日志时使用哪个命令。此命令应接受两个参数：消息的主题，收件人。然后，该命令必须读取标准输入上的消息并将其邮寄给收件人。默认邮件命令是 /bin/mail -s。</span><br><span class="line">-s, --state &lt;statefile&gt; : 告诉 logrotate 使用备用状态文件。如果 logrotate 以不同用户身份运行不同的日志文件集，这会非常有用。默认状态文件是 /var/lib/logrotate/status。</span><br><span class="line">--usage : 打印简短的用法信息。</span><br><span class="line">--?, --help : 打印帮助信息。</span><br><span class="line">-v, --verbose : 打开详细模式，例如在滚动期间显示消息。</span><br></pre></td></tr></table></figure>
+
+<h3 id="常用配置文件参数"><a href="#常用配置文件参数" class="headerlink" title="常用配置文件参数"></a>常用配置文件参数</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>daily</td>
+<td>周期：每天</td>
+</tr>
+<tr>
+<td>weekly</td>
+<td>周期：每周</td>
+</tr>
+<tr>
+<td>monthly</td>
+<td>周期：每月</td>
+</tr>
+<tr>
+<td>yearly</td>
+<td>周期：每年</td>
+</tr>
+<tr>
+<td>dateext</td>
+<td>使用日期代替数字作为扩展名（YYYYMMDD），如：access.log-20231202</td>
+</tr>
+<tr>
+<td>dateformat</td>
+<td>必须配合 dateext 使用，只支持 %Y %m %d %s 这四个参数</td>
+</tr>
+<tr>
+<td>compress</td>
+<td>使用 gzip 压缩旧版本日志文件</td>
+</tr>
+<tr>
+<td>nocompress</td>
+<td>不压缩</td>
+</tr>
+<tr>
+<td>delaycompress</td>
+<td>延迟到下一次滚动周期再压缩</td>
+</tr>
+<tr>
+<td>nodelaycompress</td>
+<td>不延迟压缩，覆盖 delaycompress</td>
+</tr>
+<tr>
+<td>create mode owner group</td>
+<td>滚动后（运行 postrotate 脚本前），立即创建日志文件，指定权限属性</td>
+</tr>
+<tr>
+<td>nocreate</td>
+<td>不创建新的日志文件，覆盖 create</td>
+</tr>
+<tr>
+<td>ifempty</td>
+<td>即使是空文件也滚动（默认），覆盖 notifempty</td>
+</tr>
+<tr>
+<td>missingok</td>
+<td>如果日志丢失，不报错继续滚动下一个日志</td>
+</tr>
+<tr>
+<td>notifempty</td>
+<td>如果是空文件，不滚动，覆盖 ifempty</td>
+</tr>
+<tr>
+<td>sharedscripts</td>
+<td>在所有日志都滚动后统一执行一次脚本。如果没有配置，每个日志滚动后都会执行一次脚本</td>
+</tr>
+<tr>
+<td>prerotate&#x2F;endscript</td>
+<td>存放在滚动以前需要执行的脚本，两者必须单独成行</td>
+</tr>
+<tr>
+<td>postrotate&#x2F;endscript</td>
+<td>存放在滚动以后需要执行的脚本，两者必须单独成行</td>
+</tr>
+<tr>
+<td>rotate count</td>
+<td>日志文件在删除或邮寄前滚动的次数，0 指没有备份</td>
+</tr>
+<tr>
+<td>size log-size</td>
+<td>当日志文件到达指定的大小时才滚动，默认单位 byte，可以使用 k、M、G</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>文档说默认在运行 <code>postrotate</code> 脚本前创建新文件，可是新文件不是 <code>Nginx</code> 重新打开文件时创建的吗？之前脚本执行报错，也没有产生新文件啊。</p>
+</blockquote>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://nginx.org/en/docs/control.html#logs">Rotating Log-files</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nginx.com/resources/wiki/start/topics/examples/logrotation/">Log Rotation</a></li>
+<li><a target="_blank" rel="noopener" href="https://linux.die.net/man/8/logrotate">logrotate(8) - Linux man page</a></li>
+<li><a target="_blank" rel="noopener" href="https://serverfault.com/questions/1023555/error-error-creating-output-file-var-lib-logrotate-status-tmp-permission-deni">error: error creating output file &#x2F;var&#x2F;lib&#x2F;logrotate.status.tmp: Permission denied</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/26482773/apache-and-logrotate-configuration">apache-and-logrotate-configuration</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.slogra.com/post-792.html">docker nginx&#x2F;openresty容器使用logrotate日志切割</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+              <a href="/tags/nginx/" rel="tag"># nginx</a>
+              <a href="/tags/logrotate/" rel="tag"># logrotate</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/01/Nginx-reverse-proxy-for-home-networks/" rel="prev" title="Nginx 反向代理在家庭网络中的应用">
+                  <i class="fa fa-chevron-left"></i> Nginx 反向代理在家庭网络中的应用
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">73k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:02</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
