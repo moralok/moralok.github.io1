@@ -27,7 +27,7 @@
 <meta property="og:description" content="Nginx 没有提供开箱即用的日志滚动功能，而是将其交给使用者自己实现。你既可以按照官方文档的建议通过编写脚本实现，也可以使用 logrotate 管理日志。但是和在普通场景下不同，在使用 Docker 运行 Nginx 时，你可能需要额外考虑一点细节。本文记录了在为 Docker 中的 Nginx 的日志文件配置滚动功能过程中遇到的一些问题和思考。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-12-02T05:26:20.000Z">
-<meta property="article:modified_time" content="2023-12-02T19:15:41.592Z">
+<meta property="article:modified_time" content="2023-12-03T11:44:04.175Z">
 <meta property="article:author" content="Moralok">
 <meta property="article:tag" content="docker">
 <meta property="article:tag" content="nginx">
@@ -145,7 +145,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx-%E6%BB%9A%E5%8A%A8%E6%97%A5%E5%BF%97"><span class="nav-number">1.</span> <span class="nav-text">Nginx 滚动日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3"><span class="nav-number">1.1.</span> <span class="nav-text">官方文档</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.1.1.</span> <span class="nav-text">说明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-logrotate"><span class="nav-number">1.2.</span> <span class="nav-text">使用 logrotate</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">默认配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E6%89%80%E5%9C%A8%E7%9B%AE%E5%BD%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">配置信息所在目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA-Nginx-%E6%96%B0%E5%A2%9E%E9%85%8D%E7%BD%AE"><span class="nav-number">1.2.3.</span> <span class="nav-text">为 Nginx 新增配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE%E5%92%8C%E6%B5%8B%E8%AF%95"><span class="nav-number">1.2.4.</span> <span class="nav-text">验证配置和测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9D%91"><span class="nav-number">1.3.</span> <span class="nav-text">一些坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#var-lib-logrotate-%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98"><span class="nav-number">1.3.1.</span> <span class="nav-text">&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%A4%B9%E7%9A%84%E6%9D%83%E9%99%90"><span class="nav-number">1.3.2.</span> <span class="nav-text">日志文件夹的权限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%B1%E5%AE%BF%E4%B8%BB%E6%9C%BA%E8%BF%98%E6%98%AF%E5%AE%B9%E5%99%A8%E4%B8%BB%E5%AF%BC"><span class="nav-number">1.3.3.</span> <span class="nav-text">由宿主机还是容器主导</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#logrotate-%E5%A4%87%E5%BF%98"><span class="nav-number">2.</span> <span class="nav-text">logrotate 备忘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text">命令参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">常用配置文件参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx-%E6%BB%9A%E5%8A%A8%E6%97%A5%E5%BF%97"><span class="nav-number">1.</span> <span class="nav-text">Nginx 滚动日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3"><span class="nav-number">1.1.</span> <span class="nav-text">官方文档</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.1.1.</span> <span class="nav-text">说明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-logrotate"><span class="nav-number">1.2.</span> <span class="nav-text">使用 logrotate</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">默认配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E6%89%80%E5%9C%A8%E7%9B%AE%E5%BD%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">配置信息所在目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA-Nginx-%E6%96%B0%E5%A2%9E%E9%85%8D%E7%BD%AE"><span class="nav-number">1.2.3.</span> <span class="nav-text">为 Nginx 新增配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE%E5%92%8C%E6%B5%8B%E8%AF%95"><span class="nav-number">1.2.4.</span> <span class="nav-text">验证配置和测试</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9D%91"><span class="nav-number">2.</span> <span class="nav-text">一些坑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#var-lib-logrotate-%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%A4%B9%E7%9A%84%E6%9D%83%E9%99%90"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件夹的权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%B1%E5%AE%BF%E4%B8%BB%E6%9C%BA%E8%BF%98%E6%98%AF%E5%AE%B9%E5%99%A8%E4%B8%BB%E5%AF%BC"><span class="nav-number">2.3.</span> <span class="nav-text">由宿主机还是容器主导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%A7%E7%BB%AD%E5%86%99%E5%85%A5%E6%97%A7%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="nav-number">2.4.</span> <span class="nav-text">继续写入旧日志文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#logrotate-%E5%A4%87%E5%BF%98"><span class="nav-number">3.</span> <span class="nav-text">logrotate 备忘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">命令参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">常用配置文件参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -239,7 +239,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-03 03:15:41" itemprop="dateModified" datetime="2023-12-03T03:15:41+08:00">2023-12-03</time>
+      <time title="修改时间：2023-12-03 19:44:04" itemprop="dateModified" datetime="2023-12-03T19:44:04+08:00">2023-12-03</time>
     </span>
 
   
@@ -256,14 +256,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>2.5k</span>
+      <span>3.7k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
+      <span>12 分钟</span>
     </span>
 </div>
 
@@ -307,7 +307,7 @@
 
 <h4 id="验证配置和测试"><a href="#验证配置和测试" class="headerlink" title="验证配置和测试"></a>验证配置和测试</h4><p>测试配置文件是否有错误，<code>logrotate -d /etc/logrotate.d/nginx</code>。</p>
 <p>强制滚动：<code>logrotate -f /etc/logrotate.d/nginx</code></p>
-<h3 id="一些坑"><a href="#一些坑" class="headerlink" title="一些坑"></a>一些坑</h3><h4 id="var-lib-logrotate-权限问题"><a href="#var-lib-logrotate-权限问题" class="headerlink" title="&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题"></a>&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</h4><p>当你使用校验过配置文件的正确性后，尝试强制滚动时，可能会遇到报错。</p>
+<h2 id="一些坑"><a href="#一些坑" class="headerlink" title="一些坑"></a>一些坑</h2><h3 id="var-lib-logrotate-权限问题"><a href="#var-lib-logrotate-权限问题" class="headerlink" title="&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题"></a>&#x2F;var&#x2F;lib&#x2F;logrotate&#x2F; 权限问题</h3><p>当你使用校验过配置文件的正确性后，尝试强制滚动时，可能会遇到报错。</p>
 <figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -f /etc/logrotate.d/nginx</span> </span><br><span class="line">error: error creating output file /var/lib/logrotate/status.tmp: Permission denied</span><br></pre></td></tr></table></figure>
 
 <p>这是因为 logrotate 会在 <code>/var/lib/logrotate/</code> 目录下创建 <code>status</code> 文件。查看目录权限可知，需要以 <code>root</code> 身份运行 <code>logrotate</code>。</p>
@@ -316,17 +316,38 @@
 <p>事实上，<code>logrotate -d /etc/logrotate.d/nginx</code> 命令也会读取 <code>/var/lib/logrotate/status</code>，但是 <code>other</code> 对该目录也有 <code>r</code> 读取权限，所以没有报错。</p>
 <figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -d /etc/logrotate.d/nginx</span> </span><br><span class="line">WARNING: logrotate in debug mode does nothing except printing debug messages!  Consider using verbose mode (-v) instead if this is not what you want.</span><br><span class="line"></span><br><span class="line">reading config file /etc/logrotate.d/nginx</span><br><span class="line">Reading state from file: /var/lib/logrotate/status</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
-<h4 id="日志文件夹的权限"><a href="#日志文件夹的权限" class="headerlink" title="日志文件夹的权限"></a>日志文件夹的权限</h4><p>即使你使用 <code>root</code> 身份运行 <code>logrotate</code>，你可能还会遇到以下报错</p>
+<h3 id="日志文件夹的权限"><a href="#日志文件夹的权限" class="headerlink" title="日志文件夹的权限"></a>日志文件夹的权限</h3><p>即使你使用 <code>root</code> 身份运行 <code>logrotate</code>，你可能还会遇到以下报错</p>
 <figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">logrotate -f /etc/logrotate.d/nginx</span> </span><br><span class="line">error: skipping &quot;/path/to/your/nginx/logs/*.log&quot; because parent directory has insecure permissions (It&#x27;s world writable or writable by group which is not &quot;root&quot;) Set &quot;su&quot; directive in config file to tell logrotate which user/group should be used for rotation.</span><br></pre></td></tr></table></figure>
 
 <p>你需要在配置文件中，使用 <code>su &lt;user&gt; &lt;group&gt;</code> 指定日志所在文件夹所属的用户和组，<code>logrotate</code> 才能正确读写。</p>
-<h4 id="由宿主机还是容器主导"><a href="#由宿主机还是容器主导" class="headerlink" title="由宿主机还是容器主导"></a>由宿主机还是容器主导</h4><p>首先 <code>Nginx</code> 的日志文件夹通过挂载映射到宿主机，日志滚动既可以由宿主机主导，也可以由容器主导，不过不论如何我们都需要向 <code>Docker</code> 容器内的 <code>Nginx</code> 发送 <code>USR1</code> 信号。有人倾向于在容器内完成所有工作，和宿主机几乎完全隔离；我个人更青睐于由宿主机主导，因为容器内的环境并不总是拥有你想要使用的软件（除非你总是定制自己使用的镜像），甚至标准镜像往往非常精简。</p>
+<h3 id="由宿主机还是容器主导"><a href="#由宿主机还是容器主导" class="headerlink" title="由宿主机还是容器主导"></a>由宿主机还是容器主导</h3><p>首先 <code>Nginx</code> 的日志文件夹通过挂载映射到宿主机，日志滚动既可以由宿主机主导，也可以由容器主导，不过不论如何我们都需要向 <code>Docker</code> 容器内的 <code>Nginx</code> 发送 <code>USR1</code> 信号。有人倾向于在容器内完成所有工作，和宿主机几乎完全隔离；我个人更青睐于由宿主机主导，因为容器内的环境并不总是拥有你想要使用的软件（除非你总是定制自己使用的镜像），甚至标准镜像往往非常精简。</p>
 <p>在 <code>logrotate</code> 配置中的 <code>postrotate</code> 部分添加脚本，使用 <code>docker exec</code> 在容器内执行命令，完成向 <code>Nginx</code> 发送信号的工作。脚本的处理逻辑大概是“如果存在 <code>/var/run/nginx.pid</code>，就执行 <code>kill -USR1 \`cat /var/run/nginx.pid\`</code> 命令，并打印成功的消息”。但是我看到很多文章中分享的配置类似下面这样：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec nginx sh -c &quot;if [ -f /var/run/nginx.pid ]; then kill -USR1 $(docker exec nginx cat /var/run/nginx.pid); fi&quot;</span><br><span class="line"></span><br><span class="line">docker exec nginx sh -c &quot;[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`;&quot;</span><br></pre></td></tr></table></figure>
 
 <p>经过测试都会有以下报错，我不清楚是否大多是抓取发布的文章，也不清楚他们是否测试过，对于 <code>Shell</code> 脚本写得不多的我来说，半夜测试反复排查错误真是头昏脑胀。在我原先的理解里，<code>-c</code> 后面的脚本是整体发到容器内部执行的，后来我才意识到，我对脚本内部的命令在宿主机还是容器里执行的理解是错误的。</p>
 <figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat: /var/run/nginx.pid: No such file or directory</span><br></pre></td></tr></table></figure>
 
+<h3 id="继续写入旧日志文件"><a href="#继续写入旧日志文件" class="headerlink" title="继续写入旧日志文件"></a>继续写入旧日志文件</h3><p>在使用 <code>logrotate -f /etc/logrotate.d/nginx</code> 测试通过后的第二天，发现虽然创建了新的日志文件，但是 <code>Nginx</code> 继续写入到旧的日志文件。这不同于网上很多文章提到的“没有发送 <code>USR1</code> 信号给 <code>Nginx</code> ”的情况。</p>
+<p>尝试手动发送信号，观察效果。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec nginx sh -c &quot;kill -USR1 `docker exec nginx cat /var/run/nginx.pid`&quot;</span><br></pre></td></tr></table></figure>
+
+<p>发现虽然终止了继续写入到旧的文件，但是在宿主机读取日志时，提示没有权限。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> access.log</span></span><br><span class="line">cat: access.log: Permission denied</span><br></pre></td></tr></table></figure>
+
+<p>查看日志文件权限，发现不对劲。新建的 <code>access.log</code> 的权限为 <code>600</code>，所属用户从 <code>moralok</code> 变为 <code>systemd-resolve</code>，失去了只有所属用户才拥有的 <code>rw</code> 权限。</p>
+<blockquote>
+<p>此时虽然注意到没有成功创建新的 <code>error.log</code>，但是只是以为对于空的日志文件不滚动。并且在后续重现问题时发现此时其实可以在容器里看到日志开始写入新的日志文件。</p>
+</blockquote>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ll</span></span><br><span class="line">total 136</span><br><span class="line">drwxrwxr-x 2 moralok         moralok 4096 Dec  3 00:00 ./</span><br><span class="line">drwxrwxr-x 4 moralok         moralok 4096 Nov 30 17:25 ../</span><br><span class="line">-rw------- 1 moralok         moralok    0 Dec  3 00:00 access.log</span><br><span class="line">-rw-r--r-- 1 systemd-resolve root  109200 Dec  3 07:01 access.log-20231203</span><br><span class="line">-rw-r--r-- 1 systemd-resolve root       0 Dec  2 19:07 error.log</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我的想法是，既然成功创建了新的日志文件，肯定是 <code>Nginx</code> 接收到了 <code>USR1</code> 信号。怎么会出现“<code>crontab</code> 触发时发送信号有问题，手动发送却没问题”的情况呢？难道是两者触发的执行方式有所不同？还是说宿主机创建的文件会有问题？注意到新的日志文件所属的用户和组和原日志文件所属的用户和组不同，我开始怀疑创建文件的过程有问题。在反复测试尝试重现问题后，我把关注点放到了 <code>create</code> 配置上。其实在最开始，我就关注了它，我想既然在默认的配置文件中已经设置而且我也不修改，那么就不在 <code>/etc/logrotate.d/nginx</code> 添加了。我甚至花了很多时间浏览文档，确认它在缺省后面的权限属性时会使用原日志文件的权限属性。当时我还专门记录了一个疑问，“文档说在运行 <code>postrotate</code> 脚本前创建新文件，可是在测试验证时，新文件是 <code>Nginx</code> 接收 <code>USR1</code> 信号后重新打开文件时创建的，在脚本执行报错或者脚本中并不发送信号时，不会产生新文件”。现在想来，都是坑，坑里注定要灌满眼泪！</p>
+<p>在 <code>/etc/logrotate.d/nginx</code> 添加 <code>create</code> 后，成功重现问题。</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">renaming /path/to/your/nginx/logs/access.log to /path/to/your/nginx/logs/access.log-20231203</span><br><span class="line">creating new /path/to/your/nginx/logs/access.log mode = 0644 uid = 101 gid = 0</span><br><span class="line">error: error setting owner of /path/to/your/nginx/logs/access.log to uid 101 and gid 0: Operation not permitted</span><br><span class="line">switching euid to 0 and egid to 0</span><br></pre></td></tr></table></figure>
+
+<p>可见 <code>logrotate -f /etc/logrotate.d/nginx</code>，并没有使用到默认配置 <code>/etc/logrotate.conf</code>，而 <code>crontab</code> 触发 <code>logrotate</code> 时使用到了。修改为 <code>create 0644 moralok moralok</code>，成功解决问题。可以确认 <code>create</code> 在缺省权限属性的时候，如果日志文件因为挂载到容器中而被修改了所属用户，<code>logrotate</code> 按照原文件的权限属性创建新文件时会报错，从而导致脚本不能正常执行，<code>Nginx</code> 不会收到信号，<code>error.log</code> 也不会继续滚动。按此原因推理，在配置文件中，加入 <code>nocreate</code> 也可以解决问题，并且更加符合官方文档建议的流程。</p>
+<blockquote>
+<p>枯坐一下午，百思不得其解，想到抓狂。不得不说真的很讨厌这类问题，特定条件下奇怪的问题，食之无味，弃之还不行！如果照着网上的文章，一开始就添加配置真的不会遇到啊。可是不喜欢不明不白地修改配置来解决问题，也不喜欢一次性加很多设置却不知道各个配置的功能，特别是在我的理解里这个默认配置似乎没问题的情况下。明明想要克制住不知重点还不断深入探索细节的坏习惯，却还是被一个 <code>Bug</code> 带着花费了大量的时间和精力，解决了一个照着抄就不会遇到的问题。虽然真的有收获，真的解决了前一晚留下的疑问，可是不甘心啊，气气气！而且为什么这样会有问题，我还是不懂！</p>
+</blockquote>
 <h2 id="logrotate-备忘"><a href="#logrotate-备忘" class="headerlink" title="logrotate 备忘"></a>logrotate 备忘</h2><p><a target="_blank" rel="noopener" href="https://linux.die.net/man/8/logrotate">帮助文档</a></p>
 <h3 id="命令参数"><a href="#命令参数" class="headerlink" title="命令参数"></a>命令参数</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-d, --debug : 打开调试模式，这意味着不会对日志进行任何更改，并且 logrotate 状态文件不会更新。仅打印调试消息。</span><br><span class="line">-f, --force : 告诉 logrotate 强制滚动，即使它认为这没有必要。有时，在将新条目添加到 logrotate 配置文件后，或者如果已手动删除旧日志文件，这会很有用，因为将创建新文件，并且正确地继续记录日志。</span><br><span class="line">-m, --mail &lt;command&gt; : 告诉 logrotate 在邮寄日志时使用哪个命令。此命令应接受两个参数：消息的主题，收件人。然后，该命令必须读取标准输入上的消息并将其邮寄给收件人。默认邮件命令是 /bin/mail -s。</span><br><span class="line">-s, --state &lt;statefile&gt; : 告诉 logrotate 使用备用状态文件。如果 logrotate 以不同用户身份运行不同的日志文件集，这会非常有用。默认状态文件是 /var/lib/logrotate/status。</span><br><span class="line">--usage : 打印简短的用法信息。</span><br><span class="line">--?, --help : 打印帮助信息。</span><br><span class="line">-v, --verbose : 打开详细模式，例如在滚动期间显示消息。</span><br></pre></td></tr></table></figure>
 
@@ -386,6 +407,14 @@
 <td>不创建新的日志文件，覆盖 create</td>
 </tr>
 <tr>
+<td>copytruncate</td>
+<td>创建副本后就地截断原始日志文件，用于一些无法被告知关闭日志文件的程序，可能会丢失复制和截断之间的日志</td>
+</tr>
+<tr>
+<td>nocopytruncate</td>
+<td>不截断始日志文件，覆盖 copytruncate</td>
+</tr>
+<tr>
 <td>ifempty</td>
 <td>即使是空文件也滚动（默认），覆盖 notifempty</td>
 </tr>
@@ -418,9 +447,6 @@
 <td>当日志文件到达指定的大小时才滚动，默认单位 byte，可以使用 k、M、G</td>
 </tr>
 </tbody></table>
-<blockquote>
-<p>文档说默认在运行 <code>postrotate</code> 脚本前创建新文件，可是新文件不是 <code>Nginx</code> 重新打开文件时创建的吗？之前脚本执行报错，也没有产生新文件啊。</p>
-</blockquote>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://nginx.org/en/docs/control.html#logs">Rotating Log-files</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.nginx.com/resources/wiki/start/topics/examples/logrotation/">Log Rotation</a></li>
@@ -483,13 +509,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">73k</span>
+    <span title="站点总字数">74k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:02</span>
+    <span title="站点阅读时长">4:06</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
