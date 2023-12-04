@@ -256,7 +256,7 @@ private T createAdaptiveExtension() {
 2. 检查缓存 `cachedAdaptiveClass`，如果不为 `null`，则返回缓存。
 3. 如果缓存为 `null`，则调用 `createAdaptiveExtensionClass` 创建自适应拓展类（代理类）。
 
-在{% post_link 'how-Dubbo-SPI-works' 'Dubbo SPI 的工作原理' %}中我们分析过 `getExtensionClasses` 方法，在获取拓展的所有实现类时，如果某个实现类被 `Adaptive` 注解标注了，那么该类就会被赋值给 `cachedAdaptiveClass` 变量。“原理”部分介绍的 `AdaptiveExtensionFactory` 就属于这种情况，我们不再细谈。按前文所说，在绝大多数情况下，`Adaptive` 注解都是用于标注方法而非标注具体的实现类，因此在大多数情况下程序都会走第三个步骤，由框架自动生成自适应拓展类（代理类）。
+在{% post_link 'how-does-Dubbo-SPI-works' 'Dubbo SPI 的工作原理' %}中我们分析过 `getExtensionClasses` 方法，在获取拓展的所有实现类时，如果某个实现类被 `Adaptive` 注解标注了，那么该类就会被赋值给 `cachedAdaptiveClass` 变量。“原理”部分介绍的 `AdaptiveExtensionFactory` 就属于这种情况，我们不再细谈。按前文所说，在绝大多数情况下，`Adaptive` 注解都是用于标注方法而非标注具体的实现类，因此在大多数情况下程序都会走第三个步骤，由框架自动生成自适应拓展类（代理类）。
 
 ```java
 private Class<?> getAdaptiveExtensionClass() {

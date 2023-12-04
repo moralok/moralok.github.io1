@@ -630,7 +630,7 @@ private void injectValue(T instance, Method method, Class<?> pt, String property
 }
 ```
 
-`objectFactory` 是 `ExtensionFactory` 的自适应拓展，通过它获取依赖对象，本质上是根据目标拓展类获取 `ExtensionLoader`，然后获取其自适应拓展，过程代码如下。具体我们不再深入分析，可以参考{% post_link 'how-Dubbo-SPI-adaptive-extension-works' 'Dubbo SPI 自适应拓展的工作原理' %}。
+`objectFactory` 是 `ExtensionFactory` 的自适应拓展，通过它获取依赖对象，本质上是根据目标拓展类获取 `ExtensionLoader`，然后获取其自适应拓展，过程代码如下。具体我们不再深入分析，可以参考{% post_link 'how-does-Dubbo-SPI-adaptive-extension-works' 'Dubbo SPI 自适应拓展的工作原理' %}。
 
 ```java
 public <T> T getExtension(Class<T> type, String name) {
