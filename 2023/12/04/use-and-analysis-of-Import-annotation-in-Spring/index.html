@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="使用方式Import 注解有 3 种导入（注册） BeanDefinition 的方式：  使用 Import 将目标类的 Class 对象，解析为 BeanDefinition 并注册。 使用 Import 配合 ImportSelector 的实现类，将 selectImports 方法返回的所有全限定类名字符串，解析为 BeanDefinition 并注册。 使用 Import 配合 Imp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 中 @Import 注解的使用和源码分析">
+<meta property="og:url" content="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="使用方式Import 注解有 3 种导入（注册） BeanDefinition 的方式：  使用 Import 将目标类的 Class 对象，解析为 BeanDefinition 并注册。 使用 Import 配合 ImportSelector 的实现类，将 selectImports 方法返回的所有全限定类名字符串，解析为 BeanDefinition 并注册。 使用 Import 配合 Imp">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-04T00:36:21.000Z">
+<meta property="article:modified_time" content="2023-12-05T08:44:37.419Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="spring">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/","path":"2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/","title":"Spring 中 @Import 注解的使用和源码分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Spring 中 @Import 注解的使用和源码分析 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">测试用例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.1.</span> <span class="nav-text">获取要导入的目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.2.</span> <span class="nav-text">处理要导入的目标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%80%EF%BC%9AImportSelector"><span class="nav-number">3.2.1.</span> <span class="nav-text">类型一：ImportSelector</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%BA%8C%EF%BC%9AImportBeanDefinitionRegistrar"><span class="nav-number">3.2.2.</span> <span class="nav-text">类型二：ImportBeanDefinitionRegistrar</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%89%EF%BC%9A%E5%85%B6%E4%BB%96%E5%89%A9%E4%BD%99%E6%83%85%E5%86%B5"><span class="nav-number">3.2.3.</span> <span class="nav-text">类型三：其他剩余情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DeferredImportSelector-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.3.</span> <span class="nav-text">DeferredImportSelector 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ImportBeanDefinitionRegistrar-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.4.</span> <span class="nav-text">ImportBeanDefinitionRegistrar 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%AF%BC%E5%85%A5%E7%9A%84%E6%A3%80%E6%B5%8B"><span class="nav-number">3.5.</span> <span class="nav-text">循环导入的检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Spring 中 @Import 注解的使用和源码分析 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring 中 @Import 注解的使用和源码分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-04 08:36:21" itemprop="dateCreated datePublished" datetime="2023-12-04T08:36:21+08:00">2023-12-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-05 16:44:37" itemprop="dateModified" datetime="2023-12-05T16:44:37+08:00">2023-12-05</time>
+    </span>
+
+  
+    <span id="/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/" class="post-meta-item leancloud_visitors" data-flag-title="Spring 中 @Import 注解的使用和源码分析" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p><code>Import</code> 注解有 <code>3</code> 种导入（注册） <code>BeanDefinition</code> 的方式：</p>
+<ol>
+<li>使用 <code>Import</code> 将目标类的 <code>Class</code> 对象，解析为 <code>BeanDefinition</code> 并注册。</li>
+<li>使用 <code>Import</code> 配合 <code>ImportSelector</code> 的实现类，将 <code>selectImports</code> 方法返回的所有全限定类名字符串，解析为 <code>BeanDefinition</code> 并注册。</li>
+<li>使用 <code>Import</code> 配合 <code>ImportBeanDefinitionRegistra</code>r 的实现类，在 <code>registerBeanDefinitions</code> 方法中，直接向 <code>BeanDefinitionRegistry</code> 中注册 <code>BeanDefinition</code>。</li>
+</ol>
+<h2 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h2><p>测试了使用 <code>Import</code> 注解的 <code>3</code> 种方式：</p>
+<ol>
+<li>使用 <code>Import</code> 直接导入（注册） <code>Red</code>。</li>
+<li>配合 <code>ImportBeanDefinitionRegistrar</code> 间接注册 <code>Color</code>。</li>
+<li>配合 <code>ImportSelector</code> 间接导入（注册） <code>Blue</code>。</li>
+</ol>
+<p>用例中的特别地测试了以下两种情况：</p>
+<ol>
+<li>使用 <code>Import</code> 直接导入和配合 <code>ImportSelector</code> 间接导入相同的类 <code>Red</code> 只会注册一个 <code>BeanDefinition</code>。</li>
+<li>尽管 <code>MyImportSelector</code> 书面顺序在 <code>MyImportBeanDefinitionRegistrar</code> 之后，但是 <code>MyImportBeanDefinitionRegistrar</code> 判断 <code>registry</code> 是否包含在 <code>MyImportSelector</code> 导入的类 <code>Blue</code> 时，不受顺序影响。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import(&#123;Red.class, MyImportBeanDefinitionRegistrar.class, MyImportSelector.class,&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ImportConfig</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyImportBeanDefinitionRegistrar</span> <span class="keyword">implements</span> <span class="title class_">ImportBeanDefinitionRegistrar</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">registerBeanDefinitions</span><span class="params">(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)</span> &#123;</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">hasRed</span> <span class="operator">=</span> registry.containsBeanDefinition(<span class="string">&quot;com.moralok.bean.Red&quot;</span>);</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">hasBlue</span> <span class="operator">=</span> registry.containsBeanDefinition(<span class="string">&quot;com.moralok.bean.Blue&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (hasRed &amp;&amp; hasBlue) &#123;</span><br><span class="line">            <span class="type">BeanDefinition</span> <span class="variable">beanDefinition</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RootBeanDefinition</span>(Color.class);</span><br><span class="line">            registry.registerBeanDefinition(<span class="string">&quot;color&quot;</span>, beanDefinition);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyImportSelector</span> <span class="keyword">implements</span> <span class="title class_">ImportSelector</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String[] selectImports(AnnotationMetadata annotationMetadata) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">String</span>[] &#123;<span class="string">&quot;com.moralok.bean.Blue&quot;</span>, <span class="string">&quot;com.moralok.bean.Red&quot;</span>&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Color</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Red</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Blue</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IocTest</span> &#123;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">importTest</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">ac</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>(ImportConfig.class);</span><br><span class="line">        String[] beanDefinitionNames = ac.getBeanDefinitionNames();</span><br><span class="line">        <span class="keyword">for</span> (String name : beanDefinitionNames) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;beanDefinitionName..........&quot;</span> + name);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">beanDefinitionName..........importConfig</span><br><span class="line">beanDefinitionName..........com.moralok.bean.Red</span><br><span class="line">beanDefinitionName..........com.moralok.bean.Blue</span><br><span class="line">beanDefinitionName..........color</span><br></pre></td></tr></table></figure>
+
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>关于 <code>Import</code> 注解的源码分析需要建立在对关于 <code>Configuration</code> 注解的源码的了解基础上，因为前者是 <code>Spring</code> 解析配置类处理过程的一部分，可以参考文章:</p>
+<ul>
+<li><a href="/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/" title="Spring @Configuration 注解的源码分析">Spring @Configuration 注解的源码分析</a></li>
+</ul>
+<h3 id="获取要导入的目标"><a href="#获取要导入的目标" class="headerlink" title="获取要导入的目标"></a>获取要导入的目标</h3><p>在 <code>doProcessConfigurationClass</code> 方法中处理配置类构建配置模型时，会调用 <code>processImports</code> 方法处理 <code>Import</code> 注解。在进入方法前，会调用 <code>getImports</code> 方法从 <code>sourceClass</code> 获取要导入的目标。</p>
+<blockquote>
+<p>注意：目标不仅仅来自直接标注在 <code>sourceClass</code> 上的 <code>Import</code> 注解，因为 <code>sourceClass</code> 上可能还有其他的注解，这些注解自身可能标注了 <code>Import</code> 注解，因此需要递归地遍历所有注解，找到所有的 <code>Import</code> 注解。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> SourceClass <span class="title function_">doProcessConfigurationClass</span><span class="params">(ConfigurationClass configClass, SourceClass sourceClass)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 前后省略 @PropertySource、@ComponentScan、@ImportSource、@Bean 等注解的处理</span></span><br><span class="line">    <span class="comment">// 处理 Import 注解</span></span><br><span class="line">    processImports(configClass, sourceClass, getImports(sourceClass), <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>collectImports</code> 方法是一种常见的递归写法（深度优先遍历）。<code>imports</code> 存放要导入的目标，<code>visited</code> 存放已经访问过的 <code>sourceClass</code>。<code>sourceClass</code> 在入口处包装了一个普通的 <code>Class</code>，在递归的过程中包装的都是一个注解 <code>Class</code>。</p>
+<blockquote>
+<p>注意：这里还没有检测循环导入的情况并抛出异常，但 <code>visited</code> 保证了只会遍历一次。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 Import 注解 value 中的 Class 对象，并包装为 SourceClass 返回</span></span><br><span class="line"><span class="keyword">private</span> Set&lt;SourceClass&gt; <span class="title function_">getImports</span><span class="params">(SourceClass sourceClass)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    Set&lt;SourceClass&gt; imports = <span class="keyword">new</span> <span class="title class_">LinkedHashSet</span>&lt;SourceClass&gt;();</span><br><span class="line">    Set&lt;SourceClass&gt; visited = <span class="keyword">new</span> <span class="title class_">LinkedHashSet</span>&lt;SourceClass&gt;();</span><br><span class="line">    collectImports(sourceClass, imports, visited);</span><br><span class="line">    <span class="keyword">return</span> imports;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 递归地收集要导入的目标（包装为 SourceClass）</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">collectImports</span><span class="params">(SourceClass sourceClass, Set&lt;SourceClass&gt; imports, Set&lt;SourceClass&gt; visited)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果 sourceClass 尚未访问过</span></span><br><span class="line">    <span class="keyword">if</span> (visited.add(sourceClass)) &#123;</span><br><span class="line">        <span class="comment">// 遍历 sourceClass 上的注解</span></span><br><span class="line">        <span class="keyword">for</span> (SourceClass annotation : sourceClass.getAnnotations()) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">annName</span> <span class="operator">=</span> annotation.getMetadata().getClassName();</span><br><span class="line">            <span class="comment">// 只要注解的名称不是 java 开头或者不是 Import 注解</span></span><br><span class="line">            <span class="keyword">if</span> (!annName.startsWith(<span class="string">&quot;java&quot;</span>) &amp;&amp; !annName.equals(Import.class.getName())) &#123;</span><br><span class="line">                <span class="comment">// 将该注解作为 sourceClass 递归地调用</span></span><br><span class="line">                collectImports(annotation, imports, visited);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将 Import 注解的 value 的值转换为 sourceClass 加入 imports</span></span><br><span class="line">        imports.addAll(sourceClass.getAnnotationAttributes(Import.class.getName(), <span class="string">&quot;value&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这时候，并不区分要导入的目标的 <code>Class</code> 有什么特别之处，<code>Import</code> 注解的语义，此时宽泛地说就是：“将 <code>value</code> 中的类导入”。但是显而易见，这样的方式不够灵活，因此才有了另外两种更有灵活性的导入方式：<code>ImportSelector</code> 和 <code>ImportBeanDefinitionRegistrar</code>，<code>Spring</code> 最终不会真的注册这两种类，而是注册它们“介绍”的类，相当于把确定导入什么类的工作委托给它们。</p>
+<h3 id="处理要导入的目标"><a href="#处理要导入的目标" class="headerlink" title="处理要导入的目标"></a>处理要导入的目标</h3><p><code>processImports</code> 方法是处理 <code>Import</code> 注解的核心方法，这里的处理逻辑就对应着 <code>Import</code> 注解的三种使用方式。主要步骤如下：</p>
+<ul>
+<li>检测要导入的候选者不为空</li>
+<li>判断是否要检测循环导入以及是否存在循环导入</li>
+<li>处理要导入的候选者<ul>
+<li>如果是 <code>ImportSelector</code> 类型，调用 <code>selectImports</code> 方法获取新的要导入的目标，递归调用 <code>processImports</code> 处理</li>
+<li>如果是 <code>ImportBeanDefinitionRegistrar</code> 类型，添加到配置模型 <code>configClass</code>（出口 <code>1</code>）</li>
+<li>如果是其他剩余情况，作为配置类处理（出口 <code>2</code>）</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">processImports</span><span class="params">(ConfigurationClass configClass, SourceClass currentSourceClass,</span></span><br><span class="line"><span class="params">			Collection&lt;SourceClass&gt; importCandidates, <span class="type">boolean</span> checkForCircularImports)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 如果要导入的目标为空，直接返回</span></span><br><span class="line">    <span class="keyword">if</span> (importCandidates.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (checkForCircularImports &amp;&amp; isChainedImportOnStack(configClass)) &#123;</span><br><span class="line">        <span class="comment">// 如果要检查循环导入，且确实存在循环导入，则抛出异常</span></span><br><span class="line">        <span class="built_in">this</span>.problemReporter.error(<span class="keyword">new</span> <span class="title class_">CircularImportProblem</span>(configClass, <span class="built_in">this</span>.importStack));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 将配置模型放入 importStack，用于检查循环导入</span></span><br><span class="line">        <span class="built_in">this</span>.importStack.push(configClass);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 遍历每一个准备导入的目标</span></span><br><span class="line">            <span class="keyword">for</span> (SourceClass candidate : importCandidates) &#123;</span><br><span class="line">                <span class="comment">// 如果是 ImportSelector 类型，委托给它确定导入目标</span></span><br><span class="line">                <span class="keyword">if</span> (candidate.isAssignable(ImportSelector.class)) &#123;</span><br><span class="line">                    <span class="comment">// 加载类</span></span><br><span class="line">                    Class&lt;?&gt; candidateClass = candidate.loadClass();</span><br><span class="line">                    <span class="comment">// 实例化得到 ImportSelector 实例</span></span><br><span class="line">                    <span class="type">ImportSelector</span> <span class="variable">selector</span> <span class="operator">=</span> BeanUtils.instantiateClass(candidateClass, ImportSelector.class);</span><br><span class="line">                    <span class="comment">// 调用其 Aware 接口</span></span><br><span class="line">                    ParserStrategyUtils.invokeAwareMethods(</span><br><span class="line">                            selector, <span class="built_in">this</span>.environment, <span class="built_in">this</span>.resourceLoader, <span class="built_in">this</span>.registry);</span><br><span class="line">                    <span class="keyword">if</span> (<span class="built_in">this</span>.deferredImportSelectors != <span class="literal">null</span> &amp;&amp; selector <span class="keyword">instanceof</span> DeferredImportSelector) &#123;</span><br><span class="line">                        <span class="comment">// 如果是 DeferredImportSelector 类型，存入 deferredImportSelectors 推迟调用</span></span><br><span class="line">                        <span class="built_in">this</span>.deferredImportSelectors.add(</span><br><span class="line">                                <span class="keyword">new</span> <span class="title class_">DeferredImportSelectorHolder</span>(configClass, (DeferredImportSelector) selector));</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">// 调用 selectImports 方法，返回要导入的目标的全限定类名</span></span><br><span class="line">                        String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());</span><br><span class="line">                        <span class="comment">// 包装为 SourceClass</span></span><br><span class="line">                        Collection&lt;SourceClass&gt; importSourceClasses = asSourceClasses(importClassNames);</span><br><span class="line">                        <span class="comment">// 递归调用 processImports</span></span><br><span class="line">                        <span class="comment">// 从这里看，ImportSelector 本质上是更加灵活的 Import</span></span><br><span class="line">                        processImports(configClass, currentSourceClass, importSourceClasses, <span class="literal">false</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 如果是 ImportBeanDefinitionRegistrar 类型，委托给它注册额外的 BeanDefinitions</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) &#123;</span><br><span class="line">                    <span class="comment">// 加载类</span></span><br><span class="line">                    Class&lt;?&gt; candidateClass = candidate.loadClass();</span><br><span class="line">                    <span class="comment">// 实例化得到 ImportBeanDefinitionRegistrar 实例</span></span><br><span class="line">                    <span class="type">ImportBeanDefinitionRegistrar</span> <span class="variable">registrar</span> <span class="operator">=</span></span><br><span class="line">                            BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);</span><br><span class="line">                    <span class="comment">// 调用其 Aware 接口</span></span><br><span class="line">                    ParserStrategyUtils.invokeAwareMethods(</span><br><span class="line">                            registrar, <span class="built_in">this</span>.environment, <span class="built_in">this</span>.resourceLoader, <span class="built_in">this</span>.registry);</span><br><span class="line">                    <span class="comment">// 添加到配置模型</span></span><br><span class="line">                    configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 既不是 ImportSelector，也不是 ImportBeanDefinitionRegistrar 的其他剩余情况，将其视为被 Configuration 注解标注的配置类进行处理</span></span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="built_in">this</span>.importStack.registerImport(</span><br><span class="line">                            currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());</span><br><span class="line">                    <span class="comment">// asConfigClass 方法建立了 candidate importBy configClass 的关系</span></span><br><span class="line">                    processConfigurationClass(candidate.asConfigClass(configClass));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (BeanDefinitionStoreException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> ex;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BeanDefinitionStoreException</span>(</span><br><span class="line">                    <span class="string">&quot;Failed to process import candidates for configuration class [&quot;</span> +</span><br><span class="line">                    configClass.getMetadata().getClassName() + <span class="string">&quot;]&quot;</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// pop 配置模型</span></span><br><span class="line">            <span class="built_in">this</span>.importStack.pop();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="类型一：ImportSelector"><a href="#类型一：ImportSelector" class="headerlink" title="类型一：ImportSelector"></a>类型一：ImportSelector</h4><p>如果要导入的目标是 <code>ImportSelector</code> 类型，那么 <code>Spring</code> 将确定真正导入什么目标的工作委托给它，不导入目标本身，实际上只导入目标“介绍”的类。具体步骤是：</p>
+<ol>
+<li>先获取 <code>Class</code> 对象</li>
+<li>再实例化得到一个 <code>ImportSelector</code> 实例</li>
+<li>调用 <code>selectImports</code> 方法，该方法返回的是类的全限定名，这样就得到了真正要导入的目标</li>
+<li>再次递归调用 <code>processImports</code></li>
+</ol>
+<p><code>ImportSelector</code> 就像它名字的含义一样，本质上是一种导入选择器，是一种更加灵活的 <code>getImports</code> 方法。由于返回的目标可能属于三种情形中的任意一种，所以对这些目标的处理还是要回到 <code>processImports</code> 方法。可以说 <code>ImportSelector</code> 类型本身不是 <code>processImports</code> 方法的出口，它最终会转换为 <code>ImportBeanDefinitionRegistrar</code> 或其他剩余情况。</p>
+<p><code>ImportSelector</code> 灵活性的来源：</p>
+<ul>
+<li><code>selectImports</code> 的 <code>AnnotationMetadata</code> 参数，为它提供了根据注解信息返回要导入的目标的能力</li>
+<li><code>ImportSelector</code> 可以实现 <code>Aware</code> 接口，用以感知到一些容器级别的资源，如 <code>BeanFactory</code>，这为它提供了根据这些资源中的信息返回要导入的目标的能力</li>
+</ul>
+<h4 id="类型二：ImportBeanDefinitionRegistrar"><a href="#类型二：ImportBeanDefinitionRegistrar" class="headerlink" title="类型二：ImportBeanDefinitionRegistrar"></a>类型二：ImportBeanDefinitionRegistrar</h4><p>如果要导入的目标是 <code>ImportBeanDefinitionRegistrar</code>，它会和 <code>ImportSelector</code> 有些相似却又有所不同。<code>Spring</code> 同样将确定真正导入什么目标的工作委托给它，不导入目标本身，实际上只导入目标“介绍”的类。</p>
+<ol>
+<li>先获取 <code>Class</code> 对象</li>
+<li>再实例化得到一个 <code>ImportBeanDefinitionRegistrar</code> 实例</li>
+<li>添加到配置模型 <code>configClass</code> 的 <code>importBeanDefinitionRegistrars</code> 属性</li>
+</ol>
+<p><code>ImportBeanDefinitionRegistrar</code> 不像 <code>ImportSelector</code> 需要进一步处理，它本身就代表着一个返回出口，成为了配置模型的一部分。但是请注意，<code>registerBeanDefinitions</code> 方法此时并没有被调用。</p>
+<p><code>ImportBeanDefinitionRegistrar</code> 灵活性的来源：</p>
+<ul>
+<li><code>registerBeanDefinitions</code> 的 <code>AnnotationMetadata</code> 参数，为它提供了根据注解信息决定注册 <code>BeanDefinition</code> 的能力</li>
+<li><code>registerBeanDefinitions</code> 的 <code>BeanDefinitionRegistry</code> 参数，为它提供了根据 <code>BeanDefinitionRegistry</code> 中的信息决定注册 <code>BeanDefinition</code> 的能力</li>
+<li><code>ImportBeanDefinitionRegistrar</code> 可以实现 <code>Aware</code> 接口，用以感知到一些容器级别的资源，如 <code>BeanFactory</code>，这为它提供了根据这些资源中的信息返回要导入的目标的能力</li>
+</ul>
+<h4 id="类型三：其他剩余情况"><a href="#类型三：其他剩余情况" class="headerlink" title="类型三：其他剩余情况"></a>类型三：其他剩余情况</h4><p>如果要导入的目标属于既不是 <code>ImportSelector</code> 也不是 <code>ImportBeanDefinitionRegistrar</code> 的其他剩余情况，那么 <code>Spring</code> 将其视为被 <code>Configuration</code> 注解标注的配置类进行处理。这里的处理逻辑是，<code>Import</code> 注解导入的类可能不是一个普通的类，而是一个配置类，因此需要回到 <code>processConfigurationClass</code> 进行处理。<code>processConfigurationClass</code> 方法正是本文开头的 <code>doProcessConfigurationClass</code> 方法的调用方，这里有两个地方值得注意：</p>
+<ul>
+<li><code>Import</code> 注解产生的 <code>ConfigurationClass</code> 根据不同的情况需要合并或者被抛弃，显式声明比 Import 导入的优先级更高。</li>
+<li>其他剩余情况下，目标最终会转换为一个配置模型，添加到 <code>parser</code> 的 <code>configurationClasses</code> 属性。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">processConfigurationClass</span><span class="params">(ConfigurationClass configClass)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 判断是否跳过处理</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果配置模型已经存在</span></span><br><span class="line">    <span class="type">ConfigurationClass</span> <span class="variable">existingClass</span> <span class="operator">=</span> <span class="built_in">this</span>.configurationClasses.get(configClass);</span><br><span class="line">    <span class="keyword">if</span> (existingClass != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果新的配置模型代表的类，是 Import 导入的</span></span><br><span class="line">        <span class="keyword">if</span> (configClass.isImported()) &#123;</span><br><span class="line">            <span class="comment">// 如果已存在的配置模型也是 Import 导入的</span></span><br><span class="line">            <span class="keyword">if</span> (existingClass.isImported()) &#123;</span><br><span class="line">                <span class="comment">// 合并它们的来源</span></span><br><span class="line">                <span class="comment">// 比如一个类 A 既被 Config1 上的 Import 注解导入，也被 Config2 上的 Import 导入</span></span><br><span class="line">                existingClass.mergeImportedBy(configClass);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 否则忽略新的因为 Import 导入而产生的配置模型</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 使用显式定义的代替 Import 导入的（显式定义的和 Import 导入的有什么不同吗）</span></span><br><span class="line">            <span class="built_in">this</span>.configurationClasses.remove(configClass);</span><br><span class="line">            <span class="keyword">for</span> (Iterator&lt;ConfigurationClass&gt; it = <span class="built_in">this</span>.knownSuperclasses.values().iterator(); it.hasNext();) &#123;</span><br><span class="line">                <span class="keyword">if</span> (configClass.equals(it.next())) &#123;</span><br><span class="line">                    it.remove();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 先递归地处理配置类和它的父类，因为配合各种注解，可能引入更多的类</span></span><br><span class="line">    <span class="type">SourceClass</span> <span class="variable">sourceClass</span> <span class="operator">=</span> asSourceClass(configClass);</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        sourceClass = doProcessConfigurationClass(configClass, sourceClass);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (sourceClass != <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 一个配置类，本身最终被解析成配置模型（配置模型在后续将会解析出 BeanDefinition）</span></span><br><span class="line">    <span class="built_in">this</span>.configurationClasses.put(configClass, configClass);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="DeferredImportSelector-的调用时机"><a href="#DeferredImportSelector-的调用时机" class="headerlink" title="DeferredImportSelector 的调用时机"></a>DeferredImportSelector 的调用时机</h3><p>在解析完每一批（注释中说“全部”）的配置类后，会统一调用 <code>DeferredImportSelector</code>。它作为一个标记接口推迟了 <code>selectImports</code> 的时机，打破了处理顺序的限制，在方法被调用时，可以得到更加完整的信息。注释中说“在选择导入的目标是 <code>@Conditional</code> 时，这个类型的选择器会很有用”，但是我不太理解，因为这个时候，处理配置类得到的信息尚未转换为 <code>ImportSelector</code> 可以感知到的信息，不像 <code>ImportBeanDefinitionRegistrar</code>，它被调用的时机在最后，也因此可以感知到更多的信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parse</span><span class="params">(Set&lt;BeanDefinitionHolder&gt; configCandidates)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.deferredImportSelectors = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;DeferredImportSelectorHolder&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (BeanDefinitionHolder holder : configCandidates) &#123;</span><br><span class="line">        <span class="type">BeanDefinition</span> <span class="variable">bd</span> <span class="operator">=</span> holder.getBeanDefinition();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (bd <span class="keyword">instanceof</span> AnnotatedBeanDefinition) &#123;</span><br><span class="line">                parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (bd <span class="keyword">instanceof</span> AbstractBeanDefinition &amp;&amp; ((AbstractBeanDefinition) bd).hasBeanClass()) &#123;</span><br><span class="line">                parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                parse(bd.getBeanClassName(), holder.getBeanName());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (BeanDefinitionStoreException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> ex;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BeanDefinitionStoreException</span>(</span><br><span class="line">                    <span class="string">&quot;Failed to parse configuration class [&quot;</span> + bd.getBeanClassName() + <span class="string">&quot;]&quot;</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 调用 DeferredImportSelectors</span></span><br><span class="line">    processDeferredImportSelectors();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">processDeferredImportSelectors</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 获取处理这一批配置类获得的 DeferredImportSelectors</span></span><br><span class="line">    List&lt;DeferredImportSelectorHolder&gt; deferredImports = <span class="built_in">this</span>.deferredImportSelectors;</span><br><span class="line">    <span class="comment">// 清空</span></span><br><span class="line">    <span class="built_in">this</span>.deferredImportSelectors = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 排序</span></span><br><span class="line">    Collections.sort(deferredImports, DEFERRED_IMPORT_COMPARATOR);</span><br><span class="line">    <span class="comment">// 遍历</span></span><br><span class="line">    <span class="keyword">for</span> (DeferredImportSelectorHolder deferredImport : deferredImports) &#123;</span><br><span class="line">        <span class="type">ConfigurationClass</span> <span class="variable">configClass</span> <span class="operator">=</span> deferredImport.getConfigurationClass();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 调用 selectImports 获取要导入的目标</span></span><br><span class="line">            String[] imports = deferredImport.getImportSelector().selectImports(configClass.getMetadata());</span><br><span class="line">            <span class="comment">// 调用 processImports 处理要导入的目标，这里不管循环导入？竟然是任由 StackOverFlow</span></span><br><span class="line">            processImports(configClass, asSourceClass(configClass), asSourceClasses(imports), <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (BeanDefinitionStoreException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> ex;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BeanDefinitionStoreException</span>(</span><br><span class="line">                    <span class="string">&quot;Failed to process import candidates for configuration class [&quot;</span> +</span><br><span class="line">                    configClass.getMetadata().getClassName() + <span class="string">&quot;]&quot;</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ImportBeanDefinitionRegistrar-的调用时机"><a href="#ImportBeanDefinitionRegistrar-的调用时机" class="headerlink" title="ImportBeanDefinitionRegistrar 的调用时机"></a>ImportBeanDefinitionRegistrar 的调用时机</h3><p><code>ConfigurationClassPostProcessor</code> 在每次解析得到新的一批配置模型后，都会调用 <code>ConfigurationClassBeanDefinitionReader</code> 的 <code>loadBeanDefinitions</code> 方法加载 <code>BeanDefinition</code>，在这过程的最后会从 <code>ImportBeanDefinitionRegistrar</code> 加载 <code>BeanDefinition</code>。这代表在处理同一批配置类时，在 <code>registerBeanDefinitions</code> 方法中总是能感知到以其他方式注册到 <code>BeanDefinitionRegistry</code> 中的 <code>BeanDefinition</code>，不论书面定义的顺序如何。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">loadBeanDefinitions</span><span class="params">(Set&lt;ConfigurationClass&gt; configurationModel)</span> &#123;</span><br><span class="line">    <span class="type">TrackedConditionEvaluator</span> <span class="variable">trackedConditionEvaluator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TrackedConditionEvaluator</span>();</span><br><span class="line">    <span class="comment">// 遍历每一个配置模型</span></span><br><span class="line">    <span class="keyword">for</span> (ConfigurationClass configClass : configurationModel) &#123;</span><br><span class="line">        <span class="comment">// 从配置模型中加载 BeanDefinistion</span></span><br><span class="line">        loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">loadBeanDefinitionsForConfigurationClass</span><span class="params">(ConfigurationClass configClass,</span></span><br><span class="line"><span class="params">        TrackedConditionEvaluator trackedConditionEvaluator)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (trackedConditionEvaluator.shouldSkip(configClass)) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">beanName</span> <span class="operator">=</span> configClass.getBeanName();</span><br><span class="line">        <span class="keyword">if</span> (StringUtils.hasLength(beanName) &amp;&amp; <span class="built_in">this</span>.registry.containsBeanDefinition(beanName)) &#123;</span><br><span class="line">            <span class="built_in">this</span>.registry.removeBeanDefinition(beanName);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">this</span>.importRegistry.removeImportingClass(configClass.getMetadata().getClassName());</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果配置模型本身是导入的，为自身注册 BeanDefinition</span></span><br><span class="line">    <span class="keyword">if</span> (configClass.isImported()) &#123;</span><br><span class="line">        registerBeanDefinitionForImportedConfigurationClass(configClass);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 为 BeanMethod 加载 BeanDefinition（Bean 注解）</span></span><br><span class="line">    <span class="keyword">for</span> (BeanMethod beanMethod : configClass.getBeanMethods()) &#123;</span><br><span class="line">        loadBeanDefinitionsForBeanMethod(beanMethod);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 为 ImportResources 加载 BeanDefinition（ImportResource 注解）</span></span><br><span class="line">    loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());</span><br><span class="line">    <span class="comment">// 从 ImportBeanDefinitionRegistrar 加载 BeanDefinition</span></span><br><span class="line">    loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">loadBeanDefinitionsFromRegistrars</span><span class="params">(Map&lt;ImportBeanDefinitionRegistrar, AnnotationMetadata&gt; registrars)</span> &#123;</span><br><span class="line">    <span class="comment">// 遍历 ImportBeanDefinitionRegistrar 调用 registerBeanDefinitions 方法注册 BeanDefinition</span></span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;ImportBeanDefinitionRegistrar, AnnotationMetadata&gt; entry : registrars.entrySet()) &#123;</span><br><span class="line">        entry.getKey().registerBeanDefinitions(entry.getValue(), <span class="built_in">this</span>.registry);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="循环导入的检测"><a href="#循环导入的检测" class="headerlink" title="循环导入的检测"></a>循环导入的检测</h3><p>在处理导入的目标前将配置类放入 <code>importStack</code>，处理完毕移除。如果要导入的目标属于其他剩余情况时，注册被导入类-&gt;所有导入类集合的映射关系。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">processImports</span><span class="params">(ConfigurationClass configClass, SourceClass currentSourceClass,</span></span><br><span class="line"><span class="params">			Collection&lt;SourceClass&gt; importCandidates, <span class="type">boolean</span> checkForCircularImports)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">if</span> (checkForCircularImports &amp;&amp; isChainedImportOnStack(configClass)) &#123;</span><br><span class="line">        <span class="comment">// 如果要检查循环导入，且确实存在循环导入，则抛出异常</span></span><br><span class="line">        <span class="built_in">this</span>.problemReporter.error(<span class="keyword">new</span> <span class="title class_">CircularImportProblem</span>(configClass, <span class="built_in">this</span>.importStack));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 将配置模型放入 importStack，用于检查循环导入</span></span><br><span class="line">        <span class="built_in">this</span>.importStack.push(configClass);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 遍历每一个准备导入的目标</span></span><br><span class="line">            <span class="keyword">for</span> (SourceClass candidate : importCandidates) &#123;</span><br><span class="line">                <span class="comment">// ...</span></span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 记录了被导入类-&gt;所有导入类集合的映射关系</span></span><br><span class="line">                    <span class="built_in">this</span>.importStack.registerImport(</span><br><span class="line">                            currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());</span><br><span class="line">                    <span class="comment">// asConfigClass 方法建立了 candidate importBy configClass 的关系</span></span><br><span class="line">                    processConfigurationClass(candidate.asConfigClass(configClass));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// pop 配置模型</span></span><br><span class="line">            <span class="built_in">this</span>.importStack.pop();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>检测是否发生循环导入。以当前类开始，循环向上查找最近一个导入自身的类，如果找到自身，说明发生循环导入。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isChainedImportOnStack</span><span class="params">(ConfigurationClass configClass)</span> &#123;</span><br><span class="line">    <span class="comment">// 如果 importStack 已存在该配置模型</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.importStack.contains(configClass)) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">configClassName</span> <span class="operator">=</span> configClass.getMetadata().getClassName();</span><br><span class="line">        <span class="comment">// 获取最新一个导入 configClass 的类</span></span><br><span class="line">        <span class="type">AnnotationMetadata</span> <span class="variable">importingClass</span> <span class="operator">=</span> <span class="built_in">this</span>.importStack.getImportingClassFor(configClassName);</span><br><span class="line">        <span class="comment">// 循环查找导入类的最近一个导入类，如果找到了自身，表示发生循环导入</span></span><br><span class="line">        <span class="keyword">while</span> (importingClass != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (configClassName.equals(importingClass.getClassName())) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            importingClass = <span class="built_in">this</span>.importStack.getImportingClassFor(importingClass.getClassName());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><table>
+<thead>
+<tr>
+<th></th>
+<th><code>ImportSelector</code></th>
+<th><code>ImportBeanDefinitionRegistrar</code></th>
+<th>其他剩余情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>灵活性</td>
+<td>中</td>
+<td>高</td>
+<td>低</td>
+</tr>
+<tr>
+<td>处理结果</td>
+<td></td>
+<td>转换为配置模型的一部分</td>
+<td>转换为一个配置模型</td>
+</tr>
+<tr>
+<td>方法调用时机</td>
+<td>立即（或解析配置类的最后）</td>
+<td>加载 <code>BeanDefinition</code> 的最后</td>
+<td></td>
+</tr>
+<tr>
+<td>方法的结果</td>
+<td>获取 Import 目标</td>
+<td>直接注册 <code>BeanDefinition</code></td>
+<td></td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/spring/" rel="tag"># spring</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/02/rotating-nginx-logs-in-docker-container-with-logrotate/" rel="prev" title="使用 logrotate 滚动 Docker 容器内的 Nginx 的日志">
+                  <i class="fa fa-chevron-left"></i> 使用 logrotate 滚动 Docker 容器内的 Nginx 的日志
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">77k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:18</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
