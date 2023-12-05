@@ -6,12 +6,11 @@ tags:
     - spring
 ---
 
-注解 @Configuration 是 Spring 中常用的注解，在一般应用场景中，它用于标识一个类作为配置类，搭配注解 @Bean 将创建的 bean 交给 Spring 容器管理。神奇的是，被 @Bean 注解的方法，只会被真正调用一次。这种方法调用被拦截的情况很容易让人联想到代理，如果你在 Debug 时注意过配置类的实例，你会发现配置类的 Class 名称中携带 EnhancerBySpringCGLIB。
+`Configuration` 注解是 `Spring` 中常用的注解，在一般的应用场景中，它用于标识一个类作为配置类，搭配 `Bean` 注解将创建的 `bean` 交给 `Spring` 容器管理。神奇的是，被 `Bean` 注解标注的方法，只会被真正调用一次。这种方法调用被拦截的情况很容易让人联想到代理，如果你在 `Debug` 时注意过配置类的实例，你会发现配置类的 `Class` 名称中携带 `EnhancerBySpringCGLIB`。本文将从源码角度，分析 `Configuration` 注解是如何工作的。
 
-本文将从源码角度，分析 @Configuration 注解是如何工作的。通过本文，你将收获：
+<!-- more -->
 
-1. Spring 如何解析配置类并注册 bean 定义到 beanFactory 中的？
-2. 配置类是如何被增强的，被 @Bean 注解的方法（在一般情况下）为何只会被调用一次？
+## 测试用例
 
 - 配置类
 ```java
@@ -46,7 +45,7 @@ public void annotationConfigTest() {
 
 ### 什么是配置类？
 
-通常情况下，我们称被 @Configuration 注解的类为配置类。事实上，配置类的范围比这个定义稍微广泛一些，可以划分为全配置类和精简配置类。在解析配置类时，我们再进一步说明。
+通常情况下，我们称被 `Configuration` 注解标注的类为配置类。事实上，配置类的范围比这个定义稍微广泛一些，可以划分为全配置类和精简配置类。在解析配置类时，我们再进一步说明。
 
 ```java
 ApplicationContext ac = new AnnotationConfigApplicationContext(BeanConfig.class);
@@ -59,29 +58,29 @@ public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
 }
 ```
 
-本文不详细介绍配置类本身如何注册到 BeanFactory 中。当 BeanConfig 被传递给 AnnotationConfigApplicationContext，自身会先被解析为 BeanDefinition 注册到 beanFactory 中。有两点需要注意：
+本文不详细介绍配置类本身如何注册到 `BeanFactory` 中。当 `BeanConfig` 被传递给 `AnnotationConfigApplicationContext`，自身会先被解析为 `BeanDefinition` 注册到 `beanFactory` 中。有两点需要注意：
 
-1. annotatedClasses 可以传入多个，意味着一开始**静态指定的配置类**可以有多个。
-2. annotatedClasses 除了在命名上提示用户应传入被注解的类外，`register(annotatedClasses)` 实际上只是将它们视作普通的 Bean 注册到 beanFactory 中。它们是从外界传入的**首批 BeanDefinition**。
+1. `annotatedClasses` 可以传入多个，意味着一开始**静态指定的配置类**可以有多个。
+2. `annotatedClasses` 除了在命名上提示用户应传入被注解的类外，`register(annotatedClasses)` 实际上只是将它们视作普通的 `Bean` 注册到 `beanFactory` 中。它们是从外界传入的**首批 `BeanDefinition`**。
 
-之后 Spring 进入 refresh 流程。使用 IDEA Debug 观察此时的 beanDefinitionMap，除了 beanConfig 外，AnnotationConfigApplicationContext 在创建时，已经自动注册了 6 个 bean 定义，其中一个就是我们今天的主角 `org.springframework.context.annotation.internalConfigurationAnnotationProcessor -> org.springframework.context.annotation.ConfigurationClassPostProcessor`。显而易见，此时配置类还未被处理得到新的 bean 定义。
+之后 `Spring` 进入 `refresh` 流程。使用 `IDEA Debug` 观察此时的 `beanDefinitionMap`，除了 `beanConfig` 外，`AnnotationConfigApplicationContext` 在创建时，已经自动注册了 `6` 个 `bean` 定义，其中一个就是我们今天的主角 `org.springframework.context.annotation.internalConfigurationAnnotationProcessor -> org.springframework.context.annotation.ConfigurationClassPostProcessor`。显而易见，此时配置类还未被处理得到新的 `bean` 定义。
 
-{% asset_img "Snipaste_2023-11-24_15-26-08.png" AnnotationConfigApplicationContext 刷新前的 bean 定义 %}
+<div style="width:70%;margin:auto">{% asset_img "Snipaste_2023-11-24_15-26-08.png" AnnotationConfigApplicationContext 刷新前的 bean 定义 %}</div>
 
 ### 配置类后处理器 ConfigurationClassPostProcessor
 
-配置类后处理器 ConfigurationClassPostProcessor 实现了接口 BeanDefinitionRegistryPostProcessor，也因此同时实现了接口 BeanFactoryPostProcessor。在{% post_link Spring-application-context-refresh-process 'Spring 应用 context 刷新流程' %}中，我们介绍过这两个接口，它们作为工厂后处理器，被用于 refresh 过程的**调用工厂后处理器阶段**（`invokeBeanFactoryPostProcessors(beanFactory)`）。工厂后处理器的作用，一言以蔽之，允许自定义修改应用上下文中的 bean 定义。
+配置类后处理器 `ConfigurationClassPostProcessor` 实现了接口 `BeanDefinitionRegistryPostProcessor`，也因此同时实现了接口 `BeanFactoryPostProcessor`。在{% post_link Spring-application-context-refresh-process 'Spring 应用 context 刷新流程' %}中，我们介绍过这两个接口，它们作为工厂后处理器，被用于 `refresh` 过程的**调用工厂后处理器阶段**（`invokeBeanFactoryPostProcessors(beanFactory)`）。工厂后处理器的作用，一言以蔽之，允许自定义修改应用上下文中的 bean 定义。
 
-配置类后处理器 ConfigurationClassPostProcessor 的具体作用可以概括为两点：
+配置类后处理器 `ConfigurationClassPostProcessor` 的具体作用可以概括为两点：
 
-1. 解析配置类中配置的 Bean，将它们的 bean 定义注册到 Bean Factory 中。
+1. 解析配置类中配置的 `Bean`，将它们的 `bean` 定义注册到 `BeanFactory` 中。
 2. （如有必要）增强配置类
 
 ### 处理配置类的核心方法 processConfigBeanDefinitions
 
-根据之前的介绍，进入 `invokeBeanFactoryPostProcessors(beanFactory)`，ConfigurationClassPostProcessor 会先作为 BeanDefinitionRegistryPostProcessor 被调用。
+根据之前的介绍，进入 `invokeBeanFactoryPostProcessors(beanFactory)`，`ConfigurationClassPostProcessor` 会先作为 `BeanDefinitionRegistryPostProcessor` 被调用。
 
-> 个人的理解是，先将 beanFactory 视作 BeanDefinitionRegistry 注册好 BeanDefinition，再视作 BeanFactory 进行处理，有点预备好原材料再统一处理的意思。
+> 个人的理解是，先将 `BeanFactory` 视作 `BeanDefinitionRegistry` 注册好 `BeanDefinition`，再视作 `BeanFactory` 进行处理，有点预备好原材料再统一处理的意思。
 
 ```java
 @Override
@@ -92,19 +91,19 @@ public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 }
 ```
 
-> 核心方法 `processConfigBeanDefinitions(registry)` 冗长，个人建议无需过度关注细节（但同时个人感受是反复阅读和 Debug 确实有益于加深理解，看个人时间和精力）。
+> 核心方法 `processConfigBeanDefinitions(registry)` 冗长，个人建议无需过度关注细节（但同时个人感受是反复阅读和 `Debug` 确实有益于加深理解，看个人时间和精力）。
 
-基于配置类的 BeanDefinition Registry（也就是 BeanFactory），获取配置类，构建和校验配置模型：
+基于配置类的 `BeanDefinition Registry`（也就是 `BeanFactory`），获取配置类，构建和校验配置模型：
 
-1. 从 BeanDefinition Registry（即 Bean Factory）中查找配置类。
-2. 解析配置类得到**配置模型**，从模型中读取 BeanDefinitions 注册到 BeanDefinition Registry。
-3. 新的 BeanDefinitions 可能有新的配置类，回到 1 再来一遍。重复循环直到不再引入新的配置类。
+1. 从 `BeanDefinition Registry`（即 `BeanFactory`）中查找配置类。
+2. 解析配置类得到**配置模型**，从模型中读取 `BeanDefinitions` 注册到 `BeanDefinition Registry`。
+3. 新的 `BeanDefinitions` 可能有新的配置类，回到 `1` 再来一遍。重复循环直到不再引入新的配置类。
 
-以本文示例进行说明，静态添加的配置类只有 BeanConfig，假如 BeanConfig 不仅被 @Configuration 注解，还被 @ComponentScan 注解，并且刚好 Spring 通过扫描获得并添加了新的配置类，那么新的配置类就需要继续被解析。
+以本文示例进行说明，静态添加的配置类只有 `BeanConfig`，假如 `BeanConfig` 不仅被 `Configuration` 注解标注，还被 `ComponentScan` 注解标注，并且刚好 `Spring` 通过扫描获得并添加了新的配置类，那么新的配置类就需要继续被解析。
 
-> 应正视**配置模型**这个概念，它可以理解为配置类到 Bean Definitions 的中间产物。最初我先入为主，带着`解析得到 BeanDefinitions` 这样“一阶段”完成的观念，非常不理解 `processConfigBeanDefinitions` 方法上 `Build and validate a configuration model based on the registry of Configuration classes` 这句注释。先行强调注意，**处理配置类得到 bean 定义分为“两阶段”，解析配置类得到配置模型，从配置模型中读取 bean 定义**。
+> 应正视**配置模型**这个概念，它可以理解为配置类到 `BeanDefinitions` 的中间产物。最初我先入为主，带着`解析得到 BeanDefinitions` 这样“一阶段”完成的观念，非常不理解 `processConfigBeanDefinitions` 方法上 `Build and validate a configuration model based on the registry of Configuration classes` 这句注释。先行强调注意，**处理配置类得到 `bean` 定义分为“两阶段”，解析配置类得到配置模型，从配置模型中读取 `bean` 定义**。
 
-{% asset_img "Pasted image 20231127205117.png" 处理配置类的过程 %}
+<div style="width:60%;margin:auto">{% asset_img "Pasted image 20231127205117.png" 处理配置类的过程 %}</div>
 
 ```java
 public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
@@ -237,12 +236,12 @@ public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 
 ### 判断是否是配置类
 
-checkConfigurationClassCandidate 方法：
+`checkConfigurationClassCandidate` 方法：
 
-1. 不能 className 为 null 或 Bean 定义拥有工厂方法
-2. 被 @Configuration 注解（全配置类）
-3. 被 @Component、@ComponentScan、@Import、@ImportResource 注解或者拥有被 @Bean 注解的方法
-4. 设置 order 用于排序
+1. 不能 `className` 为 `null` 或 `Bean` 定义拥有工厂方法
+2. 被 `Configuration` 注解标注（全配置类）
+3. 被 `Component`、`ComponentScan`、`Import`、`ImportResource` 注解标注或者拥有被 `Bean` 注解标注的方法
+4. 设置 `order` 用于排序
 
 ```java
 public static boolean checkConfigurationClassCandidate(BeanDefinition beanDef, MetadataReaderFactory metadataReaderFactory) {
@@ -305,7 +304,7 @@ public static boolean checkConfigurationClassCandidate(BeanDefinition beanDef, M
 
 #### 判断是否属于 Full 配置类
 
-1. 被 @Configuration 注解
+1. 被 `Configuration` 注解标注
 
 ```java
 public static boolean isFullConfigurationCandidate(AnnotationMetadata metadata) {
@@ -315,8 +314,8 @@ public static boolean isFullConfigurationCandidate(AnnotationMetadata metadata) 
 
 #### 判断是否属于 Lite 配置类
 
-1. 被 @Component、@ComponentScan、@Import、@ImportResource 注解
-2. 拥有被 @Bean 注解的方法
+1. 被 `Component`、`ComponentScan`、`Import`、`ImportResource` 注解标注
+2. 拥有被 `Bean` 注解标注的方法
 
 ```java
 public static boolean isLiteConfigurationCandidate(AnnotationMetadata metadata) {
@@ -350,20 +349,20 @@ public static boolean isLiteConfigurationCandidate(AnnotationMetadata metadata) 
 循环处理部分的代码有点难阅读。
 
 - 首先是因为命名比较相似，需要理清各个变量的含义和作用
-    - candidateNames 就是普普通通的纯候选者（全部 BeanDefinitions），每次循环在解析完，加载 BeanDefinitions 后可能会新增
-    - configCandidates（candidates） 就是符合配置类条件的配置类。虽然命名带 Candidates，其实已经是正牌，并非候选。感觉 configClass 更容易理解，但该变量名另作他用。有新增就要继续循环
-    - configClass（ConfigurationClass 类） 是经过解析的配置模型，不要和配置类搞混了。后面出现过 ConfigurationModel，感觉该命名更加准确
-- 其次是因为对黑盒 parser 的作用不了解，个人经验如果完全将 parser 当作黑盒对待，不了解解析过程、解析的返回结果以及如何处理返回结果，理解循环解析的过程时会有点困难
-    - `parser.parse(candidates)` 解析配置类构建得到配置模型（ConfigurationClass）。以副作用的形式进行处理，传入 ConfigurationClass，返回 ConfigurationClass。
-    - `this.reader.loadBeanDefinitions(configClasses)` 从配置模型（ConfigurationClass）中加载 BeanDefinitions
+    - `candidateNames` 就是普普通通的纯候选者（全部 `BeanDefinitions`），每次循环在解析完，加载 `BeanDefinitions` 后可能会新增
+    - `configCandidates`（`candidates`） 就是符合配置类条件的配置类。虽然命名带 `Candidates`，其实已经是正牌，并非候选。感觉 `configClass` 更容易理解，但该变量名另作他用。有新增就要继续循环
+    - `configClass`（`ConfigurationClass` 类） 是经过解析的配置模型，不要和配置类搞混了。后面出现过 `ConfigurationModel`，感觉该命名更加准确
+- 其次是因为对黑盒 parser 的作用不了解，个人经验如果完全将 `parser` 当作黑盒对待，不了解解析过程、解析的返回结果以及如何处理返回结果，理解循环解析的过程时会有点困难
+    - `parser.parse(candidates)` 解析配置类构建得到配置模型（`ConfigurationClass`）。以副作用的形式进行处理，传入 `ConfigurationClass`，返回 `ConfigurationClass`
+    - `this.reader.loadBeanDefinitions(configClasses)` 从配置模型（`ConfigurationClass`）中加载 `BeanDefinitions`
 
-> 再次提示：**正视配置模型的概念，ConfigurationClassParser 使用配置类构建配置模型并校验；ConfigurationClassBeanDefinitionReader 从配置模型中读取 bean 定义。**
+> 再次提示：**正视配置模型的概念，`ConfigurationClassParser` 使用配置类构建配置模型并校验；`ConfigurationClassBeanDefinitionReader` 从配置模型中读取 `bean` 定义。**
 
-{% asset_img "Pasted image 20231127214511.png" 处理配置类流程图 %}
+<div style="width:50%;margin:auto">{% asset_img "Pasted image 20231127214511.png" 处理配置类流程图 %}</div>
 
 ### 解析配置类构建配置模型
 
-`parser.parse(candidates)` 正式进入解析过程，ConfigurationClassParser 负责将配置类转换为配置模型（ConfigurationClass）。
+`parser.parse(candidates)` 正式进入解析过程，`ConfigurationClassParser` 负责将配置类转换为配置模型（`ConfigurationClass`）。
 
 ```java
 public void parse(Set<BeanDefinitionHolder> configCandidates) {
@@ -397,7 +396,7 @@ public void parse(Set<BeanDefinitionHolder> configCandidates) {
 }
 ```
 
-每次都创建一个新的配置模型 ConfigurationClass，最终处理结果以副作用的形式直接表现在配置模型上。
+每次都创建一个新的配置模型 `ConfigurationClass`，最终处理结果以副作用的形式直接表现在配置模型上。
 
 ```java
 protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
@@ -406,14 +405,14 @@ protected final void parse(AnnotationMetadata metadata, String beanName) throws 
 }
 ```
 
-{% asset_img "Pasted image 20231127215414.png" 处理配置模型 %}
+<div style="width:50%;margin:auto">{% asset_img "Pasted image 20231127215414.png" 处理配置模型 %}</div>
 
-处理配置模型的方法 processConfigurationClass。
+处理配置模型的方法 `processConfigurationClass`。
 
 1. 检查配置模型是否曾经处理过
 2. 处理配置模型（递归处理配置类和它的父类）
 
-SourceClass 是一个简单的包装器，无论带注解的源类是如何被加载的，允许以统一的方式处理。
+`SourceClass` 是一个简单的包装器，无论带注解的源类是如何被加载的，允许以统一的方式处理。
 
 ```java
 protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
@@ -458,7 +457,7 @@ protected void processConfigurationClass(ConfigurationClass configClass) throws 
 }
 ```
 
-注意 ConfigurationClass 重写了 equals 和 hashCode 方法，metadata 的 className 相同代表配置模型也相同。
+注意 `ConfigurationClass` 重写了 `equals` 和 `hashCode` 方法，`metadata` 的 `className` 相同代表配置模型也相同。
 
 ```java
 public boolean equals(Object other) {
@@ -471,15 +470,15 @@ public int hashCode() {
 }
 ```
 
-真正处理配置模型的方法，根据注释很容易知道，如果配置类携带了 @PropertySource、@ComponentScan、@Import、@ImportResource、@Bean 等注解，就是在这里被处理的。
-比如示例中被 @Bean 注解的方法，`configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass))` 将它以 BeanMethod 的形式添加到配置模型中。
+真正处理配置模型的方法，根据注释很容易知道，如果配置类携带了 `PropertySource`、`ComponentScan`、`Import`、`ImportResource`、`Bean` 等注解，就是在这里被处理的。
+比如示例中被 `Bean` 注解标注的方法，`configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass))` 将它以 `BeanMethod` 的形式添加到配置模型中。
 
 1. 先递归的处理成员（嵌套）类
-2. 处理 @PropertySource
-3. 处理 @ComponentScan
-4. 处理 @Import
-5. 处理 @ImportResource
-6. 处理 @Bean，**使用 ASM 代替 JVM 反射，以获得确定性的声明顺序**
+2. 处理 `@PropertySource`
+3. 处理 `@ComponentScan`
+4. 处理 `@Import`
+5. 处理 `@ImportResource`
+6. 处理 `@Bean`，**使用 `ASM` 代替 `JVM` 反射，以获得确定性的声明顺序**
 7. 处理接口的默认方法
 8. 检查是否有父类
 
@@ -563,7 +562,7 @@ protected final SourceClass doProcessConfigurationClass(ConfigurationClass confi
 
 ### 读取配置模型，加载 Bean 定义
 
-`this.reader.loadBeanDefinitions(configClasses)` 读取配置模型的内容，注册 BeanDefinitions 到 BeanDefinition Registry（也就是 BeanFactory）。
+`this.reader.loadBeanDefinitions(configClasses)` 读取配置模型的内容，注册 `BeanDefinitions` 到 `BeanDefinition Registry`（也就是 `BeanFactory`）。
 
 ```java
 public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
@@ -603,9 +602,9 @@ private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configC
 
 ## 增强配置类
 
-我们在介绍 ConfigurationClassPostProcessor 时提过，它既实现了接口 BeanDefinitionRegistryPostProcessor，也因此同时实现了接口 BeanFactoryPostProcessor。在 `invokeBeanFactoryPostProcessors(beanFactory)` 阶段，调用 postProcessBeanDefinitionRegistry 方法，成功注册配置类引入的 Bean 后，紧接着会调用 postProcessBeanFactory 方法，增强配置类本身。
+我们在介绍 `ConfigurationClassPostProcessor` 时提过，它既实现了接口 `BeanDefinitionRegistryPostProcessor`，也因此同时实现了接口 `BeanFactoryPostProcessor`。在 `invokeBeanFactoryPostProcessors(beanFactory)` 阶段，调用 `postProcessBeanDefinitionRegistry` 方法，成功注册配置类引入的 `Bean` 后，紧接着会调用 `postProcessBeanFactory` 方法，增强配置类本身。
 
-> ConfigurationClasses 在之前还是指配置模型，这里就又指配置类了。。。真让人头秃。
+> `ConfigurationClasses` 在之前还是指配置模型，这里就又指配置类了。。。真让人头秃。
 
 ```java
 public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
@@ -620,8 +619,8 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 
 ### 增强所有 Full 类型配置类
 
-1. 查找所有 Full 类型的配置类
-2. 依次使用 ConfigurationClassEnhancer 增强目标类，成功则替换 BeanClass（不成功的情况是已经增强过）
+1. 查找所有 `Full` 类型的配置类
+2. 依次使用 `ConfigurationClassEnhancer` 增强目标类，成功则替换 `BeanClass`（不成功的情况是已经增强过）
 
 ```java
 public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
@@ -671,7 +670,7 @@ public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFact
 }
 ```
 
-1. 如果增强过则不再处理。这往往代表容器中存在多个 ConfigurationClassPostProcessor，虽然无害，但是建议调整配置
+1. 如果增强过则不再处理。这往往代表容器中存在多个 `ConfigurationClassPostProcessor`，虽然无害，但是建议调整配置
 2. 如果未曾增强过，则创建增强类
 
 ```java
@@ -700,9 +699,9 @@ public Class<?> enhance(Class<?> configClass, ClassLoader classLoader) {
 
 ### 创建 CGLib 子类
 
-> 如果完全不熟悉 CGLib，可以单独查阅一下相关资料，稍作了解。
+> 如果完全不熟悉 `CGLib`，可以单独查阅一下相关资料，稍作了解。
 
-创建 Enhancer，并设置属性。
+创建 `Enhancer`，并设置属性。
 
 ```java
 private Enhancer newEnhancer(Class<?> superclass, ClassLoader classLoader) {
@@ -723,8 +722,8 @@ private Enhancer newEnhancer(Class<?> superclass, ClassLoader classLoader) {
 }
 ```
 
-- 所有因为 @Configuration 注解而被增强的配置类，它的 CGLib 子类都实现了这个标记接口，用于检查候选类是否已经增强过，避免重复增强。
-- 该接口继承了 BeanFactoryAware。**创建得到的 CGLib 子类必须能够访问 BeanFactory**，用以在工厂方法交叉调用时获取已经创建的 Bean 而非真正执行。
+- 所有因为 `Configuration` 注解而被增强的配置类，它的 `CGLib` 子类都实现了这个标记接口，用于检查候选类是否已经增强过，避免重复增强。
+- 该接口继承了 `BeanFactoryAware`。**创建得到的 `CGLib` 子类必须能够访问 `BeanFactory`**，用以在工厂方法交叉调用时获取已经创建的 `Bean` 而非真正执行。
 
 ```java
 public interface EnhancedConfiguration extends BeanFactoryAware {
@@ -742,7 +741,7 @@ private Class<?> createClass(Enhancer enhancer) {
 }
 ```
 
-CALLBACKS、CALLBACK_FILTER 和 `$$beanFactory` 属性名都是 ConfigurationClassEnhancer 的静态属性。
+`CALLBACKS`、`CALLBACK_FILTER` 和 `$$beanFactory` 属性名都是 `ConfigurationClassEnhancer` 的静态属性。
 
 ```java
 class ConfigurationClassEnhancer {
@@ -760,13 +759,13 @@ class ConfigurationClassEnhancer {
 
 ### 匹配回调 ConditionalCallbackFilter
 
-ConditionalCallbackFilter 实现了 CGLib 的 CallbackFilter 接口，accept 方法返回准备使用的 Callback 的索引。匹配规则如下：
+`ConditionalCallbackFilter` 实现了 `CGLib` 的 `CallbackFilter` 接口，`accept` 方法返回准备使用的 `Callback` 的索引。匹配规则如下：
 
-1. 遍历 callbacks，依次判断
-    1. 如果 `this.callbacks[i]` 不是 ConditionalCallback 类型，直接返回。根据 CALLBACKS 的值，这意味着没有匹配到合适的 MethodInterceptor，选择 `NoOp.INSTANCE`。
-    2. 如果 `this.callbacks[i]` 是 ConditionalCallback 类型，使用 isMatch 方法判断是否匹配，匹配成功返回对应索引
+1. 遍历 `callbacks`，依次判断
+    1. 如果 `this.callbacks[i]` 不是 `ConditionalCallback` 类型，直接返回。根据 `CALLBACKS` 的值，这意味着没有匹配到合适的 `MethodInterceptor`，选择 `NoOp.INSTANCE`。
+    2. 如果 `this.callbacks[i]` 是 `ConditionalCallback` 类型，使用 `isMatch` 方法判断是否匹配，匹配成功返回对应索引
 
-Callback 中除了 `NoOp.INSTANCE`，还有 BeanFactoryAwareMethodInterceptor 用于拦截 setBeanFactory 方法，以及 BeanMethodInterceptor 拦截 @Bean 方法。
+`Callback` 中除了 `NoOp.INSTANCE`，还有 `BeanFactoryAwareMethodInterceptor` 用于拦截 `setBeanFactory` 方法，以及 `BeanMethodInterceptor` 拦截 `@Bean` 方法。
 
 ```java
 private static class ConditionalCallbackFilter implements CallbackFilter {
@@ -802,9 +801,9 @@ private static class ConditionalCallbackFilter implements CallbackFilter {
 
 ### 拦截 setBeanFactory 方法
 
-BeanFactoryAwareMethodInterceptor 实现了 MethodInterceptor 和 ConditionalCallback 接口。isMatch 匹配到 BeanFactoryAware 接口的 setBeanFactory 方法，则调用 intercept 方法，为 `$$beanFactory` 属性赋值。`$$beanFactory` 是 CGLib 生成的 BeanFactory 类型的属性。这个属性是通过设置 `enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader))` 生成的。
+`BeanFactoryAwareMethodInterceptor` 实现了 `MethodInterceptor` 和 `ConditionalCallback` 接口。`isMatch` 匹配到 `BeanFactoryAware` 接口的 `setBeanFactory` 方法，则调用 `intercept` 方法，为 `$$beanFactory` 属性赋值。`$$beanFactory` 是 `CGLib` 生成的 `BeanFactory` 类型的属性。这个属性是通过设置 `enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader))` 生成的。
 
-这样，当配置类 Bean 被创建时，会因为实现了 BeanFactoryAware，在初始化阶段被调用 setBeanFactory 方法而被拦截。拦截后将获得的 beanFactory 实例保存在 CGlib 生成的属性 $$beanFactory 中。
+这样，当配置类 `Bean` 被创建时，会因为实现了 `BeanFactoryAware`，在初始化阶段被调用 `setBeanFactory` 方法而被拦截。拦截后将获得的 `beanFactory` 实例保存在 `CGlib` 生成的属性 `$$beanFactory` 中。
 
 ```java
 private static class BeanFactoryAwareMethodInterceptor implements MethodInterceptor, ConditionalCallback {
@@ -838,7 +837,7 @@ private static class BeanFactoryAwareMethodInterceptor implements MethodIntercep
 
 #### 生成 $$beanFactory 属性
 
-BeanFactoryAwareGeneratorStrategy 为配置的 CGLib 子类生成一个访问控制符为 public、类型为 BeanFactory、名称为 `$$beanFactory` 的属性。
+`BeanFactoryAwareGeneratorStrategy` 为配置的 `CGLib` 子类生成一个访问控制符为 `public`、类型为 `BeanFactory`、名称为 `$$beanFactory` 的属性。
 
 ```java
 private static class BeanFactoryAwareGeneratorStrategy extends DefaultGeneratorStrategy {
@@ -898,7 +897,7 @@ private static class BeanFactoryAwareGeneratorStrategy extends DefaultGeneratorS
 
 ### 核心：拦截 @Bean 方法
 
-BeanMethodInterceptor 实现了 MethodInterceptor 和 ConditionalCallback 接口。isMatch 匹配到被 @Bean 注解的方法，则调用 intercept 方法。被 @Configuration 注解的配置类，它定义的被 @Bean 注解的方法，只会在第一次被调用时真正地执行并创建实例，后续不会再执行的“魔法”就在这里。即使你手动地调用配置类的方法，或是被 @Bean 注解的方法间互相调用，都是如此。
+`BeanMethodInterceptor` 实现了 `MethodInterceptor` 和 `ConditionalCallback` 接口。`isMatch` 匹配到被 `Bean` 注解标注的方法，则调用 `intercept` 方法。被 `Configuration` 注解标注的配置类，它定义的被 `Bean` 注解标注的方法，只会在第一次被调用时真正地执行并创建实例，后续不会再执行的“魔法”就在这里。即使你手动地调用配置类的方法，或是被 `Bean` 注解标注的方法间互相调用，都是如此。
 
 ```java
 public Object intercept(Object enhancedConfigInstance, Method beanMethod, Object[] beanMethodArgs,
@@ -961,26 +960,26 @@ public Object intercept(Object enhancedConfigInstance, Method beanMethod, Object
 }
 ```
 
-1. `isCurrentlyInvokedFactoryMethod(beanMethod)` 检查 beanMethod 是不是当前正在被调用的 FactoryMethod
-2. 如果是，则调用实际的父类方法，创建 Bean 实例
-3. 如果不是，则从 BeanFactory 中获取
+1. `isCurrentlyInvokedFactoryMethod(beanMethod)` 检查 `beanMethod` 是不是当前正在被调用的 `FactoryMethod`
+2. 如果是，则调用实际的父类方法，创建 `Bean` 实例
+3. 如果不是，则从 `BeanFactory` 中获取
 
 以本文示例进行说明。
 
-1. 调用 lisi() 前，设置当前正在调用的 FactoryMethod 为 lisi()
-    1. lisi() 调用被拦截后，查询获知当前正在调用的 FactoryMethod 确实是 lisi()，调用父类方法创建
-2. 调用 person() 前，设置当前正在调用的 FactoryMethod 为 person()
-    1. person() 调用被拦截后，查询获知当前正在调用的 FactoryMethod 确实是 person()，调用父类方法创建
-    2. 父类方法内调用了 lisi()
-        1. lisi() 调用被拦截后，查询获知当前正在调用的 FactoryMethod 是 person()，从 BeanFactory 中获取
-        2. 从 BeanFactory 中获取得到已经创建的 lisi
+1. 调用 `lisi()` 前，设置当前正在调用的 `FactoryMethod` 为 `lisi()`
+    1. lisi() 调用被拦截后，查询获知当前正在调用的 `FactoryMethod` 确实是 `lisi()`，调用父类方法创建
+2. 调用 `person()` 前，设置当前正在调用的 `FactoryMethod` 为 `person()`
+    1. `person()` 调用被拦截后，查询获知当前正在调用的 `FactoryMethod` 确实是 `person()`，调用父类方法创建
+    2. 父类方法内调用了 `lisi()`
+        1. `lisi()` 调用被拦截后，查询获知当前正在调用的 `FactoryMethod` 是 `person()`，从 `BeanFactory` 中获取
+        2. 从 `BeanFactory` 中获取得到已经创建的 `lisi`
     3. 继续创建并返回
 
-以上处理的过程是比较清晰简单的，但是当前正在被调用的 FactoryMethod 是什么时候保存的，怎么处理的，还未明朗。
+以上处理的过程是比较清晰简单的，但是当前正在被调用的 `FactoryMethod` 是什么时候保存的，怎么处理的，还未明朗。
 
 #### isCurrentlyInvokedFactoryMethod
 
-判断是否是当前正在被调用的 FactoryMethod。
+判断是否是当前正在被调用的 `FactoryMethod`。
 
 ```java
 private boolean isCurrentlyInvokedFactoryMethod(Method method) {
@@ -990,7 +989,7 @@ private boolean isCurrentlyInvokedFactoryMethod(Method method) {
 }
 ```
 
-原理是通过 ThreadLocal 记录正在调用的 FactoryMethod。
+原理是通过 `ThreadLocal` 记录正在调用的 `FactoryMethod`。
 
 ```java
 public class SimpleInstantiationStrategy implements InstantiationStrategy {
@@ -1008,11 +1007,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 }
 ```
 
-这里只是通过 get 获取 currentlyInvokedFactoryMethod 的值，我们还不知道它是在哪更新的。
+这里只是通过 `get` 获取 `currentlyInvokedFactoryMethod` 的值，我们还不知道它是在哪更新的。
 
 ### currentlyInvokedFactoryMethod 的“来龙去脉”
 
-当 BeanFactory 创建 Bean 实例时，被 @Bean 注解的方法注册的 Bean 在实例化时是使用工厂方法而不是构造器方法。
+当 `BeanFactory` 创建 `Bean` 实例时，被 `Bean` 注解标注的方法注册的 `Bean` 在实例化时是使用工厂方法而不是构造器方法。
 
 ```java
 protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, Object[] args) {
@@ -1031,7 +1030,7 @@ protected BeanWrapper instantiateUsingFactoryMethod(
 }
 ```
 
-BeanFactory 委托给 ConstructorResolver。
+`BeanFactory` 委托给 `ConstructorResolver`。
 
 ```java
 public BeanWrapper instantiateUsingFactoryMethod(
@@ -1043,15 +1042,15 @@ public BeanWrapper instantiateUsingFactoryMethod(
 }
 ```
 
-AbstractAutowireCapableBeanFactory 的 instantiationStrategy 类型是 CglibSubclassingInstantiationStrategy，继承自 SimpleInstantiationStrategy。
+`AbstractAutowireCapableBeanFactory` 的 `instantiationStrategy` 类型是 `CglibSubclassingInstantiationStrategy`，继承自 `SimpleInstantiationStrategy`。
 
 ```java
 private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
 ```
 
-SimpleInstantiationStrategy 的 instantiate 方法在通过反射调用 factoryBean 对应的 method 前后，会处理 currentlyInvokedFactoryMethod 的值。
+`SimpleInstantiationStrategy` 的 `instantiate` 方法在通过反射调用 `factoryBean` 对应的 `method` 前后，会处理 `currentlyInvokedFactoryMethod` 的值。
 
-> 被 @Bean 注解的方法，对应的 Bean 就是一个 FactoryBean。
+> 被 `Bean` 注解标注的方法，对应的 `Bean` 就是一个 `FactoryBean`。
 
 ```java
 public class SimpleInstantiationStrategy implements InstantiationStrategy {

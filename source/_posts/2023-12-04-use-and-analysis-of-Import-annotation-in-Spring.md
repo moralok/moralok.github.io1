@@ -4,6 +4,10 @@ date: 2023-12-04 08:36:21
 tags: [java, spring]
 ---
 
+`Import` 注解是 `Spring` 基于 `Java` 注解配置的重要组成部分，处理 `Import` 注解是处理 `Configuration` 注解的子过程之一，本文将介绍 `Import` 注解的 `3` 种使用方式，然后通过分析源码和处理过程示意图解释它是如何导入（注册） `BeanDefinition` 的。
+
+<!-- more -->
+
 ## 使用方式
 
 `Import` 注解有 `3` 种导入（注册） `BeanDefinition` 的方式：
@@ -483,10 +487,16 @@ private boolean isChainedImportOnStack(ConfigurationClass configClass) {
 
 ## 总结
 
+### 对比
+
 ||`ImportSelector`|`ImportBeanDefinitionRegistrar`|其他剩余情况|
 |--|--|--|--|
 |灵活性|中|高|低|
 |处理结果||转换为配置模型的一部分|转换为一个配置模型|
 |方法调用时机|立即（或解析配置类的最后）|加载 `BeanDefinition` 的最后||
-|方法的结果|获取 Import 目标|直接注册 `BeanDefinition`||
+|方法的结果|获取 `Import` 目标|直接注册 `BeanDefinition`||
 
+
+### 处理过程示意图
+
+<div style="width:70%;margin:auto">{% asset_img "Pasted image 20231205175232.png" Import 注解的处理过程示意图 %}</div>
