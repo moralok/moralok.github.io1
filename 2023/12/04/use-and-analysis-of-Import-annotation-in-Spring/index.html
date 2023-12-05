@@ -19,19 +19,21 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="使用方式Import 注解有 3 种导入（注册） BeanDefinition 的方式：  使用 Import 将目标类的 Class 对象，解析为 BeanDefinition 并注册。 使用 Import 配合 ImportSelector 的实现类，将 selectImports 方法返回的所有全限定类名字符串，解析为 BeanDefinition 并注册。 使用 Import 配合 Imp">
+    <meta name="description" content="Import 注解是 Spring 基于 Java 注解配置的重要组成部分，处理 Import 注解是处理 Configuration 注解的子过程之一，本文将介绍 Import 注解的 3 种使用方式，然后通过分析源码和处理过程示意图解释它是如何导入（注册） BeanDefinition 的。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring 中 @Import 注解的使用和源码分析">
 <meta property="og:url" content="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/index.html">
 <meta property="og:site_name" content="Moralok">
-<meta property="og:description" content="使用方式Import 注解有 3 种导入（注册） BeanDefinition 的方式：  使用 Import 将目标类的 Class 对象，解析为 BeanDefinition 并注册。 使用 Import 配合 ImportSelector 的实现类，将 selectImports 方法返回的所有全限定类名字符串，解析为 BeanDefinition 并注册。 使用 Import 配合 Imp">
+<meta property="og:description" content="Import 注解是 Spring 基于 Java 注解配置的重要组成部分，处理 Import 注解是处理 Configuration 注解的子过程之一，本文将介绍 Import 注解的 3 种使用方式，然后通过分析源码和处理过程示意图解释它是如何导入（注册） BeanDefinition 的。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/Pasted%20image%2020231205175232.png">
 <meta property="article:published_time" content="2023-12-04T00:36:21.000Z">
-<meta property="article:modified_time" content="2023-12-05T08:44:37.419Z">
+<meta property="article:modified_time" content="2023-12-05T10:34:22.618Z">
 <meta property="article:author" content="Moralok">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="spring">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/Pasted%20image%2020231205175232.png">
 
 
 <link rel="canonical" href="https://www.moralok.com/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/">
@@ -144,7 +146,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">测试用例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.1.</span> <span class="nav-text">获取要导入的目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.2.</span> <span class="nav-text">处理要导入的目标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%80%EF%BC%9AImportSelector"><span class="nav-number">3.2.1.</span> <span class="nav-text">类型一：ImportSelector</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%BA%8C%EF%BC%9AImportBeanDefinitionRegistrar"><span class="nav-number">3.2.2.</span> <span class="nav-text">类型二：ImportBeanDefinitionRegistrar</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%89%EF%BC%9A%E5%85%B6%E4%BB%96%E5%89%A9%E4%BD%99%E6%83%85%E5%86%B5"><span class="nav-number">3.2.3.</span> <span class="nav-text">类型三：其他剩余情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DeferredImportSelector-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.3.</span> <span class="nav-text">DeferredImportSelector 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ImportBeanDefinitionRegistrar-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.4.</span> <span class="nav-text">ImportBeanDefinitionRegistrar 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%AF%BC%E5%85%A5%E7%9A%84%E6%A3%80%E6%B5%8B"><span class="nav-number">3.5.</span> <span class="nav-text">循环导入的检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">测试用例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.1.</span> <span class="nav-text">获取要导入的目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E8%A6%81%E5%AF%BC%E5%85%A5%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">3.2.</span> <span class="nav-text">处理要导入的目标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%80%EF%BC%9AImportSelector"><span class="nav-number">3.2.1.</span> <span class="nav-text">类型一：ImportSelector</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%BA%8C%EF%BC%9AImportBeanDefinitionRegistrar"><span class="nav-number">3.2.2.</span> <span class="nav-text">类型二：ImportBeanDefinitionRegistrar</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%B8%89%EF%BC%9A%E5%85%B6%E4%BB%96%E5%89%A9%E4%BD%99%E6%83%85%E5%86%B5"><span class="nav-number">3.2.3.</span> <span class="nav-text">类型三：其他剩余情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DeferredImportSelector-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.3.</span> <span class="nav-text">DeferredImportSelector 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ImportBeanDefinitionRegistrar-%E7%9A%84%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA"><span class="nav-number">3.4.</span> <span class="nav-text">ImportBeanDefinitionRegistrar 的调用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%AF%BC%E5%85%A5%E7%9A%84%E6%A3%80%E6%B5%8B"><span class="nav-number">3.5.</span> <span class="nav-text">循环导入的检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94"><span class="nav-number">4.1.</span> <span class="nav-text">对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="nav-number">4.2.</span> <span class="nav-text">处理过程示意图</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -238,7 +240,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-05 16:44:37" itemprop="dateModified" datetime="2023-12-05T16:44:37+08:00">2023-12-05</time>
+      <time title="修改时间：2023-12-05 18:34:22" itemprop="dateModified" datetime="2023-12-05T18:34:22+08:00">2023-12-05</time>
     </span>
 
   
@@ -255,7 +257,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>3.5k</span>
+      <span>3.6k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -273,7 +275,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p><code>Import</code> 注解有 <code>3</code> 种导入（注册） <code>BeanDefinition</code> 的方式：</p>
+        <p><code>Import</code> 注解是 <code>Spring</code> 基于 <code>Java</code> 注解配置的重要组成部分，处理 <code>Import</code> 注解是处理 <code>Configuration</code> 注解的子过程之一，本文将介绍 <code>Import</code> 注解的 <code>3</code> 种使用方式，然后通过分析源码和处理过程示意图解释它是如何导入（注册） <code>BeanDefinition</code> 的。</p>
+<span id="more"></span>
+
+<h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p><code>Import</code> 注解有 <code>3</code> 种导入（注册） <code>BeanDefinition</code> 的方式：</p>
 <ol>
 <li>使用 <code>Import</code> 将目标类的 <code>Class</code> 对象，解析为 <code>BeanDefinition</code> 并注册。</li>
 <li>使用 <code>Import</code> 配合 <code>ImportSelector</code> 的实现类，将 <code>selectImports</code> 方法返回的所有全限定类名字符串，解析为 <code>BeanDefinition</code> 并注册。</li>
@@ -370,7 +375,7 @@
 <p>检测是否发生循环导入。以当前类开始，循环向上查找最近一个导入自身的类，如果找到自身，说明发生循环导入。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isChainedImportOnStack</span><span class="params">(ConfigurationClass configClass)</span> &#123;</span><br><span class="line">    <span class="comment">// 如果 importStack 已存在该配置模型</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.importStack.contains(configClass)) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">configClassName</span> <span class="operator">=</span> configClass.getMetadata().getClassName();</span><br><span class="line">        <span class="comment">// 获取最新一个导入 configClass 的类</span></span><br><span class="line">        <span class="type">AnnotationMetadata</span> <span class="variable">importingClass</span> <span class="operator">=</span> <span class="built_in">this</span>.importStack.getImportingClassFor(configClassName);</span><br><span class="line">        <span class="comment">// 循环查找导入类的最近一个导入类，如果找到了自身，表示发生循环导入</span></span><br><span class="line">        <span class="keyword">while</span> (importingClass != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (configClassName.equals(importingClass.getClassName())) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            importingClass = <span class="built_in">this</span>.importStack.getImportingClassFor(importingClass.getClassName());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h3><table>
 <thead>
 <tr>
 <th></th>
@@ -399,11 +404,12 @@
 </tr>
 <tr>
 <td>方法的结果</td>
-<td>获取 Import 目标</td>
+<td>获取 <code>Import</code> 目标</td>
 <td>直接注册 <code>BeanDefinition</code></td>
 <td></td>
 </tr>
 </tbody></table>
+<h3 id="处理过程示意图"><a href="#处理过程示意图" class="headerlink" title="处理过程示意图"></a>处理过程示意图</h3><div style="width:70%;margin:auto"><img src="/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/Pasted%20image%2020231205175232.png" class="" title="Import 注解的处理过程示意图"></div>
 
     </div>
 
