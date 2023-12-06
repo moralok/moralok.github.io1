@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://www.moralok.com/2023/12/06/custom-starter-and-auto-configuration-in-Spring-Boot/Snipaste_2023-12-06_23-52-47.png">
 <meta property="og:image" content="https://www.moralok.com/2023/12/06/custom-starter-and-auto-configuration-in-Spring-Boot/Pasted%20image%2020231206230317.png">
 <meta property="article:published_time" content="2023-12-06T00:02:11.000Z">
-<meta property="article:modified_time" content="2023-12-06T17:02:04.705Z">
+<meta property="article:modified_time" content="2023-12-06T19:53:58.520Z">
 <meta property="article:author" content="Moralok">
 <meta property="article:tag" content="spring">
 <meta property="article:tag" content="spring boot">
@@ -162,7 +162,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">31</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -243,7 +243,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-07 01:02:04" itemprop="dateModified" datetime="2023-12-07T01:02:04+08:00">2023-12-07</time>
+      <time title="修改时间：2023-12-07 03:53:58" itemprop="dateModified" datetime="2023-12-07T03:53:58+08:00">2023-12-07</time>
     </span>
 
   
@@ -260,14 +260,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>2.5k</span>
+      <span>2.6k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
+      <span>9 分钟</span>
     </span>
 </div>
 
@@ -340,6 +340,10 @@
 <h3 id="获取候选的配置类"><a href="#获取候选的配置类" class="headerlink" title="获取候选的配置类"></a>获取候选的配置类</h3><p>我们前面提到过，自动配置类本身只是普通的配置类，那么有什么标记或特征表明目标是一个自动配置类吗？有的，凡是配置在 <code>spring.factories</code> 文件中 <code>EnableAutoConfiguration</code>（<code>org.springframework.boot.autoconfigure.EnableAutoConfiguration</code>） 键下的类，就是候选的自动配置类。<br><code>getCandidateConfigurations</code> 方法用于获取候选的配置类。该方法运用了 <strong><code>Spring</code> 的 <code>SPI</code></strong> 机制，通过 <code>SpringFactoriesLoader</code> 获得所有配置在 <code>spring.factories</code> 文件中，<code>org.springframework.boot.autoconfigure.EnableAutoConfiguration</code> 键下的类，其中就包括了 <code>RedisLockAutoConfiguration</code>。这样就完成了自动配置。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> List&lt;String&gt; <span class="title function_">getCandidateConfigurations</span><span class="params">(AnnotationMetadata metadata,</span></span><br><span class="line"><span class="params">        AnnotationAttributes attributes)</span> &#123;</span><br><span class="line">    <span class="comment">// 通过 SpringFactoriesLoader 加载候选的配置</span></span><br><span class="line">    List&lt;String&gt; configurations = SpringFactoriesLoader.loadFactoryNames(</span><br><span class="line">            getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());</span><br><span class="line">    Assert.notEmpty(configurations,</span><br><span class="line">            <span class="string">&quot;No auto configuration classes found in META-INF/spring.factories. If you &quot;</span></span><br><span class="line">                    + <span class="string">&quot;are using a custom packaging, make sure that file is correct.&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> configurations;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; getSpringFactoriesLoaderFactoryClass() &#123;</span><br><span class="line">    <span class="keyword">return</span> EnableAutoConfiguration.class;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<p>基于 <code>Spring Boot SPI</code> 机制获取配置在 <code>spring.factories</code> 文件中的自动配置类的过程我们不再分析，可以参见以下文章：</p>
+<ul>
+<li><a href="/2023/12/06/how-does-Spring-Boot-SPI-works/" title="Spring Boot SPI 的工作原理">Spring Boot SPI 的工作原理</a></li>
+</ul>
 <h2 id="让-starter-更好用"><a href="#让-starter-更好用" class="headerlink" title="让 starter 更好用"></a>让 starter 更好用</h2><h3 id="为配置属性生成元数据"><a href="#为配置属性生成元数据" class="headerlink" title="为配置属性生成元数据"></a>为配置属性生成元数据</h3><p>在平时开发时你可能会注意到，有时候在配置文件 <code>application.properties</code> 或 <code>application.yml</code> 中编写配置时，<code>IDEA</code> 会自动提示我们存在哪些配置，默认值是什么。</p>
 <div style="width:70%;margin:auto"><img src="/2023/12/06/custom-starter-and-auto-configuration-in-Spring-Boot/Snipaste_2023-12-07_00-08-47.png" class="" title="IDEA 对配置属性的智能提示"></div>
 
@@ -365,6 +369,7 @@
 <li><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-boot/docs/1.5.11.RELEASE/reference/html/boot-features-developing-auto-configuration.html">Creating your own auto-configuration</a></li>
 <li><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-boot/docs/1.5.11.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor">Generating your own meta-data using the annotation processor</a></li>
 <li><a href="/2023/12/04/use-and-analysis-of-Import-annotation-in-Spring/" title="Spring 中 @Import 注解的使用和源码分析">Spring 中 @Import 注解的使用和源码分析</a></li>
+<li><a href="/2023/12/06/how-does-Spring-Boot-SPI-works/" title="Spring Boot SPI 的工作原理">Spring Boot SPI 的工作原理</a></li>
 </ul>
 
     </div>
@@ -389,6 +394,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2023/12/06/how-does-Spring-Boot-SPI-works/" rel="next" title="Spring Boot SPI 的工作原理">
+                  Spring Boot SPI 的工作原理 <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
@@ -420,13 +428,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">80k</span>
+    <span title="站点总字数">81k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:26</span>
+    <span title="站点阅读时长">4:30</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
