@@ -282,6 +282,10 @@ protected Class<?> getSpringFactoriesLoaderFactoryClass() {
 }
 ```
 
+基于 `Spring Boot SPI` 机制获取配置在 `spring.factories` 文件中的自动配置类的过程我们不再分析，可以参见以下文章：
+
+- {%post_link 'how-does-Spring-Boot-SPI-works' 'Spring Boot SPI 的工作原理' %}
+
 ## 让 starter 更好用
 
 ### 为配置属性生成元数据
@@ -328,3 +332,4 @@ protected Class<?> getSpringFactoriesLoaderFactoryClass() {
 - [Creating your own auto-configuration](https://docs.spring.io/spring-boot/docs/1.5.11.RELEASE/reference/html/boot-features-developing-auto-configuration.html)
 - [Generating your own meta-data using the annotation processor](https://docs.spring.io/spring-boot/docs/1.5.11.RELEASE/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)
 - {%post_link 'use-and-analysis-of-Import-annotation-in-Spring' 'Spring 中 @Import 注解的使用和源码分析' %}
+- {%post_link 'how-does-Spring-Boot-SPI-works' 'Spring Boot SPI 的工作原理' %}
