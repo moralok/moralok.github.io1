@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="@PropertySource 注解提供了一种方便的声明性机制，用于将 PropertySource 添加到 Spring 容器的 Environment 环境中。该注解通常搭配 @Configuration 注解一起使用。本文将介绍如何使用 @PropertySource 注解，并通过分析源码解释外部配置文件是如何被解析进入 Spring 的 Environment 中。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 中 @PropertySource 注解的使用和源码分析">
+<meta property="og:url" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="@PropertySource 注解提供了一种方便的声明性机制，用于将 PropertySource 添加到 Spring 容器的 Environment 环境中。该注解通常搭配 @Configuration 注解一起使用。本文将介绍如何使用 @PropertySource 注解，并通过分析源码解释外部配置文件是如何被解析进入 Spring 的 Environment 中。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_21-12-20.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_22-49-22.png">
+<meta property="article:published_time" content="2023-12-07T03:55:49.000Z">
+<meta property="article:modified_time" content="2023-12-07T15:15:24.117Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_21-12-20.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/","path":"2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/","title":"Spring 中 @PropertySource 注解的使用和源码分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Spring 中 @PropertySource 注解的使用和源码分析 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-PropertySource-%E6%B3%A8%E8%A7%A3%E5%B1%9E%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">获取 @PropertySource 注解属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86-PropertySource-%E6%B3%A8%E8%A7%A3%E5%B1%9E%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">处理 @PropertySource 注解属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%B1%9E%E6%80%A7%E6%BA%90%E5%88%B0-Environment"><span class="nav-number">2.3.</span> <span class="nav-text">添加属性源到 Environment</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Spring 中 @PropertySource 注解的使用和源码分析 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring 中 @PropertySource 注解的使用和源码分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-12-07 11:55:49 / 修改时间：23:15:24" itemprop="dateCreated datePublished" datetime="2023-12-07T11:55:49+08:00">2023-12-07</time>
+    </span>
+
+  
+    <span id="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/" class="post-meta-item leancloud_visitors" data-flag-title="Spring 中 @PropertySource 注解的使用和源码分析" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><code>@PropertySource</code> 注解提供了一种方便的声明性机制，用于将 <code>PropertySource</code> 添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。该注解通常搭配 <code>@Configuration</code> 注解一起使用。本文将介绍如何使用 <code>@PropertySource</code> 注解，并通过分析源码解释外部配置文件是如何被解析进入 <code>Spring</code> 的 <code>Environment</code> 中。</p>
+<span id="more"></span>
+
+<h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p><code>@Configuration</code> 注解表示这是一个配置类，<code>Spring</code> 在处理配置类时，会解析并处理配置类上的 <code>@PropertySource</code> 注解，将对应的配置文件解析为 <code>PropertySource</code>，添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。这样就可以在其他的 <code>Bean</code> 中，使用 <code>@Value</code> 注解使用这些配置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@PropertySource(value = &quot;classpath:/player.properties&quot;, encoding = &quot;UTF-8&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PropertySourceConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> Player <span class="title function_">player</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Player</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Player</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;player.nickname&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String nickname;</span><br><span class="line">    <span class="comment">// 省略 setter 和 getter 方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>配置文件</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">player.nickname</span>=<span class="string">Tom</span></span><br></pre></td></tr></table></figure>
+
+<p>测试类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PropertySourceTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">AnnotationConfigApplicationContext</span> <span class="variable">ac</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>(PropertySourceConfig.class);</span><br><span class="line"></span><br><span class="line">        <span class="type">Player</span> <span class="variable">player</span> <span class="operator">=</span> (Player) ac.getBean(<span class="string">&quot;player&quot;</span>);</span><br><span class="line">        System.out.println(player);</span><br><span class="line"></span><br><span class="line">        <span class="type">ConfigurableEnvironment</span> <span class="variable">environment</span> <span class="operator">=</span> ac.getEnvironment();</span><br><span class="line">        <span class="type">String</span> <span class="variable">property</span> <span class="operator">=</span> environment.getProperty(<span class="string">&quot;player.nickname&quot;</span>);</span><br><span class="line">        System.out.println(property);</span><br><span class="line"></span><br><span class="line">        ac.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Player&#123;name=&#x27;null&#x27;, age=null, nickname=&#x27;Tom&#x27;&#125;</span><br><span class="line">Tom</span><br></pre></td></tr></table></figure>
+
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>关于 <code>Spring</code> 是如何处理配置类的请参见之前的文章：</p>
+<ul>
+<li><a href="/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/" title="Spring @Configuration 注解的源码分析">Spring @Configuration 注解的源码分析</a></li>
+</ul>
+<h3 id="获取-PropertySource-注解属性"><a href="#获取-PropertySource-注解属性" class="headerlink" title="获取 @PropertySource 注解属性"></a>获取 @PropertySource 注解属性</h3><p><code>Spring</code> 在解析配置类构建配置模型时，会对配置类上的 <code>@PropertySource</code> 注解进行处理。<code>Spring</code> 将获取所有的 <code>@PropertySource</code> 注解属性，并遍历进行处理。</p>
+<ul>
+<li><code>@PropertySource</code> 注解是可重复的，一个类上可以标注多个</li>
+<li><code>@PropertySources</code> 注解包含 <code>@PropertySource</code> 注解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> SourceClass <span class="title function_">doProcessConfigurationClass</span><span class="params">(ConfigurationClass configClass, SourceClass sourceClass)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 处理 @PropertySource 注解</span></span><br><span class="line">    <span class="comment">// 获取所有 @PropertySource 注解的属性并遍历。注意该注解为可重复的。</span></span><br><span class="line">    <span class="keyword">for</span> (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(</span><br><span class="line">            sourceClass.getMetadata(), PropertySources.class,</span><br><span class="line">            org.springframework.context.annotation.PropertySource.class)) &#123;</span><br><span class="line">        <span class="comment">// 如果 environment 是 ConfigurableEnvironment 的一个实例，目前恒为 true</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.environment <span class="keyword">instanceof</span> ConfigurableEnvironment) &#123;</span><br><span class="line">            <span class="comment">// 处理单个 @PropertySource 注解的属性</span></span><br><span class="line">            processPropertySource(propertySource);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.warn(<span class="string">&quot;Ignoring @PropertySource annotation on [&quot;</span> + sourceClass.getMetadata().getClassName() +</span><br><span class="line">                    <span class="string">&quot;]. Reason: Environment must implement ConfigurableEnvironment&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>IDEA</code> 查看 <code>AnnotationAttributes</code>：</p>
+<div style="width:70%;margin:auto"><img src="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_21-12-20.png" class="" title="IDEA 查看 AnnotationAttributes"></div>
+
+<h3 id="处理-PropertySource-注解属性"><a href="#处理-PropertySource-注解属性" class="headerlink" title="处理 @PropertySource 注解属性"></a>处理 @PropertySource 注解属性</h3><ul>
+<li>读取 <code>@PropertySource</code> 注解属性的信息，如名称、编码和位置等等</li>
+<li>遍历 <code>location</code> 查找资源</li>
+<li>通过 <code>PropertySourceFactory</code> 使用资源创建属性源 <code>PropertySource</code></li>
+<li>将属性源添加到 <code>Environment</code></li>
+</ul>
+<blockquote>
+<p>注意属性源 <code>PropertySource</code> 不是 <code>@PropertySource</code> 注解，而是表示 <code>name/value</code> 属性对的源的抽象基类。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">processPropertySource</span><span class="params">(AnnotationAttributes propertySource)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 属性源的 name，大部分时候不指定</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> propertySource.getString(<span class="string">&quot;name&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (!StringUtils.hasLength(name)) &#123;</span><br><span class="line">        name = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 编码</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">encoding</span> <span class="operator">=</span> propertySource.getString(<span class="string">&quot;encoding&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (!StringUtils.hasLength(encoding)) &#123;</span><br><span class="line">        encoding = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 位置</span></span><br><span class="line">    String[] locations = propertySource.getStringArray(<span class="string">&quot;value&quot;</span>);</span><br><span class="line">    Assert.isTrue(locations.length &gt; <span class="number">0</span>, <span class="string">&quot;At least one @PropertySource(value) location is required&quot;</span>);</span><br><span class="line">    <span class="comment">// 找不到资源时是否忽略，默认 false</span></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">ignoreResourceNotFound</span> <span class="operator">=</span> propertySource.getBoolean(<span class="string">&quot;ignoreResourceNotFound&quot;</span>);</span><br><span class="line">    <span class="comment">// 属性源工厂，默认 DefaultPropertySourceFactory</span></span><br><span class="line">    Class&lt;? <span class="keyword">extends</span> <span class="title class_">PropertySourceFactory</span>&gt; factoryClass = propertySource.getClass(<span class="string">&quot;factory&quot;</span>);</span><br><span class="line">    <span class="type">PropertySourceFactory</span> <span class="variable">factory</span> <span class="operator">=</span> (factoryClass == PropertySourceFactory.class ?</span><br><span class="line">            DEFAULT_PROPERTY_SOURCE_FACTORY : BeanUtils.instantiateClass(factoryClass));</span><br><span class="line">    <span class="comment">// 遍历位置</span></span><br><span class="line">    <span class="keyword">for</span> (String location : locations) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 解析位置，这代表 location 也可以使用占位符</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">resolvedLocation</span> <span class="operator">=</span> <span class="built_in">this</span>.environment.resolveRequiredPlaceholders(location);</span><br><span class="line">            <span class="comment">// 查找资源</span></span><br><span class="line">            <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> <span class="built_in">this</span>.resourceLoader.getResource(resolvedLocation);</span><br><span class="line">            <span class="comment">// 创建属性源，并添加到 Environment</span></span><br><span class="line">            addPropertySource(factory.createPropertySource(name, <span class="keyword">new</span> <span class="title class_">EncodedResource</span>(resource, encoding)));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IllegalArgumentException ex) &#123;</span><br><span class="line">            <span class="comment">// Placeholders not resolvable</span></span><br><span class="line">            <span class="keyword">if</span> (ignoreResourceNotFound) &#123;</span><br><span class="line">                <span class="keyword">if</span> (logger.isInfoEnabled()) &#123;</span><br><span class="line">                    logger.info(<span class="string">&quot;Properties location [&quot;</span> + location + <span class="string">&quot;] not resolvable: &quot;</span> + ex.getMessage());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> ex;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">            <span class="comment">// Resource not found when trying to open it</span></span><br><span class="line">            <span class="keyword">if</span> (ignoreResourceNotFound &amp;&amp;</span><br><span class="line">                    (ex <span class="keyword">instanceof</span> FileNotFoundException || ex <span class="keyword">instanceof</span> UnknownHostException)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (logger.isInfoEnabled()) &#123;</span><br><span class="line">                    logger.info(<span class="string">&quot;Properties location [&quot;</span> + location + <span class="string">&quot;] not resolvable: &quot;</span> + ex.getMessage());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> ex;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加属性源到-Environment"><a href="#添加属性源到-Environment" class="headerlink" title="添加属性源到 Environment"></a>添加属性源到 Environment</h3><p>将属性源添加到 <code>Environment</code> 中有以下几个规则：</p>
+<ul>
+<li>所有通过 <code>@PropertySource</code> 注解加入的属性源，<code>name</code> 都会添加到 <code>propertySourceNames</code></li>
+<li><code>propertySourceNames</code> 为空时，代表这是第一个通过 <code>@PropertySource</code> 注解加入的属性源，添加到最后（前面有系统属性源）</li>
+<li><code>propertySourceNames</code> 不为空时，添加到上一个添加到 <code>propertySourceNames</code> 中的属性源的前面（后来居上）</li>
+<li>添加到 <code>propertySources</code> 的方法中都是先尝试移除，后添加（代表可能有顺序调整，具体场景不知）</li>
+<li>如果已存在通过 <code>@PropertySource</code> 注解加入的属性源，则扩展为 <code>CompositePropertySource</code>，里面包含多个同名属性源（后来居上）</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addPropertySource</span><span class="params">(PropertySource&lt;?&gt; propertySource)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> propertySource.getName();</span><br><span class="line">    <span class="comment">// 从 Environment 中取出 MutablePropertySources</span></span><br><span class="line">    <span class="type">MutablePropertySources</span> <span class="variable">propertySources</span> <span class="operator">=</span> ((ConfigurableEnvironment) <span class="built_in">this</span>.environment).getPropertySources();</span><br><span class="line">    <span class="comment">// 检查环境中是否已存在该属性源并且 propertySourceNames 中不存在</span></span><br><span class="line">    <span class="keyword">if</span> (propertySources.contains(name) &amp;&amp; <span class="built_in">this</span>.propertySourceNames.contains(name)) &#123;</span><br><span class="line">        <span class="comment">// 如果已经添加过，则扩展</span></span><br><span class="line">        PropertySource&lt;?&gt; existing = propertySources.get(name);</span><br><span class="line">        PropertySource&lt;?&gt; newSource = (propertySource <span class="keyword">instanceof</span> ResourcePropertySource ?</span><br><span class="line">                ((ResourcePropertySource) propertySource).withResourceName() : propertySource);</span><br><span class="line">        <span class="keyword">if</span> (existing <span class="keyword">instanceof</span> CompositePropertySource) &#123;</span><br><span class="line">            <span class="comment">// 如果已经扩展过，添加（addFirst）</span></span><br><span class="line">            ((CompositePropertySource) existing).addFirstPropertySource(newSource);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 第一次扩展，替换为 CompositePropertySource</span></span><br><span class="line">            <span class="keyword">if</span> (existing <span class="keyword">instanceof</span> ResourcePropertySource) &#123;</span><br><span class="line">                existing = ((ResourcePropertySource) existing).withResourceName();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">CompositePropertySource</span> <span class="variable">composite</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CompositePropertySource</span>(name);</span><br><span class="line">            composite.addPropertySource(newSource);</span><br><span class="line">            composite.addPropertySource(existing);</span><br><span class="line">            propertySources.replace(name, composite);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 如果 propertySourceNames 为空，添加到最后</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.propertySourceNames.isEmpty()) &#123;</span><br><span class="line">            propertySources.addLast(propertySource);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果 propertySourceNames 不为空，添加到上一次添加的属性源的前面</span></span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">firstProcessed</span> <span class="operator">=</span> <span class="built_in">this</span>.propertySourceNames.get(<span class="built_in">this</span>.propertySourceNames.size() - <span class="number">1</span>);</span><br><span class="line">            propertySources.addBefore(firstProcessed, propertySource);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 添加到 propertySourceNames</span></span><br><span class="line">    <span class="built_in">this</span>.propertySourceNames.add(name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以适当地将添加属性源和使用属性分开看待，<code>Environment</code> 是它们产生联系的枢纽，<code>@PropertySource</code> 注解的处理过程是 <code>@Configuration</code> 注解的处理过程的一部分，在文件中的配置转换成为 <code>Environment</code> 中的 <code>PropertySource</code> 后，如何使用它们是独立的一件事情。</p>
+<div style="width:70%;margin:auto"><img src="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_22-49-22.png" class="" title="Environment 中的 MutablePropertySources"></div>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/spring/" rel="tag"># spring</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/06/how-does-Spring-Boot-SPI-works/" rel="prev" title="Spring Boot SPI 的工作原理">
+                  <i class="fa fa-chevron-left"></i> Spring Boot SPI 的工作原理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">82k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:34</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
