@@ -228,3 +228,7 @@ private void addPropertySource(PropertySource<?> propertySource) {
 可以适当地将添加属性源和使用属性分开看待，`Environment` 是它们产生联系的枢纽，`@PropertySource` 注解的处理过程是 `@Configuration` 注解的处理过程的一部分，在文件中的配置转换成为 `Environment` 中的 `PropertySource` 后，如何使用它们是独立的一件事情。
 
 <div style="width:70%;margin:auto">{% asset_img "Snipaste_2023-12-07_22-49-22.png" Environment 中的 MutablePropertySources %}</div>
+
+关于搭配使用的 `@Value` 注解是如何工作的，可以参考文章：
+
+- - {% post_link 'source-code-analysis-of-AutowiredAnnotationBeanPostProcessor-in-Spring' 'Spring AutowiredAnnotationBeanPostProcessor 的源码分析' %}

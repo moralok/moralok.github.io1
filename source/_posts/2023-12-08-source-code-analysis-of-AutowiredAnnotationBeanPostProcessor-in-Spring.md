@@ -1,16 +1,39 @@
 ---
-title: Spring AutowiredAnnotationBeanPostProcessor 的源码分析 
+title: Spring AutowiredAnnotationBeanPostProcessor 的源码分析
 date: 2023-12-08 12:00:30
 tags: [java, spring]
 ---
 
-在 `Spring` 中，`AutowiredAnnotationBeanPostProcessor` 是一个非常重要的后处理器，它可以自动装配标注注解的字段和方法，默认使用 `@Autowired` 和 `@Value` 注解，可以支持 `JSR-330` 的 `@Inject` 注解。本文通过分析源码介绍它的工作原理。
+在 `Spring` 中，`AutowiredAnnotationBeanPostProcessor` 是一个非常重要的后处理器，它可以自动装配标注注解的字段和方法，默认使用 `@Autowired` 和 `@Value` 注解，可以支持 `JSR-330` 的 `@Inject` 注解。本文通过分析源码介绍它的调用时机和工作原理。
 
 <!-- more -->
 
+### 介绍
+
+`AutowiredAnnotationBeanPostProcessor` 顾名思义，是自动装配注解的 `BeanPostProcessor`，但是它处理的不仅仅是 `@Autowired` 这一个注解。个人认为 `Autowired Annotation` 的意思更接近“用于标注**目标**是**被自动装配**的**注解**”。使用“目标”是为了表达注解标注的目标不仅仅限于字段，更是包括构造函数、方法、方法参数以及注解；使用“被自动装配”是为了表达注解描述的是目标的特征或者被处理的结果，体现出被动的语义更准确；使用“注解”是为了表达注解的种类不仅仅限于 `@Autowired`，还包括 `@Value` 和 `@Inject`，它们都指示目标需要被自动装配处理。
+
+通过 `AutowiredAnnotationBeanPostProcessor` 的构造函数可以看到 `@Inject` 注解的特别之处，为了使用它，需要在 `Maven` 配置中额外引入 `javax.inject` 依赖。
+
+```java
+public AutowiredAnnotationBeanPostProcessor() {
+    this.autowiredAnnotationTypes.add(Autowired.class);
+    this.autowiredAnnotationTypes.add(Value.class);
+    try {
+        this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
+                ClassUtils.forName("javax.inject.Inject", AutowiredAnnotationBeanPostProcessor.class.getClassLoader()));
+        logger.info("JSR-330 'javax.inject.Inject' annotation found and supported for autowiring");
+    }
+    catch (ClassNotFoundException ex) {
+        // JSR-330 API not available - simply skip.
+    }
+}
+```
+
 ### 入口：`populateBean` 方法
 
-我们在{% post_link Spring-application-context-refresh-process 'Spring 应用 context 刷新流程' %}中介绍过属性注入发生在 `populateBean` 方法中。
+我们在{% post_link how-does-Spring-load-beans 'Spring Bean 加载过程' %}中介绍过**为 `bean` 填充属性值**发生在 `populateBean` 方法中。我们也将直接从这里开始跟踪代码的处理过程。
+
+> 个人认为宽松地讲，“填充属性”等于“注入属性”等于“自动装配”，前两者更侧重处理的结果，后者更侧重过程的特征，但请注意在具体的代码上下文中应辨析区别。例如为 `bean` 填充属性是 `Spring` 的重要目标之一，基于 `Autowired Annotation` 进行自动装配某一个后处理器的功能，是 `Spring` 实现目标的其中一个具体方式。
 
 ```java
 protected void populateBean(String beanName, RootBeanDefinition mbd, BeanWrapper bw) {
@@ -18,6 +41,7 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, BeanWrapper
     // 如果存在 InstantiationAwareBeanPostProcessor 或者需要检查依赖
     if (hasInstAwareBpps || needsDepCheck) {
         PropertyDescriptor[] filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
+        // 如果存在 InstantiationAwareBeanPostProcessor 
         if (hasInstAwareBpps) {
             for (BeanPostProcessor bp : getBeanPostProcessors()) {
                 if (bp instanceof InstantiationAwareBeanPostProcessor) {
@@ -39,14 +63,32 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, BeanWrapper
 }
 ```
 
+> 有时候在 `Spring` 中看到 `BeanPostProcessor` 并不能代表将目光转向该接口的方法实现。不同 `BeanPostProcessor` 的子接口存在不同的调用时机。`AutowiredAnnotationBeanPostProcessor` 间接实现了 `InstantiationAwareBeanPostProcessor` 并直接实现了 `MergedBeanDefinitionPostProcessor`，这是我们今天要关注的两个重点接口。
+
+**`AutowiredAnnotationBeanPostProcessor` 是什么时候注册的呢？**
+
+以 `AnnotationConfigApplicationContext` 为例，它在构造函数中创建了 `AnnotatedBeanDefinitionReader`，`AnnotatedBeanDefinitionReader` 又在构造函数中注册了基于注解配置的处理器：
+
+```java
+AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
+```
+
+其中就包括 `AutowiredAnnotationBeanPostProcessor`。
+
 ### 后处理 PropertyValues
 
-`AutowiredAnnotationBeanPostProcessor` 实现了 `InstantiationAwareBeanPostProcessor` 接口，在 `postProcessPropertyValues` 方法中，它做了两件事情：
+`AutowiredAnnotationBeanPostProcessor` 实现了 `InstantiationAwareBeanPostProcessor` 接口，该接口关注 `bean` 的实例化：
+
+- `postProcessBeforeInstantiation`（实例化前）
+- `postProcessAfterInstantiation`（实例化后）
+- `postProcessPropertyValues`（实例化后）
+
+> `postProcessPropertyValues` 方法在工厂将给定属性值应用到给定 `bean` 之前对给定属性值进行后处理。允许检查是否满足所有依赖关系，例如基于 `bean` 属性 `setters` 上的 `@Required` 注解进行检查。还允许替换要应用的属性值，通常是通过基于原始 `PropertyValues` 创建新的 `MutablePropertyValues` 实例，并添加或删除特定值。
+
+`postProcessPropertyValues` 方法做了两件事情：
 
 - 查找需要自动装配的元数据
 - 注入
-
-> `postProcessPropertyValues` 方法在工厂将给定属性值应用到给定 `bean` 之前对给定属性值进行后处理。允许检查是否满足所有依赖关系，例如基于 `bean` 属性 `setters` 上的 `@Required` 注解进行检查。还允许替换要应用的属性值，通常是通过基于原始 `PropertyValues` 创建新的 `MutablePropertyValues` 实例，并添加或删除特定值。
 
 ```java
 @Override
@@ -70,16 +112,20 @@ public PropertyValues postProcessPropertyValues(
 
 ### 查找自动装配元数据
 
-`InjectionMetadata` 是用于管理注入元数据的内部类，不适合直接在应用程序中使用。它和 `Class` 是一对一的关系，封装了需要注入的元素 `InjectedElement`。一个 `InjectedElement` 对应着一个字段（`Field`）或一个方法（`Method`），分别对应着两个实现类 `AutowiredFieldElement` 和 `AutowiredMethodElement`。
+> 这部分代码体现了注入（Injection）和自动装配（Autowiring）的等价性。`InjectionMetadata` 和 `AutowiringMetadata` 的含义是用于注入（自动装配）的元数据。
+
+`InjectionMetadata` 是用于管理注入元数据的内部类，不适合直接在应用程序中使用。它和 `Class` 是一对一的关系，封装了需要**被注入**的元素 `InjectedElement`。一个 `InjectedElement` 对应着一个字段（`Field`）或一个方法（`Method`），分别对应着两个实现类 `AutowiredFieldElement` 和 `AutowiredMethodElement`。这里再次体现了**被注入、被自动装配**的语义。
 
 查找自动装配元数据的过程如下：
 
 - 先从缓存中获取，如果存在且不需要刷新，则直接返回结果
 - 否则构建自动装配元数据并放入缓存
 
+> 注意：在 `postProcessPropertyValues` 第一次调用 `findAutowiringMetadata` 缓存中就已经有结果了。什么时候构建并存入缓存的呢？
+
 ```java
 private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
-    // 缓存 key
+    // 缓存 key，如果没有指定退化为使用全限定类名
     String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
     // 双重检查
     // 先从缓存中获取
@@ -95,6 +141,7 @@ private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz
                 try {
                     // 构建自动装配元数据
                     metadata = buildAutowiringMetadata(clazz);
+                    // 放入缓存
                     this.injectionMetadataCache.put(cacheKey, metadata);
                 }
                 catch (NoClassDefFoundError err) {
@@ -129,10 +176,11 @@ private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
         ReflectionUtils.doWithLocalFields(targetClass, new ReflectionUtils.FieldCallback() {
             @Override
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-                // 查找代表自动装配的注解：@Autowired、@Value、@Inject（可选）
+                // 查找表示需被自动装配的注解：@Autowired、@Value、@Inject（可选）
                 AnnotationAttributes ann = findAutowiredAnnotation(field);
                 if (ann != null) {
                     if (Modifier.isStatic(field.getModifiers())) {
+                        // 不支持静态字段
                         if (logger.isWarnEnabled()) {
                             logger.warn("Autowired annotation is not supported on static fields: " + field);
                         }
@@ -140,7 +188,7 @@ private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
                     }
                     // 确定 required
                     boolean required = determineRequiredStatus(ann);
-                    // 创建 AutowiredFieldElement 并添加
+                    // 根据 field 和 required 创建 AutowiredFieldElement 并添加
                     currElements.add(new AutowiredFieldElement(field, required));
                 }
             }
@@ -153,16 +201,18 @@ private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
                 if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
                     return;
                 }
-                // 查找代表自动装配的注解：@Autowired、@Value、@Inject（可选）
+                // 查找表示需被自动装配的注解：@Autowired、@Value、@Inject（可选）
                 AnnotationAttributes ann = findAutowiredAnnotation(bridgedMethod);
                 if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
                     if (Modifier.isStatic(method.getModifiers())) {
+                        // 不支持静态方法
                         if (logger.isWarnEnabled()) {
                             logger.warn("Autowired annotation is not supported on static methods: " + method);
                         }
                         return;
                     }
                     if (method.getParameterTypes().length == 0) {
+                        // 不支持无参数的方法
                         if (logger.isWarnEnabled()) {
                             logger.warn("Autowired annotation should only be used on methods with parameters: " +
                                     method);
@@ -182,14 +232,16 @@ private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
         targetClass = targetClass.getSuperclass();
     }
     while (targetClass != null && targetClass != Object.class);
-    // 封装为 InjectionMetadata
+    // 封装为 InjectionMetadata 返回
     return new InjectionMetadata(clazz, elements);
 }
 ```
 
 ### 注入
 
-`InjectionMetadata` 的 `inject` 方法比较简单，内部会遍历并调用 `InjectedElement` 的 `inject` 方法，`AutowiredFieldElement` 和 `AutowiredMethodElement` 各自实现了 `inject` 方法。对于字段来说，注入意味着将一个解析得到的 `value` 通过反射设置到字段中；对于方法来说，注入意味着解析得到方法的参数的 `value`，然后通过反射调用方法。
+对于字段来说，注入意味着将一个解析得到的 `value` 通过反射设置到字段中；对于方法来说，注入意味着解析得到方法参数的 `value`，然后通过反射调用方法。
+
+`InjectionMetadata` 的 `inject` 方法比较简单，内部会遍历并调用 `InjectedElement` 的 `inject` 方法，`AutowiredFieldElement` 和 `AutowiredMethodElement` 各自实现了 `inject` 方法。
 
 ```java
 public void inject(Object target, String beanName, PropertyValues pvs) throws Throwable {
@@ -213,10 +265,8 @@ public void inject(Object target, String beanName, PropertyValues pvs) throws Th
 
 - 都使用 `DependencyDescriptor` 描述即将被注入的特定依赖项，`DependencyDescriptor` 包装了构造函数参数、方法参数或者字段，允许以统一的方式访问它们的元数据
 - 都会缓存 `DependencyDescriptor`
-- 都会记录自动装配的 `bean`，用于判断是否使用 `DependencyDescriptor` 的变体优化缓存
+- 都会记录自动装配的 `bean`，用于判断是否使用 `DependencyDescriptor` 的变体 `ShortcutDependencyDescriptor` 优化缓存
 - 都通过 `beanFactory.resolveDependency` 解析依赖
-
-> 不理解缓存 `DependencyDescriptor` 代码上的注释
 
 #### 字段注入
 
@@ -251,7 +301,7 @@ private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
             Set<String> autowiredBeanNames = new LinkedHashSet<String>(1);
             TypeConverter typeConverter = beanFactory.getTypeConverter();
             try {
-                // beanFactory 解析依赖
+                // 通过 beanFactory 解析依赖得到 value
                 value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
             }
             catch (BeansException ex) {
@@ -261,13 +311,14 @@ private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
                 // 如果未缓存，则缓存
                 if (!this.cached) {
                     if (value != null || this.required) {
-                        // 缓存 desc
+                        // 缓存 DependencyDescriptor
                         this.cachedFieldValue = desc;
                         // 注册依赖关系，用于控制销毁顺序
                         registerDependentBeans(beanName, autowiredBeanNames);
                         // 如果自动装配的 bean 刚好只有一个
                         if (autowiredBeanNames.size() == 1) {
                             String autowiredBeanName = autowiredBeanNames.iterator().next();
+                            // 检测工厂里存在 bean
                             if (beanFactory.containsBean(autowiredBeanName)) {
                                 if (beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
                                     // 替换为具有预先解析的目标 bean 名称的 DependencyDescriptor 变体
@@ -294,6 +345,8 @@ private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
 ```
 
 #### 方法注入
+
+> 不理解缓存 `DependencyDescriptor` 代码上的注释：Shortcut for avoiding synchronization...
 
 ```java
 private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
@@ -330,14 +383,15 @@ private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
             DependencyDescriptor[] descriptors = new DependencyDescriptor[paramTypes.length];
             Set<String> autowiredBeans = new LinkedHashSet<String>(paramTypes.length);
             TypeConverter typeConverter = beanFactory.getTypeConverter();
+            // 遍历
             for (int i = 0; i < arguments.length; i++) {
                 MethodParameter methodParam = new MethodParameter(method, i);
-                // 创建依赖描述符
+                // 为每个方法参数创建依赖描述符
                 DependencyDescriptor currDesc = new DependencyDescriptor(methodParam, this.required);
                 currDesc.setContainingClass(bean.getClass());
                 descriptors[i] = currDesc;
                 try {
-                    // beanFactory 解析依赖
+                    // 通过 beanFactory 解析依赖得到 value
                     Object arg = beanFactory.resolveDependency(currDesc, beanName, autowiredBeans, typeConverter);
                     if (arg == null && !this.required) {
                         arguments = null;
@@ -355,6 +409,7 @@ private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
                 if (!this.cached) {
                     if (arguments != null) {
                         this.cachedMethodArguments = new Object[paramTypes.length];
+                        // 缓存 DependencyDescriptor
                         for (int i = 0; i < arguments.length; i++) {
                             this.cachedMethodArguments[i] = descriptors[i];
                         }
@@ -363,8 +418,10 @@ private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
                         // 如果自动装配的 bean 数量等于参数的数量
                         if (autowiredBeans.size() == paramTypes.length) {
                             Iterator<String> it = autowiredBeans.iterator();
+                            // 遍历
                             for (int i = 0; i < paramTypes.length; i++) {
                                 String autowiredBeanName = it.next();
+                                // 检测工厂里存在 bean
                                 if (beanFactory.containsBean(autowiredBeanName)) {
                                     if (beanFactory.isTypeMatch(autowiredBeanName, paramTypes[i])) {
                                         // 替换为具有预先解析的目标 bean 名称的 DependencyDescriptor 变体
@@ -411,7 +468,7 @@ private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
 
 #### 解析已缓存的方法参数或字段
 
-> 为什么在这里 `beanFactory.resolveDependency` 需要的参数和未缓存时不一样啊？
+> 为什么在这里 `beanFactory.resolveDependency` 需要的参数和未缓存时不一样啊？虽然内部会通过相同的方式获得 `typeConverter`，但是很奇怪啊。
 
 ```java
 private Object resolvedCachedArgument(String beanName, Object cachedArgument) {
@@ -426,6 +483,8 @@ private Object resolvedCachedArgument(String beanName, Object cachedArgument) {
 ```
 
 ### 解析依赖
+
+解析依赖的过程暂不深入。
 
 ```java
 public Object resolveDependency(DependencyDescriptor descriptor, String requestingBeanName,
@@ -532,3 +591,75 @@ public Object doResolveDependency(DependencyDescriptor descriptor, String beanNa
     }
 }
 ```
+
+### 构建自动装配元数据的时机
+
+你在 `Debug` 的时候也许会注意到，在第一次进入 `postProcessPropertyValues` 方法，查找自动装配元数据时，就已经是从缓存中获取的了。那么究竟是**什么时候构建自动装配元数据并放入缓存的**呢？这就需要我们目前一直没有讲到的 `MergedBeanDefinitionPostProcessor` 派上用场了。在 `postProcessMergedBeanDefinition` 方法中，也调用了 `findAutowiringMetadata` 方法，这才是真正的第一次查找自动装配元数据。
+
+```java
+public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+    if (beanType != null) {
+        // 查找自动装配元数据
+        InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
+        // 检查配置成员
+        metadata.checkConfigMembers(beanDefinition);
+    }
+}
+```
+
+那么 **`MergedBeanDefinitionPostProcessor` 又是什么时候被调用的**呢？在 `doCreateBean` 方法中，创建实例后，填充属性前。
+
+```java
+protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final Object[] args)
+        throws BeanCreationException {
+    // 创建实例
+    // 允许 post-processors 修改合并过的 bean definition
+    synchronized (mbd.postProcessingLock) {
+        // 如果尚未被 MergedBeanDefinitionPostProcessor 应用过
+        if (!mbd.postProcessed) {
+            try {
+                // 应用
+                applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+            }
+            catch (Throwable ex) {
+                throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+                        "Post-processing of merged bean definition failed", ex);
+            }
+            // 修改为被应用过
+            mbd.postProcessed = true;
+        }
+    }
+    // 为 bean 填充属性值
+}
+```
+
+#### 检测配置成员
+
+> `configMember` 这个命名不太理解，指的是通过配置实现注入的 `Member` （`Filed` 和 `Method` 的父类）吗？
+
+检测配置成员，如果不是外部管理的配置成员，则注册为外部管理的配置成员。在合并后的 `bean` 定义中，`externallyManagedConfigMembers` 保存了外部管理的配置成员，用于标记一个配置成员是外部管理的。例如当一个字段同时标注了 `@Resource` 和 `@Autowired` 注解，当 `@Resouce` 注解被处理后，该字段已经被标记，当 `@Autowired` 注解被处理时，就会跳过该字段，避免重复注入造成冲突。
+
+> 这里的外部管理感觉有点指向依赖注入的控制反转思想。
+
+```java
+public void checkConfigMembers(RootBeanDefinition beanDefinition) {
+    Set<InjectedElement> checkedElements = new LinkedHashSet<InjectedElement>(this.injectedElements.size());
+    // 遍历需要被注入的元素
+    for (InjectedElement element : this.injectedElements) {
+        Member member = element.getMember();
+        // 如果不是外部管理的配置成员
+        if (!beanDefinition.isExternallyManagedConfigMember(member)) {
+            // 注册为外部管理的配置成员
+            beanDefinition.registerExternallyManagedConfigMember(member);
+            checkedElements.add(element);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Registered injected element on class [" + this.targetClass.getName() + "]: " + element);
+            }
+        }
+    }
+    // 在 `InjectionMetadata#inject` 方法中，迭代的集合将会是它
+    this.checkedElements = checkedElements;
+}
+```
+
+> 如果不了解具体的场景，可能会比较难想象这个标记的用处是什么。
