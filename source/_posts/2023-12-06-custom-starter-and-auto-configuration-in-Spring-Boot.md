@@ -1,7 +1,7 @@
 ---
 title: Spring Boot 自定义 starter 和自动配置的工作原理
 date: 2023-12-06 08:02:11
-tags: [spring, spring boot, auto configuration]
+tags: [java, spring, spring boot, auto configuration]
 ---
 
 如果你正在参与一个共享库的开发，你可能会想为使用方提供自动配置的支持，以帮助对方快速地接入和使用。自动配置机制往往和 `starter` 联系在一起，本文将介绍如何创建一个自定义的 `starter` 并从源码角度分析 `Spring Boot` 自动配置的工作原理。

@@ -164,6 +164,8 @@ public static boolean needsRefresh(InjectionMetadata metadata, Class<?> clazz) {
 
 构建自动装配元数据只需要给定一个 `Class`，沿着给定的 `Class` 的父类向上循环查找直到 `Object` 类。在每个循环中，先遍历当前类声明的所有属性，找到标注了自动装配注解的属性，为其创建 `AutowiredFieldElement` 并添加到临时集合，再遍历当前类声明的所有方法，找到标注了自动装配注解的方法，为其创建 `AutowiredMethodElement` 并添加到临时集合。最后汇总 `InjectedElement` 封装到 `InjectionMetadata` 中。
 
+> 这个处理顺序意味着在注入时方法的优先级高于字段，前者会覆盖后者。
+
 ```java
 private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
     LinkedList<InjectionMetadata.InjectedElement> elements = new LinkedList<InjectionMetadata.InjectedElement>();
@@ -663,3 +665,5 @@ public void checkConfigMembers(RootBeanDefinition beanDefinition) {
 ```
 
 > 如果不了解具体的场景，可能会比较难想象这个标记的用处是什么。
+
+> 尽管 `@Autowired` 注解配合 `@Value` 注解可以很灵活，但是应尽量采取清晰明了的配置方式，让注入的结果一眼就能看出来。
