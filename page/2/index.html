@@ -152,7 +152,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">34</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,111 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/" class="post-title-link" itemprop="url">Spring @Configuration 注解的源码分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-24 05:43:52" itemprop="dateCreated datePublished" datetime="2023-11-24T05:43:52+08:00">2023-11-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
+    </span>
+
+  
+    <span id="/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/" class="post-meta-item leancloud_visitors" data-flag-title="Spring @Configuration 注解的源码分析" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>22 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><code>Configuration</code> 注解是 <code>Spring</code> 中常用的注解，在一般的应用场景中，它用于标识一个类作为配置类，搭配 <code>Bean</code> 注解将创建的 <code>bean</code> 交给 <code>Spring</code> 容器管理。神奇的是，被 <code>Bean</code> 注解标注的方法，只会被真正调用一次。这种方法调用被拦截的情况很容易让人联想到代理，如果你在 <code>Debug</code> 时注意过配置类的实例，你会发现配置类的 <code>Class</code> 名称中携带 <code>EnhancerBySpringCGLIB</code>。本文将从源码角度，分析 <code>Configuration</code> 注解是如何工作的。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/23/source-code-analysis-of-Spring-Configuration-annotation/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -232,7 +337,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -449,7 +554,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -677,7 +782,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -879,7 +984,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -1049,7 +1154,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -1203,7 +1308,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -1371,7 +1476,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -1804,7 +1909,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -2037,7 +2142,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
+      <time title="修改时间：2023-12-11 01:00:47" itemprop="dateModified" datetime="2023-12-11T01:00:47+08:00">2023-12-11</time>
     </span>
 
   
@@ -2193,168 +2298,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/11/01/testing-and-analysis-of-jvm-gc/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Moralok">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Moralok">
-      <meta itemprop="description" content="Moralok's blog">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Moralok">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/01/testing-and-analysis-of-jvm-gc/" class="post-title-link" itemprop="url">JVM GC 的测试和分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-11-01 11:42:50" itemprop="dateCreated datePublished" datetime="2023-11-01T11:42:50+08:00">2023-11-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-12-10 01:16:49" itemprop="dateModified" datetime="2023-12-10T01:16:49+08:00">2023-12-10</time>
-    </span>
-
-  
-    <span id="/2023/11/01/testing-and-analysis-of-jvm-gc/" class="post-meta-item leancloud_visitors" data-flag-title="JVM GC 的测试和分析" title="阅读次数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">阅读次数：</span>
-      <span class="leancloud-visitors-count"></span>
-    </span>
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>2.5k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h3 id="堆的组成"><a href="#堆的组成" class="headerlink" title="堆的组成"></a>堆的组成</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JvmGcTest_1</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_512KB</span> <span class="operator">=</span> <span class="number">512</span> * <span class="number">1024</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1MB</span> <span class="operator">=</span> <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_6MB</span> <span class="operator">=</span> <span class="number">6</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_7MB</span> <span class="operator">=</span> <span class="number">7</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_8MB</span> <span class="operator">=</span> <span class="number">8</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -verbose:gc</span></span><br><span class="line">    <span class="comment">// -XX:+UseSerialGC 避免幸存区比例动态调整</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 2010K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,  24% used [0x00000000fec00000, 0x00000000fedf68c8, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff500000, 0x00000000ff500000, 0x00000000ff600000)</span><br><span class="line"> tenured generation   total 10240K, used 0K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,   0% used [0x00000000ff600000, 0x00000000ff600000, 0x00000000ff600200, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3288K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 348K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>根据打印的信息，组成如下：</p>
-<ul>
-<li><code>Heap</code>: 堆。<ul>
-<li><code>def new generation</code>: 新生代。</li>
-<li><code>tenured generation</code>: 老年代。</li>
-<li><code>Metaspace</code>: 元空间，实际上并不属于堆， <code>-XX:+PrintGCDetails</code> 将它的信息一起输出。</li>
-</ul>
-</li>
-</ul>
-<h4 id="堆空间的比例"><a href="#堆空间的比例" class="headerlink" title="堆空间的比例"></a>堆空间的比例</h4><p>新生代中的空间占比 <code>eden:from:to</code> 在默认情况下是 <code>8:1:1</code>，与观察到的数据 <code>8192K:1024K:1024K</code> 一致。<br>新生代的空间 <code>eden + from + to</code> 为 10240K，符合 <code>-Xmn10M</code> 设置的大小。<br><code>total</code> 显示为 9216K，即 <code>eden + from</code> 的大小，是因为 <code>to</code> 的空间不计算在内。新生代可用的空间只有 <code>eden + from</code>，<code>to</code> 空间只是在使用标记-复制算法进行垃圾回收时使用。<br>老年代的空间为 10240K。<br>目前仅 <code>eden</code> 中已用 2010K，约占 <code>eden</code> 空间的 24%。</p>
-<h4 id="从内存地址分析堆空间"><a href="#从内存地址分析堆空间" class="headerlink" title="从内存地址分析堆空间"></a>从内存地址分析堆空间</h4><p>内存地址为 16 位的 16 进制的数字，64 位机器。<br><code>[0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</code> 分别表示地址空间的开始、已用、结束的地址指针。<br>新生代 <code>[0x00000000fec00000, 0x00000000ff600000)</code>，老年代 <code>[0x00000000ff600000, 0x0000000100000000)</code>，计算可得空间大小均为 10MB。<br><code>eden</code> 中已用的空间地址为 <code>[0x00000000fec00000, 0x00000000fedf68c8)</code>，空间大小为 2058440 byte，约等于 2010K。</p>
-<p>显而易见，新生代和老生代是一片完全连续的地址空间。</p>
-<h3 id="堆的垃圾回收"><a href="#堆的垃圾回收" class="headerlink" title="堆的垃圾回收"></a>堆的垃圾回收</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_7MB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew: 2013K-&gt;721K(9216K), 0.0105099 secs] 2013K-&gt;721K(19456K), 0.0105455 secs] [Times: user=0.00 sys=0.00, real=0.01 secs] </span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 8135K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,  90% used [0x00000000fec00000, 0x00000000ff33d8c0, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,  70% used [0x00000000ff500000, 0x00000000ff5b45f0, 0x00000000ff600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line"> tenured generation   total 10240K, used 0K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,   0% used [0x00000000ff600000, 0x00000000ff600000, 0x00000000ff600200, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3354K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 360K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p><code>Allocation Failure</code>，正常情况下，新对象总是分配在 Eden，分配空间失败，<code>eden</code> 的剩余空间不足以存放 7M 大小的对象，新生代发生 <code>minor GC</code>。<br><code>[DefNew: 2013K-&gt;721K(9216K), 0.0105099 secs]</code>，新生代在垃圾回收前后空间的占用变化和耗时。<br><code>2013K-&gt;721K(19456K), 0.0105455 secs</code>，整个堆在垃圾回收前后空间的占用变化和耗时。</p>
-<h4 id="GC-类型"><a href="#GC-类型" class="headerlink" title="GC 类型"></a>GC 类型</h4><ul>
-<li>GC: minor GC。</li>
-<li>Fulle GC: full GC。</li>
-</ul>
-<h4 id="from-和-to-的角色变换"><a href="#from-和-to-的角色变换" class="headerlink" title="from 和 to 的角色变换"></a>from 和 to 的角色变换</h4><p><code>from</code> 的已用空间的地址为 <code>[0x00000000ff500000, 0x00000000ff5b45f0)</code>，空间大小为 738800 byte，约 721K，与 GC 后的新生代空间占用大小一致。在垃圾回收后，<code>eden</code> 区域存活的对象全部转移到了原 <code>to</code> 空间，<code>from</code> 和 <code>to</code> 空间的角色相互转换（从地址空间的信息可以看到此时 <code>to</code> 的地址指针比 <code>from</code> 的地址指针小）。<br><code>eden</code> 的已用空间的地址为 <code>[0x00000000fec00000, 0x00000000ff33d8c0)</code>，空间大小为 7592128 byte，约 7.24M，比 7M 大不少。此时 <code>eden</code> 区域除了 <code>byte[]</code> 对象外，还存储了其他对象，比如为了创建 <code>List&lt;byte[]&gt;</code> 对象而新加载的类对象。</p>
-<h3 id="eden-空间足够时不发生-GC"><a href="#eden-空间足够时不发生-GC" class="headerlink" title="eden 空间足够时不发生 GC"></a>eden 空间足够时不发生 GC</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_7MB]);</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_512KB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew: 2013K-&gt;721K(9216K), 0.0011172 secs] 2013K-&gt;721K(19456K), 0.0011443 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 8647K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,  96% used [0x00000000fec00000, 0x00000000ff3bd8d0, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,  70% used [0x00000000ff500000, 0x00000000ff5b45f0, 0x00000000ff600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line"> tenured generation   total 10240K, used 0K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,   0% used [0x00000000ff600000, 0x00000000ff600000, 0x00000000ff600200, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3354K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 360K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>由于 <code>eden</code> 区域还能放下 512K 的对象，所以仍然只会发生一次垃圾回收。<br><code>eden</code> 区域的已用空间比例上升到 96%，已用空间的地址为 <code>[0x00000000fec00000, 0x00000000ff3bd8d0)</code>，空间大小为 8116432 byte，约 7.74M，比上一次增加了 524304 byte，即 <code>512 * 1024 + 16</code>。显然第二次添加时，不再因为创建 <code>List&lt;byte[]&gt;</code> 而创建额外的对象，只有创建对象所需的 512K 和 16 字节的对象头。<strong>这一刻数值的精确让人欣喜hhh</strong>。</p>
-<h3 id="新生代空间不足，部分对象提前晋升到老年代"><a href="#新生代空间不足，部分对象提前晋升到老年代" class="headerlink" title="新生代空间不足，部分对象提前晋升到老年代"></a>新生代空间不足，部分对象提前晋升到老年代</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_7MB]);</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_512KB]);</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_512KB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew: 2013K-&gt;721K(9216K), 0.0013580 secs] 2013K-&gt;721K(19456K), 0.0013932 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">[GC (Allocation Failure) [DefNew: 8565K-&gt;512K(9216K), 0.0046378 secs] 8565K-&gt;8396K(19456K), 0.0046540 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 1350K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,  10% used [0x00000000fec00000, 0x00000000fecd1a20, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,  50% used [0x00000000ff400000, 0x00000000ff480048, 0x00000000ff500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff500000, 0x00000000ff500000, 0x00000000ff600000)</span><br><span class="line"> tenured generation   total 10240K, used 7884K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,  77% used [0x00000000ff600000, 0x00000000ffdb33a0, 0x00000000ffdb3400, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3354K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 360K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>在第三次添加时，由于 <code>eden</code> 空间不足，因此又发生了第二次垃圾回收。<br><code>[DefNew: 8565K-&gt;512K(9216K), 0.0046378 secs]</code>，新生代的空间占用下降到了 512K，应该是在 from 中留下了第二次添加时的 512K。<br>在第二次添加完成后，<code>eden</code> <code>[0x00000000fec00000, 0x00000000ff3bd8d0)</code> 和 <code>from</code> <code>[0x00000000ff500000, 0x00000000ff5b45f0)</code> 占用的空间为 <code>8116432 + 738800 = 8855232</code> 约 8647.7K，略大于 8565K。很奇怪，第二次垃圾回收前，新生代的空间占用为什么有小幅度下降。<br><code>8565K-&gt;8396K(19456K), 0.0046540 secs</code>，堆的占用空间并未发生明显下降。部分对象因为新生代空间不足，提前晋升到了老年代中。8396K - 512 K 剩余 7884K，全部晋升到老年代，符合 77% 的统计数据。<br><code>eden</code> 中加入了第三次添加时的对象，大于 512K 不少。<br>此时 <code>eden</code>、<code>from</code>、<code>tenured</code> 中均有不好确认成分的空间占用，比如 from 中多了 56 字节。</p>
-<h3 id="新生代空间不足，大对象直接在老年代创建"><a href="#新生代空间不足，大对象直接在老年代创建" class="headerlink" title="新生代空间不足，大对象直接在老年代创建"></a>新生代空间不足，大对象直接在老年代创建</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Heap</span><br><span class="line"> def <span class="keyword">new</span> <span class="title class_">generation</span>   total 9216K, used 2177K [<span class="number">0x00000000fec00000</span>, <span class="number">0x00000000ff600000</span>, <span class="number">0x00000000ff600000</span>)</span><br><span class="line">  eden space 8192K,  <span class="number">26</span>% used [<span class="number">0x00000000fec00000</span>, <span class="number">0x00000000fee20730</span>, <span class="number">0x00000000ff400000</span>)</span><br><span class="line">  from space 1024K,   <span class="number">0</span>% used [<span class="number">0x00000000ff400000</span>, <span class="number">0x00000000ff400000</span>, <span class="number">0x00000000ff500000</span>)</span><br><span class="line">  to   space 1024K,   <span class="number">0</span>% used [<span class="number">0x00000000ff500000</span>, <span class="number">0x00000000ff500000</span>, <span class="number">0x00000000ff600000</span>)</span><br><span class="line"> tenured generation   total 10240K, used 8192K [<span class="number">0x00000000ff600000</span>, <span class="number">0x0000000100000000</span>, <span class="number">0x0000000100000000</span>)</span><br><span class="line">   the space 10240K,  <span class="number">80</span>% used [<span class="number">0x00000000ff600000</span>, <span class="number">0x00000000ffe00010</span>, <span class="number">0x00000000ffe00200</span>, <span class="number">0x0000000100000000</span>)</span><br><span class="line"> Metaspace       used 3353K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">space</span>    used 360K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>在 Eden 空间肯定不足而老年代空间足够的情况下，大对象会直接在老年代中创建，此时不会发生 GC。</p>
-<h3 id="内存不足-OOM"><a href="#内存不足-OOM" class="headerlink" title="内存不足 OOM"></a>内存不足 OOM</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB]);</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">waiting...</span><br><span class="line">[GC (Allocation Failure) [DefNew: 4711K-&gt;928K(9216K), 0.0017245 secs][Tenured: 8192K-&gt;9117K(10240K), 0.0021690 secs] 12903K-&gt;9117K(19456K), [Metaspace: 4267K-&gt;4267K(1056768K)], 0.0039336 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">[Full GC (Allocation Failure) [Tenured: 9117K-&gt;9063K(10240K), 0.0014352 secs] 9117K-&gt;9063K(19456K), [Metaspace: 4267K-&gt;4267K(1056768K)], 0.0014614 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">Exception in thread &quot;Thread-0&quot; java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">	at com.moralok.jvm.gc.JvmGcTest.lambda$main$0(JvmGcTest.java:27)</span><br><span class="line">	at com.moralok.jvm.gc.JvmGcTest$$Lambda$1/2003749087.run(Unknown Source)</span><br><span class="line">	at java.lang.Thread.run(Thread.java:750)</span><br><span class="line"></span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 1502K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,  18% used [0x00000000fec00000, 0x00000000fed77a00, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000000ff500000, 0x00000000ff500000, 0x00000000ff600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line"> tenured generation   total 10240K, used 9063K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,  88% used [0x00000000ff600000, 0x00000000ffed9c50, 0x00000000ffed9e00, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 4787K, capacity 4884K, committed 4992K, reserved 1056768K</span><br><span class="line">  class space    used 522K, capacity 558K, committed 640K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>当新生代和老年代的空间均不足时，在尝试 GC 和 Full GC 后仍不能成功分配对象，就会发生 <code>OutOfMemoryError</code>。</p>
-<h4 id="线程中发生内存不足，不会影响其他线程"><a href="#线程中发生内存不足，不会影响其他线程" class="headerlink" title="线程中发生内存不足，不会影响其他线程"></a>线程中发生内存不足，不会影响其他线程</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB]);</span><br><span class="line">        list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB]);</span><br><span class="line">    &#125;).start();</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;waiting...&quot;</span>);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        System.in.read();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew: 2013K-&gt;721K(9216K), 0.0012274 secs][Tenured: 8192K-&gt;8912K(10240K), 0.0113036 secs] 10205K-&gt;8912K(19456K), [Metaspace: 3345K-&gt;3345K(1056768K)], 0.0125751 secs] [Times: user=0.00 sys=0.00, real=0.01 secs] </span><br><span class="line">[Full GC (Allocation Failure) [Tenured: 8912K-&gt;8895K(10240K), 0.0011880 secs] 8912K-&gt;8895K(19456K), [Metaspace: 3345K-&gt;3345K(1056768K)], 0.0012009 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 246K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,   3% used [0x00000000fec00000, 0x00000000fec3d890, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000000ff500000, 0x00000000ff500000, 0x00000000ff600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line"> tenured generation   total 10240K, used 8895K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,  86% used [0x00000000ff600000, 0x00000000ffeafce0, 0x00000000ffeafe00, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3380K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 363K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">	at com.moralok.jvm.gc.JvmGcTest.main(JvmGcTest.java:21)</span><br></pre></td></tr></table></figure>
-
-<p>当 <code>Thread-0</code> 发生 <code>OutOfMemoryError</code> 后，<code>main</code> 线程仍然正常运行。</p>
-<h3 id="大对象的划分指标"><a href="#大对象的划分指标" class="headerlink" title="大对象的划分指标"></a>大对象的划分指标</h3><p>当创建的大对象 + 对象头的容量小于等于 <code>eden</code>，如果 GC 后的存活对象可以放入 <code>to</code>，那么还是会先在 <code>eden</code> 中创建大对象。<br>在本案例中，又会马上发生一次 GC，大对象提前晋升到老年代中。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    List&lt;<span class="type">byte</span>[]&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">byte</span>[_8MB - <span class="number">16</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight console"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew: 2013K-&gt;693K(9216K), 0.0015517 secs] 2013K-&gt;693K(19456K), 0.0015828 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] </span><br><span class="line">[GC (Allocation Failure) [DefNew: 8885K-&gt;0K(9216K), 0.0048110 secs] 8885K-&gt;8885K(19456K), 0.0048264 secs] [Times: user=0.00 sys=0.02, real=0.00 secs] </span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 410K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)</span><br><span class="line">  eden space 8192K,   5% used [0x00000000fec00000, 0x00000000fec66958, 0x00000000ff400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000000ff500000, 0x00000000ff500000, 0x00000000ff600000)</span><br><span class="line"> tenured generation   total 10240K, used 8885K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)</span><br><span class="line">   the space 10240K,  86% used [0x00000000ff600000, 0x00000000ffead580, 0x00000000ffead600, 0x0000000100000000)</span><br><span class="line"> Metaspace       used 3321K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 354K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-
-<p>尽管最终大部分对象提前晋升到老年代，但是可以看到第二次 GC 前的新生代空间占用，可见数组分配时，所需空间刚好为 Eden 空间大小时，还是会在 eden 创建对象。</p>
-<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
-<li>正常情况下，新对象都是在 eden 中创建。</li>
-<li>空间足够的意思并非空间占用相加的值仍小于总额，而是有连续的一片内存可供分配。因此紧凑才能利用率高。</li>
-<li>正常情况下，GC 前 to 区域总是为空，GC 后 eden 区域总是为空。</li>
-<li>正常情况下，GC 后 eden 和 from 的存活对象要么去了 to，要么去老年代。</li>
-<li>只要 GC 后腾空 eden，创建在 eden 中的新对象的空间占用可以等于 eden 的大小。</li>
-</ul>
-<p>尽管总体上有迹可循，但是 GC 的具体情况，仍然需要具体分析，有很多分支情况未一一确认。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -2379,13 +2322,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">86k</span>
+    <span title="站点总字数">88k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:47</span>
+    <span title="站点阅读时长">4:53</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
