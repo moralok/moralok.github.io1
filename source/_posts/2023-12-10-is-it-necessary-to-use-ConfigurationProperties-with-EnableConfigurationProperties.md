@@ -8,7 +8,7 @@ tags: [java, spring, spring boot]
 
 <!-- more -->
 
-- 本文的写作动机继承自 {% post_link 'use-and-analysis-of-PropertySource-annotation-in-Spring' Spring 中 @PropertySource 注解的使用和源码分析 %}，两者有点相似并且常被一起提及，都通过外部配置管理运行时的属性值，但实际的工作原理却并不相同。
+- 本文的写作动机继承自{% post_link 'use-and-analysis-of-PropertySource-annotation-in-Spring' Spring 中 @PropertySource 注解的使用和源码分析 %}，两者有点相似并且常被一起提及，都通过外部配置管理运行时的属性值，但实际的工作原理却并不相同。
 - 本文没有介绍它们的使用方式，如有需要可以参考 [Guide to @ConfigurationProperties in Spring Boot](https://www.baeldung.com/configuration-properties-in-spring-boot)。
 - 理解 `@Import` 的工作原理对阅读本文的源码有非常大的帮助，可以参考{% post_link 'use-and-analysis-of-Import-annotation-in-Spring' Spring 中 @Import 注解的使用和源码分析 %}。
 

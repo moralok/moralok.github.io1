@@ -8,6 +8,8 @@ tags: [java, spring]
 
 <!-- more -->
 
+- 本文的写作动机继承自{% post_link 'source-code-analysis-of-Spring-Configuration-annotation' Spring @Configuration 注解的源码分析 %}，处理 `@Import` 是处理 `@Configuration` 过程的一部分。
+
 ## 使用方式
 
 `Import` 注解有 `3` 种导入（注册） `BeanDefinition` 的方式：

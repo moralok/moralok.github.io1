@@ -1169,3 +1169,8 @@ private Object obtainBeanInstanceFromFactory(Method beanMethod, Object[] beanMet
     }
 }
 ```
+
+延续自本文的文章：
+
+- {% post_link 'the-truth-about-override-of-ComponentScan-basePackages' ComponentScan 扫描路径覆盖的真相 %}
+- {% post_link 'use-and-analysis-of-Import-annotation-in-Spring' Spring 中 @Import 注解的使用和源码分析 %}
