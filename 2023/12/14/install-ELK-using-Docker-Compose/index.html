@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="印象里每次安装 ElK 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：Getting started with the Elastic Stack and Docker Compose: Part 1 通过 docker compose 安装 elasticsearch、kibana、metricbeat、filebeat 和 logstash，但是移除了 ssl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 Docker Compose 安装 ELK">
+<meta property="og:url" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="印象里每次安装 ElK 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：Getting started with the Elastic Stack and Docker Compose: Part 1 通过 docker compose 安装 elasticsearch、kibana、metricbeat、filebeat 和 logstash，但是移除了 ssl">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_04-35-10.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_05-55-46.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_05-59-47.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_06-03-42.png">
+<meta property="article:published_time" content="2023-12-14T11:35:00.000Z">
+<meta property="article:modified_time" content="2023-12-14T23:31:52.089Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="elasticsearch">
+<meta property="article:tag" content="kibana">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_04-35-10.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/","path":"2023/12/14/install-ELK-using-Docker-Compose/","title":"使用 Docker Compose 安装 ELK"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 Docker Compose 安装 ELK | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E6%96%87%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">环境文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ElasticSearch"><span class="nav-number">2.</span> <span class="nav-text">ElasticSearch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%A5%E5%BA%B7%E6%A3%80%E6%B5%8B"><span class="nav-number">2.1.</span> <span class="nav-text">健康检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%90%E5%88%B6%E5%86%85%E5%AD%98%E5%A4%B1%E8%B4%A5"><span class="nav-number">2.2.</span> <span class="nav-text">限制内存失败</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-Elasticsearch-%E5%90%AF%E5%8A%A8%E6%88%90%E5%8A%9F"><span class="nav-number">2.3.</span> <span class="nav-text">验证 Elasticsearch 启动成功</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kibana"><span class="nav-number">3.</span> <span class="nav-text">Kibana</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE-Kibana-%E5%AF%86%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">设置 Kibana 密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%AF%86%E9%92%A5"><span class="nav-number">3.2.</span> <span class="nav-text">设置密钥</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kibana-%E6%9C%AA%E5%87%86%E5%A4%87%E5%B0%B1%E7%BB%AA"><span class="nav-number">3.3.</span> <span class="nav-text">Kibana 未准备就绪</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#metricbeat"><span class="nav-number">4.</span> <span class="nav-text">metricbeat</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#metricbeat-yml"><span class="nav-number">4.1.</span> <span class="nav-text">metricbeat.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E9%80%80%E5%87%BA"><span class="nav-number">4.2.</span> <span class="nav-text">容器退出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#filebeat"><span class="nav-number">5.</span> <span class="nav-text">filebeat</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#filebeat-yaml"><span class="nav-number">5.1.</span> <span class="nav-text">filebeat.yaml</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#logstash"><span class="nav-number">6.</span> <span class="nav-text">logstash</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#logstash-conf"><span class="nav-number">6.1.</span> <span class="nav-text">logstash.conf</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用 Docker Compose 安装 ELK | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 Docker Compose 安装 ELK
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-14 19:35:00" itemprop="dateCreated datePublished" datetime="2023-12-14T19:35:00+08:00">2023-12-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-15 07:31:52" itemprop="dateModified" datetime="2023-12-15T07:31:52+08:00">2023-12-15</time>
+    </span>
+
+  
+    <span id="/2023/12/14/install-ELK-using-Docker-Compose/" class="post-meta-item leancloud_visitors" data-flag-title="使用 Docker Compose 安装 ELK" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>印象里每次安装 <code>ElK</code> 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：<a target="_blank" rel="noopener" href="https://www.elastic.co/cn/blog/getting-started-with-the-elastic-stack-and-docker-compose">Getting started with the Elastic Stack and Docker Compose: Part 1</a> 通过 <code>docker compose</code> 安装 <code>elasticsearch</code>、<code>kibana</code>、<code>metricbeat</code>、<code>filebeat</code> 和 <code>logstash</code>，但是移除了 <code>ssl</code> 相关的配置。你可以直接按照原文档进行安装，但是对照本文可以帮助你更快速地移除不需要的配置以及绕开可能踩到的坑。<br>此安装方式尽量<strong>使用环境变量代替编写配置文件</strong>，便于在备份和分享时将敏感信息留存在本地。本次安装时间为 <code>2023-12-14</code>，使用官方镜像，版本为 <code>8.11.2</code>。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>如果不考虑持久化配置，直接进入容器手动修改配置文件可能也很合适。</p>
+</blockquote>
+<p><strong>文件结构</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">├── .env</span><br><span class="line"></span><br><span class="line">├── docker-compose.yml</span><br><span class="line"></span><br><span class="line">├── filebeat.yml</span><br><span class="line"></span><br><span class="line">├── logstash.conf</span><br><span class="line"></span><br><span class="line">└── metricbeat.yml</span><br></pre></td></tr></table></figure>
+
+<h2 id="环境文件"><a href="#环境文件" class="headerlink" title="环境文件"></a>环境文件</h2><p>我们可以在 <code>.env</code> 文件中定义一些准备传递给 <code>docker-compose</code> 文件的变量，比如密码、版本和端口号等等。</p>
+<blockquote>
+<p>将敏感或者重复使用的信息放在 <code>.env</code> 文件中，并在 <code>.gitignore</code> 文件中忽略该文件，就可以更方便地将 <code>docker-compose</code> 文件备份到 <code>GitHub</code> 或者分享给他人。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"># Project namespace (defaults to the current folder name if not set)</span><br><span class="line">#COMPOSE_PROJECT_NAME=myproject</span><br><span class="line"></span><br><span class="line"># &#x27;elastic&#x27; 用户的密码 (至少 6 字符)</span><br><span class="line">ELASTIC_PASSWORD=changeme</span><br><span class="line"></span><br><span class="line"># &#x27;kibana_system&#x27; 用户的密码 (至少 6 字符)</span><br><span class="line">KIBANA_PASSWORD=changeme</span><br><span class="line"></span><br><span class="line"># Elastic 产品的版本</span><br><span class="line">STACK_VERSION=8.11.2</span><br><span class="line"></span><br><span class="line"># 设置集群的名称</span><br><span class="line">CLUSTER_NAME=docker-cluster</span><br><span class="line"></span><br><span class="line"># Set to &#x27;basic&#x27; or &#x27;trial&#x27; to automatically start the 30-day trial</span><br><span class="line">LICENSE=basic</span><br><span class="line">#LICENSE=trial</span><br><span class="line"></span><br><span class="line"># Elasticsearch HTTP API 暴露的端口</span><br><span class="line">ES_PORT=9200</span><br><span class="line"></span><br><span class="line"># Kibana 暴露的端口</span><br><span class="line">KIBANA_PORT=5601</span><br><span class="line"></span><br><span class="line"># ES、KIBANA、LOGSTASH 的内存限制（byte），根据主机可用的内存增加或降低。</span><br><span class="line">ES_MEM_LIMIT=1073741824</span><br><span class="line">KB_MEM_LIMIT=1073741824</span><br><span class="line">LS_MEM_LIMIT=1073741824</span><br><span class="line"></span><br><span class="line"># 密钥（起先以为是可选的，其实后面会用到）</span><br><span class="line">ENCRYPTION_KEY=c34d38b3a14956121ff2170e5030b471551370178f43e5626eec58b04a30fae2</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>在官方文档中，使用了一个名为 <code>setup</code> 的容器，用于做一些前置准备工作，比如 <code>ssl</code> 相关的配置和账号密码的设置。以下因为不需要配置 <code>ssl</code> 所以不使用 <code>setup</code> 容器，<code>Kibana</code> 的账号密码另行手动设置。</p>
+</blockquote>
+<h2 id="ElasticSearch"><a href="#ElasticSearch" class="headerlink" title="ElasticSearch"></a>ElasticSearch</h2><p>在 <code>docker-compose.yml</code> 文件中添加 <code>ElasticSearch</code> 部分。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3.8&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">elasticsearch:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">elasticsearch:8.11.1</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">elasticsearch</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;$&#123;ES_PORT&#125;:9200&#x27;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">node.name=elasticsearch</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">cluster.name=$&#123;CLUSTER_NAME&#125;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">discovery.type=single-node</span></span><br><span class="line">      <span class="comment"># 设置密码</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">ELASTIC_PASSWORD=$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">bootstrap.memory_lock=true</span></span><br><span class="line">      <span class="comment"># 启用  X-Pack 必须登录</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">xpack.security.enabled=true</span></span><br><span class="line">      <span class="comment"># 关闭 ssl</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">xpack.security.http.ssl.enabled=false</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">xpack.security.transport.ssl.enabled=false</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">xpack.license.self_generated.type=$&#123;LICENSE&#125;</span></span><br><span class="line">    <span class="comment"># 限制内存</span></span><br><span class="line">    <span class="attr">mem_limit:</span> <span class="string">$&#123;ES_MEM_LIMIT&#125;</span></span><br><span class="line">    <span class="attr">ulimits:</span></span><br><span class="line">      <span class="attr">memlock:</span></span><br><span class="line">        <span class="attr">soft:</span> <span class="number">-1</span></span><br><span class="line">        <span class="attr">hard:</span> <span class="number">-1</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch-data:/usr/share/elasticsearch/data</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch-plugins:/usr/share/elasticsearch/plugins</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="comment"># 健康检测：</span></span><br><span class="line">    <span class="attr">healthcheck:</span></span><br><span class="line">      <span class="attr">test:</span></span><br><span class="line">        [</span><br><span class="line">          <span class="string">&quot;CMD-SHELL&quot;</span>,</span><br><span class="line">          <span class="string">&quot;curl -s http://localhost:9200 | grep -q &#x27;missing authentication credentials&#x27;&quot;</span>,</span><br><span class="line">        ]</span><br><span class="line">      <span class="attr">interval:</span> <span class="string">10s</span></span><br><span class="line">      <span class="attr">timeout:</span> <span class="string">10s</span></span><br><span class="line">      <span class="attr">retries:</span> <span class="number">120</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">elasticsearch-data:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line">  <span class="attr">elasticsearch-plugins:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">local</span></span><br><span class="line">  <span class="comment"># kibana-data:</span></span><br><span class="line">  <span class="comment">#   driver: local</span></span><br><span class="line">  <span class="comment"># metricbeat-data:</span></span><br><span class="line">  <span class="comment">#   driver: local</span></span><br><span class="line">  <span class="comment"># filebeat-data:</span></span><br><span class="line">  <span class="comment">#   driver: local</span></span><br><span class="line">  <span class="comment"># logstash-data:</span></span><br><span class="line">  <span class="comment">#   driver: local</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">my-network:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="健康检测"><a href="#健康检测" class="headerlink" title="健康检测"></a>健康检测</h3><p>对 <code>Elasticsearch</code> 进行健康检测的方式是对其发起 <code>HTTP</code> 请求，在本示例中目标地址为 <code>http://localhost:9200</code>，因为启用了密码，因此返回结果里会带有 ‘missing authentication credentials’ 字样，成功匹配。</p>
+<p>在官方文档中的示例是携带 <code>--cacert</code> 参数发起 <code>HTTPS</code> 请求：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s --cacert config/certs/ca/ca.crt https://localhost:9200</span><br></pre></td></tr></table></figure>
+
+<p>如果在后续启动时发现 <code>elasticsearch</code> 容器长时间处于 <code>waiting</code> 状态，不能转为 <code>healthy</code>：</p>
+<ul>
+<li>检查是不是写成 <code>https</code></li>
+<li>手动执行命令查看返回结果是否符合期望，像我原先复制了 <code>Kibana</code> 中配置的测试命令，最后发现多了一个 <code>-I</code> 参数导致启动一直不能完成。</li>
+</ul>
+<h3 id="限制内存失败"><a href="#限制内存失败" class="headerlink" title="限制内存失败"></a>限制内存失败</h3><p>你可能会遇到以下警告：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARNING: Your kernel does not support cgroup swap limit. WARNING: Your</span><br><span class="line">kernel does not support swap limit capabilities. Limitation discarded.</span><br><span class="line">To prevent these messages, enable memory and swap accounting on your system. To enable these on system using GNU GRUB (GNU GRand Unified Bootloader), do the following.</span><br></pre></td></tr></table></figure>
+
+<p>原因是系统默认未开启 <code>swap</code> 限制。开启后即使 <code>Docker</code> 未运行，内存和交换计算也会产生约 <code>1%</code> 的总可用内存的开销和 <code>10%</code> 的整体性能下降。开启方式如下：</p>
+<ul>
+<li>编辑配置文件 <code>sudo vim /etc/default/grub</code></li>
+<li>设置 <code>GRUB_CMDLINE_LINUX=&quot;cgroup_enable=memory swapaccount=1</code></li>
+<li><code>sudo update-grub</code></li>
+<li>重启 <code>sudo reboot</code>（<strong>直接关闭虚拟机再启动似乎不能生效</strong>）</li>
+</ul>
+<h3 id="验证-Elasticsearch-启动成功"><a href="#验证-Elasticsearch-启动成功" class="headerlink" title="验证 Elasticsearch 启动成功"></a>验证 Elasticsearch 启动成功</h3><p>在启动后，访问 <code>http://localhost:9200/</code>，会弹出验证登录对话框，代表 <code>elasticsearch</code> 启动成功</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_04-35-10.png" class="" title="ES 登录对话框"></div>
+
+<p>输入账号密码后显示 <code>Elasticsearch</code> 信息，代表正常运行。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;elasticsearch&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;cluster_name&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;docker-cluster&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;cluster_uuid&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;MlwsEv3-SYqGkm2B_uqg4Q&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;version&quot;</span> <span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;number&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;8.11.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;build_flavor&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;default&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;build_type&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;docker&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;build_hash&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;6f9ff581fbcde658e6f69d6ce03050f060d1fd0c&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;build_date&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;2023-11-11T10:05:59.421038163Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;build_snapshot&quot;</span> <span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;lucene_version&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;9.8.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;minimum_wire_compatibility_version&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;7.17.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;minimum_index_compatibility_version&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;7.0.0&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;tagline&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;You Know, for Search&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Kibana"><a href="#Kibana" class="headerlink" title="Kibana"></a>Kibana</h2><p>在 <code>docker-compose.yml</code> 文件中添加 <code>Kibana</code> 部分。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kibana:</span></span><br><span class="line">  <span class="comment"># 依赖于 elasticsearch，检测其健康状态</span></span><br><span class="line">  <span class="attr">depends_on:</span></span><br><span class="line">    <span class="attr">elasticsearch:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">  <span class="attr">image:</span> <span class="string">&#x27;kibana:8.11.1&#x27;</span></span><br><span class="line">  <span class="attr">container_name:</span> <span class="string">kibana</span></span><br><span class="line">  <span class="attr">ports:</span> </span><br><span class="line">    <span class="bullet">-</span> <span class="string">$&#123;KIBANA_PORT&#125;:5601</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">SERVERNAME=kibana</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTICSEARCH_HOSTS=http://elasticsearch:9200</span></span><br><span class="line">    <span class="comment"># Kibana 连接 Elasticsearch 的账号密码，不可用于登录</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTICSEARCH_USERNAME=kibana_system</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTICSEARCH_PASSWORD=$&#123;KIBANA_PASSWORD&#125;</span></span><br><span class="line">    <span class="comment"># 密钥</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">XPACK_SECURITY_ENCRYPTIONKEY=$&#123;ENCRYPTION_KEY&#125;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=$&#123;ENCRYPTION_KEY&#125;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">XPACK_REPORTING_ENCRYPTIONKEY=$&#123;ENCRYPTION_KEY&#125;</span></span><br><span class="line">    <span class="comment"># 切换成中文</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">I18N_LOCALE=zh-CN</span></span><br><span class="line">  <span class="attr">mem_limit:</span> <span class="string">$&#123;KB_MEM_LIMIT&#125;</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">kibana-data:/usr/share/kibana/data</span></span><br><span class="line">  <span class="attr">networks:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">  <span class="comment"># 健康检测，发起 HTTP 请求，匹配返回结果中有指定字符串</span></span><br><span class="line">  <span class="attr">healthcheck:</span></span><br><span class="line">    <span class="attr">test:</span></span><br><span class="line">      [</span><br><span class="line">        <span class="string">&quot;CMD-SHELL&quot;</span>,</span><br><span class="line">        <span class="string">&quot;curl -s -I http://localhost:5601 | grep -q &#x27;HTTP/1.1 302 Found&#x27;&quot;</span>,</span><br><span class="line">      ]</span><br><span class="line">    <span class="attr">interval:</span> <span class="string">10s</span></span><br><span class="line">    <span class="attr">timeout:</span> <span class="string">10s</span></span><br><span class="line">    <span class="attr">retries:</span> <span class="number">120</span></span><br><span class="line">  <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="设置-Kibana-密码"><a href="#设置-Kibana-密码" class="headerlink" title="设置 Kibana 密码"></a>设置 Kibana 密码</h3><p>配置的账号密码是给 <code>Kibana</code> 用于连接 <code>Elasticsearch</code> 的，并非用于登录 <code>Kibana</code> 的，也不可用于登录。<code>elastic</code> 的账号密码才是登录 <code>Kibana</code> 的账号密码。</p>
+<p>在官方文档中，是通过 <code>setup</code> 容器完成 <code>kibana_system</code> 账号的密码设置，脚本中执行的命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s -X POST --cacert config/certs/ca/ca.crt -u &quot;elastic:$&#123;ELASTIC_PASSWORD&#125;&quot; -H &quot;Content-Type: application/json&quot; https://es01:9200/_security/user/kibana_system/_password -d &quot;&#123;\&quot;password\&quot;:\&quot;$&#123;KIBANA_PASSWORD&#125;\&quot;&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>仿照脚本手动发起请求，设置 <code>kibana_system</code> 的密码。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s -X POST -u &quot;elastic:$&#123;ELASTIC_PASSWORD&#125;&quot; -H &quot;Content-Type: application/json&quot; http://localhost:9200/_security/user/kibana_system/_password -d &quot;&#123;\&quot;password\&quot;:\&quot;$&#123;KIBANA_PASSWORD&#125;\&quot;&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>你也可以进入容器使用 <code>elasticsearch-setup-passwords</code> 设置密码。</p>
+</blockquote>
+<h3 id="设置密钥"><a href="#设置密钥" class="headerlink" title="设置密钥"></a>设置密钥</h3><p>密钥部分如果不配置，会影响 <code>Kibana</code> 的功能使用：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/kibana/current/xpack-security-secure-saved-objects.html">Secure saved objects</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/kibana/current/kibana-encryption-keys.html">kibana-encryption-keys</a></li>
+</ul>
+<p>查看日志会看到以下报错信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[2023-12-14T18:02:17.493+00:00][ERROR][plugins.observabilityAIAssistant] Error: Unable to create actions client because the Encrypted Saved Objects plugin is missing encryption key. Please set xpack.encryptedSavedObjects.encryptionKey in the kibana.yml or use the bin/kibana-encryption-keys command.</span><br><span class="line">kibana         |     at getActionsClientWithRequest (/usr/share/kibana/node_modules/@kbn/actions-plugin/server/plugin.js:329:15)</span><br><span class="line">kibana         |     at Object.secureGetActionsClientWithRequest [as getActionsClientWithRequest] (/usr/share/kibana/node_modules/@kbn/actions-plugin/server/plugin.js:384:58)</span><br><span class="line">kibana         |     at handler (/usr/share/kibana/node_modules/@kbn/observability-ai-assistant-plugin/server/routes/connectors/route.js:25:65)</span><br><span class="line">kibana         |     at processTicksAndRejections (node:internal/process/task_queues:95:5)</span><br><span class="line">kibana         |     at wrappedHandler (/usr/share/kibana/node_modules/@kbn/server-route-repository/src/register_routes.js:57:13)</span><br><span class="line">kibana         |     at Router.handle (/usr/share/kibana/node_modules/@kbn/core-http-router-server-internal/src/router.js:154:30)</span><br><span class="line">kibana         |     at handler (/usr/share/kibana/node_modules/@kbn/core-http-router-server-internal/src/router.js:113:50)</span><br><span class="line">kibana         |     at exports.Manager.execute (/usr/share/kibana/node_modules/@hapi/hapi/lib/toolkit.js:60:28)</span><br><span class="line">kibana         |     at Object.internals.handler (/usr/share/kibana/node_modules/@hapi/hapi/lib/handler.js:46:20)</span><br><span class="line">kibana         |     at exports.execute (/usr/share/kibana/node_modules/@hapi/hapi/lib/handler.js:31:20)</span><br><span class="line">kibana         |     at Request._lifecycle (/usr/share/kibana/node_modules/@hapi/hapi/lib/request.js:371:32)</span><br><span class="line">kibana         |     at Request._execute (/usr/share/kibana/node_modules/@hapi/hapi/lib/request.js:281:9)</span><br></pre></td></tr></table></figure>
+
+<p>你可以通过以下方式自己生成：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">进入 kibana 容器</span></span><br><span class="line">docker exec -it kibana bash</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">执行命令</span></span><br><span class="line">bin/kibana-encryption-keys generate</span><br></pre></td></tr></table></figure>
+
+<p>结果如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/8.11/production.html#openssl-legacy-provider</span><br><span class="line">## Kibana Encryption Key Generation Utility</span><br><span class="line"></span><br><span class="line">The &#x27;generate&#x27; command guides you through the process of setting encryption keys for:</span><br><span class="line"></span><br><span class="line">xpack.encryptedSavedObjects.encryptionKey</span><br><span class="line">    Used to encrypt stored objects such as dashboards and visualizations</span><br><span class="line">    https://www.elastic.co/guide/en/kibana/current/xpack-security-secure-saved-objects.html#xpack-security-secure-saved-objects</span><br><span class="line"></span><br><span class="line">xpack.reporting.encryptionKey</span><br><span class="line">    Used to encrypt saved reports</span><br><span class="line">    https://www.elastic.co/guide/en/kibana/current/reporting-settings-kb.html#general-reporting-settings</span><br><span class="line"></span><br><span class="line">xpack.security.encryptionKey</span><br><span class="line">    Used to encrypt session information</span><br><span class="line">    https://www.elastic.co/guide/en/kibana/current/security-settings-kb.html#security-session-and-cookie-settings</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Already defined settings are ignored and can be regenerated using the --force flag.  Check the documentation links for instructions on how to rotate encryption keys.</span><br><span class="line">Definitions should be set in the kibana.yml used configure Kibana.</span><br><span class="line"></span><br><span class="line">Settings:</span><br><span class="line">xpack.encryptedSavedObjects.encryptionKey: 8bd58432fa60321fc44cd1953b0468b9</span><br><span class="line">xpack.reporting.encryptionKey: eb360c607b1643e1739fcf8d587b2d42</span><br><span class="line">xpack.security.encryptionKey: ffe9139e6955daaa6cff13050978c3e8</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kibana-未准备就绪"><a href="#Kibana-未准备就绪" class="headerlink" title="Kibana 未准备就绪"></a>Kibana 未准备就绪</h3><p>你可能访问 <code>Kibana</code> 时还会遇到 <code>Kibana server is not ready yet</code> 的报错信息，这次我在使用原先的 <code>bitnami</code> 的镜像时怎么都解决不了这个问题。可以参考<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/641274429">Kibana 最常见的“启动报错”或“无法连接ES集群服务”的故障原因及解决方案汇总</a>，或者像我一样直接换镜像换版本试试。</p>
+<blockquote>
+<p>如果成功完成以上安装，几乎就没有硬坑了。<strong>以下部分是完全照搬官方文档</strong>，可以不安装。如果想要快速在视觉上有一些感受，也可以安装体验。</p>
+</blockquote>
+<h2 id="metricbeat"><a href="#metricbeat" class="headerlink" title="metricbeat"></a>metricbeat</h2><p>在 <code>docker-compose.yml</code> 文件中添加 <code>metricbeat</code> 部分。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">metricbeat:</span></span><br><span class="line">  <span class="attr">depends_on:</span></span><br><span class="line">    <span class="attr">elasticsearch:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">    <span class="attr">kibana:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">  <span class="attr">image:</span> <span class="string">elastic/metricbeat:$&#123;STACK_VERSION&#125;</span></span><br><span class="line">  <span class="attr">container_name:</span> <span class="string">metricbeat</span></span><br><span class="line">  <span class="attr">user:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">metricbeat-data:/usr/share/metricbeat/data</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/var/run/docker.sock:/var/run/docker.sock:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/proc:/hostfs/proc:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/:/hostfs:ro&quot;</span></span><br><span class="line">  <span class="attr">networks:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">my-network</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_USER=elastic</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_PASSWORD=$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">    <span class="comment"># 注意：改为 http</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_HOSTS=http://elasticsearch:9200</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">KIBANA_HOSTS=http://kibana:5601</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">LOGSTASH_HOSTS=http://logstash:9600</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="metricbeat-yml"><a href="#metricbeat-yml" class="headerlink" title="metricbeat.yml"></a>metricbeat.yml</h3><p>和官方文档相比，移除了 <code>ssl</code> 相关的配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">metricbeat.config.modules:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">$&#123;path.config&#125;/modules.d/*.yml</span></span><br><span class="line">  <span class="attr">reload.enabled:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">metricbeat.modules:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">module:</span> <span class="string">elasticsearch</span></span><br><span class="line">  <span class="attr">xpack.enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">period:</span> <span class="string">10s</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">$&#123;ELASTIC_HOSTS&#125;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">$&#123;ELASTIC_USER&#125;</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">  <span class="attr">ssl.enabled:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> <span class="attr">module:</span> <span class="string">logstash</span></span><br><span class="line">  <span class="attr">xpack.enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">period:</span> <span class="string">10s</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">$&#123;LOGSTASH_HOSTS&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> <span class="attr">module:</span> <span class="string">kibana</span></span><br><span class="line">  <span class="attr">metricsets:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">stats</span></span><br><span class="line">  <span class="attr">period:</span> <span class="string">10s</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">$&#123;KIBANA_HOSTS&#125;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">$&#123;ELASTIC_USER&#125;</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">  <span class="attr">xpack.enabled:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> <span class="attr">module:</span> <span class="string">docker</span></span><br><span class="line">  <span class="attr">metricsets:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;container&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;cpu&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;diskio&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;healthcheck&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;info&quot;</span></span><br><span class="line">    <span class="comment"># - &quot;image&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;memory&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;network&quot;</span></span><br><span class="line">  <span class="attr">hosts:</span> [<span class="string">&quot;unix:///var/run/docker.sock&quot;</span>]</span><br><span class="line">  <span class="attr">period:</span> <span class="string">10s</span></span><br><span class="line">  <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">processors:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">add_host_metadata:</span> <span class="string">~</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">add_docker_metadata:</span> <span class="string">~</span></span><br><span class="line"></span><br><span class="line"><span class="attr">output.elasticsearch:</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">$&#123;ELASTIC_HOSTS&#125;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">$&#123;ELASTIC_USER&#125;</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">$&#123;ELASTIC_PASSWORD&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="容器退出"><a href="#容器退出" class="headerlink" title="容器退出"></a>容器退出</h3><p>你可能会遇到 <code>metricbeat</code> 容器启动完毕就立即退出的问题，查看容器日志可知，<code>metricbeat.yml</code> 文件必须属于 <code>uid=0</code> 的用户或者 <code>root</code> 用户。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exiting: error loading config file: config file (&quot;metricbeat.yml&quot;) must be owned by the user identifier (uid=0) or root</span><br></pre></td></tr></table></figure>
+
+<p>执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chown root metricbeat.yml</span><br></pre></td></tr></table></figure>
+
+<p>在修改完你可能会发现问题还是没有被解决，再次查看日志可知，<code>metricbeat.yml</code> 文件的权限必须为 “<code>-rw-rw-r--</code>“。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exiting: error loading config file: config file (&quot;metricbeat.yml&quot;) can only be writable by the owner but the permissions are &quot;-rw-rw-r--&quot; (to fix the permissions use: &#x27;chmod go-w /usr/share/metricbeat/metricbeat.yml&#x27;)</span><br></pre></td></tr></table></figure>
+
+<p>执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chmod 0644 metricbeat.yml</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong><code>filebeat.yml</code> 文件存在相同的问题，可以提前解决</strong>。</p>
+</blockquote>
+<p>前往“左侧菜单栏-&gt;Management-&gt;堆栈监测” 查看集群概览，<code>Kibana</code> 会提示可以使用开箱即用的规则。</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_05-55-46.png" class="" title="集群概览"></div>
+
+<h2 id="filebeat"><a href="#filebeat" class="headerlink" title="filebeat"></a>filebeat</h2><p>在 <code>docker-compose.yml</code> 文件中添加 <code>filebeat</code> 部分。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">filebeat:</span></span><br><span class="line">  <span class="attr">depends_on:</span></span><br><span class="line">    <span class="attr">elasticsearch:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">  <span class="attr">image:</span> <span class="string">elastic/filebeat:$&#123;STACK_VERSION&#125;</span></span><br><span class="line">  <span class="attr">container_name:</span> <span class="string">filebeat</span></span><br><span class="line">  <span class="attr">user:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">filebeat-data:/usr/share/filebeat/data</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;./filebeat_ingest_data/:/usr/share/filebeat/ingest_data/&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/var/lib/docker/containers:/var/lib/docker/containers:ro&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/var/run/docker.sock:/var/run/docker.sock:ro&quot;</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_USER=elastic</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_PASSWORD=$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">    <span class="comment"># 注意：改用 http</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_HOSTS=http://elasticsearch:9200</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">KIBANA_HOSTS=http://kibana:5601</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">LOGSTASH_HOSTS=http://logstash:9600</span></span><br><span class="line">  <span class="attr">networks:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">my-network</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="filebeat-yaml"><a href="#filebeat-yaml" class="headerlink" title="filebeat.yaml"></a>filebeat.yaml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">filebeat.inputs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">type:</span> <span class="string">filestream</span></span><br><span class="line">  <span class="attr">id:</span> <span class="string">default-filestream</span></span><br><span class="line">  <span class="attr">paths:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ingest_data/*.log</span></span><br><span class="line"></span><br><span class="line"><span class="attr">filebeat.autodiscover:</span></span><br><span class="line">  <span class="attr">providers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">type:</span> <span class="string">docker</span></span><br><span class="line">      <span class="attr">hints.enabled:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">processors:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">add_docker_metadata:</span> <span class="string">~</span></span><br><span class="line"></span><br><span class="line"><span class="attr">setup.kibana:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">$&#123;KIBANA_HOSTS&#125;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">$&#123;ELASTIC_USER&#125;</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">output.elasticsearch:</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">$&#123;ELASTIC_HOSTS&#125;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">$&#123;ELASTIC_USER&#125;</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">  <span class="attr">ssl.enabled:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+<p>前往“左侧菜单栏-&gt;Observability-&gt;日志-&gt;Stream” 查看流式传输。</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_05-59-47.png" class="" title="流式传输"></div>
+
+<h2 id="logstash"><a href="#logstash" class="headerlink" title="logstash"></a>logstash</h2><p>在 <code>docker-compose.yml</code> 文件中添加 <code>logstash</code> 部分。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">logstash:</span></span><br><span class="line">  <span class="attr">depends_on:</span></span><br><span class="line">    <span class="attr">elasticsearch:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">    <span class="attr">kibana:</span></span><br><span class="line">      <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">  <span class="attr">image:</span> <span class="string">logstash:$&#123;STACK_VERSION&#125;</span></span><br><span class="line">  <span class="attr">container_name:</span> <span class="string">logstash</span></span><br><span class="line">  <span class="attr">user:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">logstash-data:/usr/share/logstash/data</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;./logstash_ingest_data/:/usr/share/logstash/ingest_data/&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro&quot;</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">xpack.monitoring.enabled=false</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_USER=elastic</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_PASSWORD=$&#123;ELASTIC_PASSWORD&#125;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ELASTIC_HOSTS=http://elasticsearch:9200</span></span><br><span class="line">  <span class="attr">networks:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">my-network</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="logstash-conf"><a href="#logstash-conf" class="headerlink" title="logstash.conf"></a>logstash.conf</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  file &#123;</span><br><span class="line">    mode =&gt; &quot;tail&quot;</span><br><span class="line">    path =&gt; &quot;/usr/share/logstash/ingest_data/*&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">  elasticsearch &#123;</span><br><span class="line">    index =&gt; &quot;logstash-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">    hosts =&gt; &quot;$&#123;ELASTIC_HOSTS&#125;&quot;</span><br><span class="line">    user =&gt; &quot;$&#123;ELASTIC_USER&#125;&quot;</span><br><span class="line">    password =&gt; &quot;$&#123;ELASTIC_PASSWORD&#125;&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>前往“左侧菜单栏-&gt;Analytics-&gt;Discover”，查看数据视图。</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_06-03-42.png" class="" title="数据视图"></div>
+
+<blockquote>
+<p>每一次不顺利的安装都是一场折磨。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+              <a href="/tags/elasticsearch/" rel="tag"># elasticsearch</a>
+              <a href="/tags/kibana/" rel="tag"># kibana</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/13/how-to-grant-when-MySQL-started-with-skip-name-resolve-mode/" rel="prev" title="当 MySQL 以 skip-name-resolve 模式启动时如何使用 grant 命令">
+                  <i class="fa fa-chevron-left"></i> 当 MySQL 以 skip-name-resolve 模式启动时如何使用 grant 命令
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">97k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:23</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
