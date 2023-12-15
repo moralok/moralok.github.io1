@@ -1,12 +1,12 @@
 ---
 title: 使用 Grafana 和 Prometheus 搭建监控
 date: 2023-11-18 13:48:40
-tags:
-    - grafana
-    - prometheus
+tags: [grafana, prometheus]
 ---
 
+本文介绍如何通过 `Dockers Compose` 安装 `Grafana` 和 `Prometheus` 在局域网中配合各类 `exporter` 为主机和诸多内部服务搭建监控。
 
+<!-- more -->
 
 ### Grafana
 
@@ -33,6 +33,23 @@ volumes:
 networks:
   my-network:
     external: true
+```
+
+#### 问题记录
+
+**在通过 `nginx` 代理 `Grafana` 后，出现 `"Origin not allowed"` 报错信息**。
+
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-12-15_17-15-46.png" Origin not allowed 报错信息 %}</div>
+
+问题的原因参考官方社区：[After update to 8.3.5: ‘Origin not allowed’ behind proxy](https://community.grafana.com/t/after-update-to-8-3-5-origin-not-allowed-behind-proxy/60598)
+
+在 `nginx` 配置文件的 `proxy` 配置上方添加 `proxy_set_header Host $http_host`，然后重启 `nginx` 恢复正常。
+
+```conf
+location / {
+    proxy_set_header Host $http_host;
+    proxy_pass http://grafana:3000;
+}
 ```
 
 ### Prometheus
@@ -92,7 +109,7 @@ scrape_configs:
 
 #### node_exporter
 
-node_exporter 被设计为监控主机系统，因为它需要访问主机系统，所以不推荐使用 Docker 容器部署。
+`node_exporter` 被设计为监控主机系统，因为它需要访问主机系统，所以不推荐使用 `Docker` 容器部署。
 
 - [node_exporter Github 仓库](https://github.com/prometheus/node_exporter)
 - [node_exporter 下载地址](https://prometheus.io/download/#node_exporter)
@@ -100,10 +117,10 @@ node_exporter 被设计为监控主机系统，因为它需要访问主机系统
 
 #### 步骤
 
-1. 下载解压得到 node_exporter 二进制可执行文件。
+1. 下载解压得到 `node_exporter` 二进制可执行文件。
 2. 修改权限，`chmod u+x node_exporter`
 3. `./node_exporter` 启动
-4. Prometheus 配置文件
+4. `Prometheus` 配置文件
 ```yaml
 global:
   scrape_interval: 15s
@@ -131,7 +148,7 @@ ExecStart=/opt/node_exporter
 WantedBy=multi-user.target
 ```
 
-{% asset_img "Snipaste_2023-11-19_01-11-22.png" Ubuntu 监控 %}
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-11-19_01-11-22.png" Ubuntu 监控 %}</div>
 
 ### Windows 监控
 
@@ -143,9 +160,9 @@ WantedBy=multi-user.target
 
 #### 步骤
 
-1. 下载得到 windows_exporter-0.24.0-amd64.msi 安装程序。
+1. 下载得到 `windows_exporter-0.24.0-amd64.msi` 安装程序。
 2. 以默认方式安装
-3. Prometheus 配置文件
+3. `Prometheus` 配置文件
 ```yaml
 global:
   scrape_interval: 15s
@@ -157,7 +174,7 @@ scrape_configs:
   - targets: ['192.168.46.1:9182']
 ```
 
-{% asset_img "Snipaste_2023-11-19_01-16-05.png" Windows 监控 %}
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-11-19_01-16-05.png" Windows 监控 %}</div>
 
 ### Redis 监控
 
@@ -169,7 +186,7 @@ scrape_configs:
 
 #### docker-compose 部署
 
-使用 bitnami 提供的镜像代替官方镜像并没有特殊考量。使用环境变量 REDIS_ADDR 指定目标 Redis。
+使用 `bitnami` 提供的镜像代替官方镜像并没有特殊考量。使用环境变量 `REDIS_ADDR` 指定目标 `Redis`。
 
 ```yaml
 version: '2'
@@ -204,7 +221,7 @@ networks:
     external: true
 ```
 
-{% asset_img "Snipaste_2023-11-19_01-16-54.png" Redis 监控 %}
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-11-19_01-16-54.png" Redis 监控 %}</div>
 
 ### MySQL 监控
 
@@ -215,8 +232,8 @@ networks:
 
 #### docker-compose 部署
 
-1. 使用 volume 将配置文件 .my.cnf 挂载到容器中
-2. 使用 command 指定启动时的参数
+1. 使用 `volume` 将配置文件 `.my.cnf` 挂载到容器中
+2. 使用 `command` 指定启动时的参数
 
 > **坑！！！**在文档中找配置文件的默认挂载路径或者如何配置启动时的配置文件，找了好久都没找到。搭配上后来的坑，直接迷失数小时。
 
@@ -260,7 +277,7 @@ networks:
 
 #### mysqld_exporter 配置文件
 
-创建一个专用的 MySQL 用户。
+创建一个专用的 `MySQL` 用户。
 
 ```mysql
 CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'XXXXXXXX' WITH MAX_USER_CONNECTIONS 3;
@@ -275,14 +292,13 @@ user=exporter
 password=123456
 ```
 
-**坑！！！**根据 [0.15.0 CHANGE LOG](https://github.com/prometheus/mysqld_exporter/releases/tag/v0.15.0)，不再支持使用环境变量 DATA_SOURCE_NAME 设置 MySQL 的信息。Docker 镜像的文档未及时更新。需使用 `.my.cnf` 或命令行参数进行配置。
-Docker 镜像文档更新不及时。
+**坑！！！**根据 [0.15.0 CHANGE LOG](https://github.com/prometheus/mysqld_exporter/releases/tag/v0.15.0)，不再支持使用环境变量 `DATA_SOURCE_NAME` 设置 `MySQL` 的信息。`Docker` 镜像的文档未及时更新。需使用 `.my.cnf` 或命令行参数进行配置。 **`Docker` 镜像文档更新不及时**。
 
 ```console
 Error parsing host config" file=.my.cnf err="no configuration found
 ```
 
-**坑！！！**带字符的复杂密码不能被正确解析。MySQL 使用了随机生成的复杂密码，怎么都连接不上。
+**坑！！！**带字符的复杂密码不能被正确解析。`MySQL` 使用了随机生成的复杂密码，怎么都连接不上。
 
 ```console
 caller=exporter.go:152 level=error msg="Error pinging mysqld" err="Error 1045 (28000): Access denied for user 'exporter'@'172.19.0.13' (using password: YES)"
@@ -290,4 +306,4 @@ caller=exporter.go:152 level=error msg="Error pinging mysqld" err="Error 1045 (2
 
 > 数坑并发，搜遍全网，折腾半夜，痛不欲生。
 
-{% asset_img "Snipaste_2023-11-19_01-17-25.png" MySQL 监控 %}
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-11-19_01-17-25.png" MySQL 监控 %}</div>
