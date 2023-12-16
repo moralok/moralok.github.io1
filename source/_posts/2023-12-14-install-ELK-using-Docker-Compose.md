@@ -446,6 +446,15 @@ sudo chmod 0644 metricbeat.yml
 
 <div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-12-15_05-55-46.png" 集群概览 %}</div>
 
+### 控制数据的增长速度
+
+发现数据量增长有点快，感觉哪天不留神分配的存储空间就耗尽了。如果只是用于本地测试体验的话可以适当调大周期 `period: 10s`，效果明显。
+
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-12-15_18-03-21.png" 降低数据的增长速度 metricbeat %}</div>
+
+<div style="width:80%;margin:auto">{% asset_img "Snipaste_2023-12-15_18-09-20.png" 降低数据的增长速度 filebeat %}</div>
+
+
 ## filebeat
 
 在 `docker-compose.yml` 文件中添加 `filebeat` 部分。
