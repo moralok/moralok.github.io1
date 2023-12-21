@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文详细介绍了 Java 中 synchronized 锁的机制、存储结构、优化措施以及升级过程，并通过 jol-core 演示 Mark Word 的变化来验证锁升级的多个 case。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="synchronized 锁机制的分析和验证">
+<meta property="og:url" content="https://www.moralok.com/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="本文详细介绍了 Java 中 synchronized 锁的机制、存储结构、优化措施以及升级过程，并通过 jol-core 演示 Mark Word 的变化来验证锁升级的多个 case。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-19T04:09:07.000Z">
+<meta property="article:modified_time" content="2023-12-21T19:02:01.486Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="synchronized">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/","path":"2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/","title":"synchronized 锁机制的分析和验证"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>synchronized 锁机制的分析和验证 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">存储结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81"><span class="nav-number">2.</span> <span class="nav-text">重量级锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%81%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">锁优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81"><span class="nav-number">3.1.</span> <span class="nav-text">偏向锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E5%8A%A0%E9%94%81"><span class="nav-number">3.1.1.</span> <span class="nav-text">偏向锁加锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E6%92%A4%E9%94%80"><span class="nav-number">3.1.2.</span> <span class="nav-text">偏向锁撤销</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81"><span class="nav-number">3.2.</span> <span class="nav-text">轻量级锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%8A%A0%E9%94%81"><span class="nav-number">3.2.1.</span> <span class="nav-text">轻量级锁加锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E8%A7%A3%E9%94%81"><span class="nav-number">3.2.2.</span> <span class="nav-text">轻量级锁解锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E6%97%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">自旋</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E5%92%8C%E9%AA%8C%E8%AF%81"><span class="nav-number">4.</span> <span class="nav-text">测试和验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E5%81%8F%E5%90%91"><span class="nav-number">4.1.</span> <span class="nav-text">延迟偏向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E5%81%8F%E5%90%91%E5%BB%B6%E8%BF%9F"><span class="nav-number">4.2.</span> <span class="nav-text">关闭偏向延迟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%BF%E5%90%8D%E5%81%8F%E5%90%91%E9%94%81-%E5%81%8F%E5%90%91%E9%94%81"><span class="nav-number">4.3.</span> <span class="nav-text">匿名偏向锁-&gt;偏向锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E5%81%8F%E5%90%91%E9%94%81"><span class="nav-number">4.4.</span> <span class="nav-text">关闭偏向锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E9%94%81-%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81"><span class="nav-number">4.5.</span> <span class="nav-text">无锁-&gt;轻量级锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81"><span class="nav-number">4.6.</span> <span class="nav-text">偏向锁-&gt;轻量级锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E5%81%8F%E5%90%91%E9%94%81"><span class="nav-number">4.7.</span> <span class="nav-text">偏向锁-&gt;偏向锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81"><span class="nav-number">4.8.</span> <span class="nav-text">偏向锁-&gt;重量级锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E4%BB%A3%E5%B9%B4%E9%BE%84%E7%9A%84%E5%8F%98%E5%8C%96"><span class="nav-number">4.9.</span> <span class="nav-text">分代年龄的变化</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">Moralok's blog</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="Moralok's blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="synchronized 锁机制的分析和验证 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          synchronized 锁机制的分析和验证
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-19 12:09:07" itemprop="dateCreated datePublished" datetime="2023-12-19T12:09:07+08:00">2023-12-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-22 03:02:01" itemprop="dateModified" datetime="2023-12-22T03:02:01+08:00">2023-12-22</time>
+    </span>
+
+  
+    <span id="/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/" class="post-meta-item leancloud_visitors" data-flag-title="synchronized 锁机制的分析和验证" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>20 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本文详细介绍了 <code>Java</code> 中 <code>synchronized</code> 锁的机制、存储结构、优化措施以及升级过程，并通过 <code>jol-core</code> 演示 <code>Mark Word</code> 的变化来验证锁升级的多个 <code>case</code>。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>待完善</p>
+</blockquote>
+<p>利用 <code>synchronized</code> 实现同步的基础：<code>Java</code> 中的每一个对象都可以作为锁。具体表现为以下 <code>3</code> 种形式。</p>
+<ul>
+<li>对于普通同步方法，锁是当前实例对象。</li>
+<li>对于静态同步方法，锁是当前类的 <code>Class</code> 对象。</li>
+<li>对于同步方法块，锁是 <code>synchronized</code> 括号里配置的对象。</li>
+</ul>
+<p>当一个线程试图访问同步代码块时，它首先必须得到锁，退出或抛出异常时必须释放锁。</p>
+<ul>
+<li>在 <code>JVM</code> 层面，<code>synchronized</code> 锁是基于进入和退出 <code>Monitor</code> 来实现的，每一个对象都有一个 <code>Monitor</code> 与之相关联。</li>
+<li>在字节码层面，同步方法块是使用 <code>monitorenter</code> 和 <code>monitorexit</code> 指令实现的，前者在编译后插入到同步方法块的开始位置，后者插入到同步方法块的结束位置和异常位置。</li>
+</ul>
+<h2 id="存储结构"><a href="#存储结构" class="headerlink" title="存储结构"></a>存储结构</h2><blockquote>
+<p>锁存在哪里呢？锁里面又会存储什么信息呢？</p>
+</blockquote>
+<p><code>synchronized</code> 用的锁是存在 <code>Java</code> 对象头（<code>object header</code>）里的。如果对象是数组类型，则虚拟机用 <code>3</code> 字宽（<code>Word</code>）存储对象头，如果对象是非数组类型，则用 <code>2</code> 字宽存储对象头。在 <code>32</code> 位虚拟机中，<code>1</code> 字宽等于 <code>4</code> 字节，即 <code>32bit</code>。在 <code>64</code> 位虚拟机中，<code>1</code> 字宽等于 <code>8</code> 字节，即 <code>64bit</code>。</p>
+<p><code>Java</code> 对象头的组成结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>长度</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>32/64bit</code></td>
+<td><code>Mark Word</code></td>
+<td><strong>存储对象的 <code>hashCode</code> 或锁信息</strong></td>
+</tr>
+<tr>
+<td><code>32/64bit</code></td>
+<td><code>Class Metadata Address</code></td>
+<td>存储指向对象类型数据的指针</td>
+</tr>
+<tr>
+<td><code>32/64bit</code></td>
+<td><code>Array length</code></td>
+<td>数组的长度（如果当前对象是数组）</td>
+</tr>
+</tbody></table>
+<p><code>Java</code> 对象头里的 <code>Mark Word</code> 里默认存储对象的 <code>HashCode</code>，分代年龄和锁标记位。在运行期间，<code>Mark Word</code> 里存储的数据会随着锁标志位的变化而变化。<code>Mark Word</code> 可能变化为另外 <code>4</code> 种数据。</p>
+<p>以 <code>32</code> 位虚拟机为例：</p>
+<table>
+  <tr>
+    <th rowspan="2">锁状态</th>
+    <th colspan="2">25bit</th>
+    <th rowspan="2">4bit</th>
+    <th>1bit</th>
+    <th>2bit</th>
+  </tr>
+  <tr>
+    <td>23bit</td>
+    <td>2bit</td>
+    <td>是否是偏向锁</td>
+    <td>锁标志位</td>
+  </tr>
+  <tr>
+    <td>无锁状态</td>
+    <td colspan="2">对象的 hashCode</td>
+    <td>对象分代年龄</td>
+    <td>0</td>
+    <td>01</td>
+  </tr>
+  <tr>
+    <td>偏向锁</td>
+    <td>线程 ID</td>
+    <td>Epoch</td>
+    <td>对象分代年龄</td>
+    <td>1</td>
+    <td>01</td>
+  </tr>
+  <tr>
+    <td>轻量级锁</td>
+    <td colspan="4">指向栈中锁记录的指针</td>
+    <td>00</td>
+  </tr>
+  <tr>
+    <td>重量级锁</td>
+    <td colspan="4">指向互斥量（重量级锁）的指针</td>
+    <td>10</td>
+  </tr>
+  <tr>
+    <td>GC 标记</td>
+    <td colspan="4">空</td>
+    <td>11</td>
+  </tr>
+</table>
+
+<p>以 <code>64</code> 位虚拟机为例：</p>
+<table>
+  <tr>
+    <th rowspan="2">锁状态</th>
+    <th colspan="2">56bit</th>
+    <th>1bit</th>
+    <th>4bit</th>
+    <th>1bit</th>
+    <th>2bit</th>
+  </tr>
+  <tr>
+    <td>25bit</td>
+    <td>31bit</td>
+    <td>-</td>
+    <td>-</td>
+    <td>是否是偏向锁</td>
+    <td>锁标志位</td>
+  </tr>
+  <tr>
+    <td>无锁状态</td>
+    <td>unused</td>
+    <td>对象的 hashCode</td>
+    <td>cms_free</td>
+    <td>对象分代年龄</td>
+    <td>0</td>
+    <td>01</td>
+  </tr>
+  <tr>
+    <td>偏向锁</td>
+    <td  colspan="2">线程 ID(54bit) | Epoch(2bit)</td>
+    <td>cms_free</td>
+    <td>对象分代年龄</td>
+    <td>1</td>
+    <td>01</td>
+  </tr>
+  <tr>
+    <td>轻量级锁</td>
+    <td colspan="5">指向栈中锁记录的指针</td>
+    <td>00</td>
+  </tr>
+  <tr>
+    <td>重量级锁</td>
+    <td colspan="5">指向互斥量（重量级锁）的指针</td>
+    <td>10</td>
+  </tr>
+  <tr>
+    <td>GC 标记</td>
+    <td colspan="5">空</td>
+    <td>11</td>
+  </tr>
+</table>
+
+<blockquote>
+<p>在上述表述中，很容易让人产生困惑的地方是 <code>hashCode</code> 和分代年龄是对象的固有属性，当 <code>Mark Word</code> 中存储的数据发生变化时，这些重要的数据去哪了？</p>
+</blockquote>
+<h2 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h2><h2 id="锁优化"><a href="#锁优化" class="headerlink" title="锁优化"></a>锁优化</h2><p><code>Java 6</code> 为了减少获得锁和释放锁带来的性能消耗，引入了“偏向锁”和“轻量级锁”，在 <code>Java 6</code> 中，锁一共有 <code>4</code> 种状态，级别从低到高依次是：无锁状态、偏向锁状态、轻量级锁状态和重量级锁状态，锁的状态会随着竞争的激化逐渐升级。<strong>锁状态可以升级但不能降级</strong>，举例来说偏向锁状态升级成轻量级锁状态后不能降级成偏向锁状态。这种锁升级却不能降级的策略，目的是为了提高获得锁和释放锁的效率。</p>
+<blockquote>
+<p>上述的表述并不容易理解，甚至容易让人产生误解。锁状态描述的是锁本身的状态，和是否处于加锁状态无关。以下列表格举例说明，一个偏向锁状态的对象，即使未加锁，也是偏向锁状态，而非无锁状态。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>未加锁</th>
+<th>加锁</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>匿名偏向锁状态 or 偏向锁状态</td>
+<td>偏向锁状态</td>
+</tr>
+<tr>
+<td>2</td>
+<td>无锁状态</td>
+<td>轻量级锁状态</td>
+</tr>
+<tr>
+<td>3</td>
+<td>重要级锁状态</td>
+<td>重要级锁状态</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>在查阅的众多资料中，关于锁升级过程的介绍并不详尽和准确，虽然大体上大家的观点是比较一致的，但是在一些细节的描述上却有些模糊不清，有些观点自相矛盾，有些观点互相矛盾，有些观点和我的知识矛盾，逻辑不通顺以至于不能相互联系形成和谐的整体。以下内容尽可能结合相对权威和详细的资料，补充个人的思考和猜想作为缝合剂，通过一些测试用例验证，试图建立更加连续平滑的知识面。</p>
+</blockquote>
+<h3 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h3><p><code>HotSpot</code> 的作者经过研究发现，大多数情况下，锁不仅不存在多线程竞争，而且总是由同一线程多次获得，为了让线程获得锁的代价更低而引入了偏向锁。</p>
+<p>偏向锁在 <code>Java 6</code> 之后是默认开启的，可以通过 <code>JVM</code> 参数关闭偏向锁：<code>-XXUseBiasedLocking</code>。尽管偏向锁是默认开启的，但是它在应用程序启动几秒钟之后才激活，延迟时间可以通过 <code>JVM</code> 参数 <code>-XX:BiasedLockingStartupDelay</code> 设置，默认情况下是 <code>4000ms</code>。</p>
+<h4 id="偏向锁加锁"><a href="#偏向锁加锁" class="headerlink" title="偏向锁加锁"></a>偏向锁加锁</h4><p>当一个线程访问同步块时，先测试 <code>Mark Word</code> 里是否存储着当前线程 <code>ID</code>：</p>
+<ul>
+<li>如果否，则再测试 <code>Mark Word</code> 中偏向锁的标识是否设置成 <code>1</code><ul>
+<li>如果为 <code>0</code>，则说明不是偏向锁状态 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; <em>获取偏向锁失败后续处理一</em></li>
+<li>如果为 <code>1</code>，则说明是偏向锁状态，<strong>通过 <code>CAS</code> 操作加偏向锁</strong><ul>
+<li>如果成功，说明获得偏向锁</li>
+<li>如果失败，说明发生竞争 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; <em>获取偏向锁失败后续处理二</em></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果是，则说明当前线程就是之前获得偏向锁的线程，此刻再次获得锁</li>
+</ul>
+<blockquote>
+<p>在<strong>通过 <code>CAS</code> 操作加偏向锁</strong>中，<code>Compare</code> 操作是“测试 <code>Mark Word</code> 存储线程 <code>ID</code> 的 <code>bit</code> 是否全部为 <code>0</code>，代表偏向的线程 <code>ID</code> 为 <code>null</code>”，<code>Swap</code> 操作是将当前线程 <code>ID</code> 设置到 <code>Mark Word</code> 的相应位置。</p>
+</blockquote>
+<p>补充：</p>
+<ul>
+<li>“通过 <code>CAS</code> 操作将当前线程 <code>ID</code> 设置到 <code>Mark Word</code>”在偏向锁状态下是有且仅有一次的“偏向”动作。（此观点存疑，在《Java 并发变成的艺术》一书中都有“重新偏向于其他线程”这样的描述，但是关于竞争偏向锁部分的介绍难以理解。个人在测试中，不论是持有偏向锁的线程是存活但已离开同步块，还是已死亡，后续线程都无法再获取到偏向锁，唯一一种不同线程获取到同一个偏向锁的情况是两个线程的 <code>tid</code> 相同，即 <code>Mark Word</code> 并无变化）</li>
+<li>当获得偏向锁的线程离开同步块时，没有“解锁操作”，<code>Mark Word</code> 维持不变。个人也不知道如何更准确地描述这个现象，从 <code>synchronized</code> 的语义来说，进出同步块代表着获取锁和释放锁，但是从偏向锁的实现来说，即便离开同步方法块，它仍然被偏向的线程持有，没有被释放。甚至在讨论竞争偏向锁时，我们还会说“检查持有偏向锁的线程是否存活”。因此个人更倾向于使用“撤销”一次描述偏向锁面临竞争时的处理（《Java 并发变成的艺术》一书中称偏向锁使用一种等到竞争出现才释放锁的机制，但后续在解释过程中又用撤销一词代替）</li>
+<li>当获得偏向锁的线程再次访问同步块时，简单测试 <code>Mark Word</code> 里存储着当前线程 <code>ID</code>，如果成功即可进入同步块。</li>
+<li><code>CAS</code> 操作的判断条件符合计算过 <code>hashCode</code> 后偏向锁状态会变为其他状态的情况。</li>
+</ul>
+<h4 id="偏向锁撤销"><a href="#偏向锁撤销" class="headerlink" title="偏向锁撤销"></a>偏向锁撤销</h4><p>当获得偏向锁的线程离开同步块时，并没有“解锁操作”，<code>Mark Word</code> 维持不变。偏向锁使用了一种等到竞争出现才撤销的机制，当竞争出现时，从现象上说，如果持有偏向锁的线程已经离开同步块，则锁升级为轻量级锁；如果持有锁的线程尚未离开同步块，则锁升级为重量级锁。</p>
+<p>关于偏向锁的撤销部分对我个人而言有些晦涩难懂，有很多疑问：提到锁记录中存储偏向的线程 <code>ID</code> 的作用，检查持有偏向锁的线程是否存活是否真的指线程是否 <code>alive</code>，重新偏向于其他线程的复现条件。理解有限，不多赘述。</p>
+<h3 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h3><h4 id="轻量级锁加锁"><a href="#轻量级锁加锁" class="headerlink" title="轻量级锁加锁"></a>轻量级锁加锁</h4><p>获取偏向锁失败后续处理一（是否是偏向锁为 <code>0</code>）：</p>
+<ul>
+<li>检测锁标志位是否为 <code>01</code> 或者 <code>00</code><ul>
+<li>如果否，则说明是重量级锁状态 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; <em>获取轻量级锁失败后续处理一</em></li>
+<li>如果是，则说明是无锁状态或者轻量级锁状态，尝试<strong>通过 <code>CAS</code> 操作加轻量级锁</strong><ul>
+<li>如果成功，说明获得轻量级锁</li>
+<li>如果失败，说明发生竞争 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; <em>获取轻量级锁失败后续处理二</em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>在<strong>通过 <code>CAS</code> 操作加轻量级锁</strong>中，<code>Compare</code> 操作是“测试 <code>Mark Word</code> 的锁标志位是否为 <code>01</code>，代表处于无锁状态”，<code>Swap</code> 操作是将 <code>Mark Word</code> 复制到栈中锁记录，并将指向栈中锁记录的指针设置到 <code>Mark Word</code> 的相应位置。</p>
+</blockquote>
+<p>补充：</p>
+<ul>
+<li>栈中锁记录又称为 <code>Displaced Mark Word</code>，<code>JVM</code> 会在当前线程的栈帧中创建用于存储锁记录的空间，用于在轻量级锁状态下临时存放 <code>Mark Word</code>。在轻量级锁状态下，明确提及了锁记录的作用，但偏向锁状态下，提及锁记录却语焉不详。</li>
+</ul>
+<p>获取偏向锁失败后续处理二（通过 <code>CAS</code> 加偏向锁失败）：</p>
+<ul>
+<li>获取锁失败的线程将锁升级为重量级锁，修改 <code>Mark Word</code> 为<code>指向互斥量（重量级锁）的指针|10</code>，这个操作将影响到持有轻量级锁的线程的解锁</li>
+</ul>
+<p>补充：</p>
+<ul>
+<li>有资料表明偏向锁不会直接升级到重量级锁，不确定是否总是有轻量级锁作为中间状态</li>
+<li>轻量级锁面临竞争时升级为重量级锁的过程相比于偏向锁面临竞争时的升级过程，容易理解多了，后者好多细节没有找到答案。</li>
+</ul>
+<h4 id="轻量级锁解锁"><a href="#轻量级锁解锁" class="headerlink" title="轻量级锁解锁"></a>轻量级锁解锁</h4><p>轻量级锁解锁时，会通过 <code>CAS</code> 操作解锁，<code>Compare</code> 操作是“测试 <code>Mark Word</code> 的锁标志位是否为 <code>00</code>，代表处于轻量级锁状态”，<code>Swap</code> 操作是将栈中锁记录 <code>Dispaced Mark Word</code> 替换回对象头的 <code>Mark Word</code>。<br>如果 <code>Compare</code> 操作失败，则代表发生竞争，此时锁已经被其他线程升级为重量级锁以及 <code>Mark Word</code> 被修改为<code>指向互斥量（重量级锁）的指针|10</code>。持有轻量级锁的线程会释放锁并唤醒等待的线程，开启新的一轮争抢。</p>
+<blockquote>
+<p>轻量级锁在通过 <code>CAS</code> 操作解锁失败的情况下，是如何处理 <code>Dispaced Mark Word</code> 的？直接复制回 <code>Mark Word</code>？</p>
+</blockquote>
+<h4 id="自旋"><a href="#自旋" class="headerlink" title="自旋"></a>自旋</h4><p>在轻量级锁状态下，<strong>通过 <code>CAS</code> 操作加轻量级锁</strong>失败的情况下，默认会自旋。</p>
+<h2 id="测试和验证"><a href="#测试和验证" class="headerlink" title="测试和验证"></a>测试和验证</h2><h3 id="延迟偏向"><a href="#延迟偏向" class="headerlink" title="延迟偏向"></a>延迟偏向</h3><p>通过以下示例测试并验证延迟偏向：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试：偏向锁是延迟激活的&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 无锁状态（非可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 默认情况下偏向延迟的设置为 -XX:BiasedLockingStartupDelay=4000</span></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.MILLISECONDS.sleep(<span class="number">4000</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;偏向锁激活之后，新创建的对象的对象头的 Mark Word 是 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    <span class="type">Object</span> <span class="variable">biasedLock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(ClassLayout.parseInstance(biasedLock).toPrintable());</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;偏向锁激活之前创建的对象的对象头的 Mark Word 仍然是 =====&gt; 无锁状态&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">2023-12-21 00:01:09 - 测试：偏向锁是延迟激活的</span><br><span class="line">2023-12-21 00:01:09 - Mark Word 初始为 =====&gt; 无锁状态（非可偏向的）</span><br><span class="line">2023-12-21 00:01:11 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000001 (non-biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br><span class="line"></span><br><span class="line">2023-12-21 00:01:11 - sleep 4000ms，等待偏向锁激活</span><br><span class="line">2023-12-21 00:01:15 - 偏向锁激活之后，新创建的对象的对象头的 Mark Word 是 =====&gt; 匿名偏向锁</span><br><span class="line">2023-12-21 00:01:15 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000005 (biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br><span class="line"></span><br><span class="line">2023-12-21 00:01:15 - 偏向锁激活之前创建的对象的对象头的 Mark Word 仍然是 =====&gt; 无锁状态</span><br><span class="line">2023-12-21 00:01:15 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000001 (non-biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>JVM</code> 启动后，<strong>偏向锁尚未激活前</strong>，创建的对象的 <code>Mark Word</code> 的末尾 <code>3</code> 位为 <code>0|01</code>，<code>non-biasable</code>，表示无锁状态（非可偏向的）。</li>
+<li>在 <code>4000</code> 毫秒后，<strong>新创建</strong>的对象的 <code>Mark Word</code> 的末尾 <code>3</code> 位为 <code>1|01</code>，<code>biasable</code>，表示匿名偏向锁（可偏向的）。</li>
+<li><strong>偏向锁尚未激活前</strong>创建的对象的对象头的 <code>Mark Word</code> 的末尾 <code>3</code> 位<strong>仍然</strong>是 <code>0|01</code>。</li>
+</ul>
+<blockquote>
+<p>在虚拟机启动后，偏向锁激活前，创建的对象的锁标记位为 <code>1|01</code>，此时记录线程 <code>ID</code> 的 <code>bit</code> 全是 <code>0</code>（代表指向 <code>null</code>），没有偏向任何一个线程，该状态称之为匿名偏向锁，是 <code>JVM</code> 初始化的。<code>Mark Word</code> 中偏向锁的标识，用于表示是否是偏向锁状态，而非表示是否加了偏向锁。</p>
+</blockquote>
+<h3 id="关闭偏向延迟"><a href="#关闭偏向延迟" class="headerlink" title="关闭偏向延迟"></a>关闭偏向延迟</h3><p>通过以下示例测试关闭偏向延迟：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JVM 参数设置为 -XX:BiasedLockingStartupDelay=0</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试：关闭偏向锁的延迟偏向&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;在虚拟机一启动，新创建的对象的对象头的 Mark Word 就是 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">2023-12-21 00:46:13 - 测试：关闭偏向锁的延迟偏向</span><br><span class="line">2023-12-21 00:46:13 - 在虚拟机一启动，新创建的对象的对象头的 Mark Word 就是 =====&gt; 匿名偏向锁</span><br><span class="line">2023-12-21 00:46:15 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000005 (biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在程序启动后立刻创建的对象的 <code>Mark Word</code> 的末尾 <code>3</code> 位就是 <code>1|01</code>，<code>biasable</code>，表示匿名偏向锁（可偏向的）。</li>
+</ul>
+<h3 id="匿名偏向锁-偏向锁"><a href="#匿名偏向锁-偏向锁" class="headerlink" title="匿名偏向锁-&gt;偏向锁"></a>匿名偏向锁-&gt;偏向锁</h3><blockquote>
+<p>在一个匿名偏向锁状态的对象第一次被作为锁获取时，<code>Mark Word</code> 就会从匿名偏向锁变成偏向锁，并且再也不会变回到匿名偏向锁。</p>
+</blockquote>
+<p>通过以下示例测试并验证匿名偏向锁到偏向锁的变化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;偏向锁基础测试：匿名偏向锁 -&gt; 偏向锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.MILLISECONDS.sleep(<span class="number">4000</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;&#123;&#125; 获取锁 =====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">        log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">        log.info(<span class="string">&quot;暂停，输入任意字符回车继续，可以使用 jstack 查看线程 tid 和 Mark Word 进行对比&quot;</span>);</span><br><span class="line">        scanner.next();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;偏向锁等到竞争出现才释放锁，因此离开同步方法块后，Mark Word 仍然不变&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">2023-12-21 00:34:39 - 偏向锁基础测试：匿名偏向锁 -&gt; 偏向锁</span><br><span class="line">2023-12-21 00:34:39 - sleep 4000ms，等待偏向锁激活</span><br><span class="line">2023-12-21 00:34:43 - Mark Word 初始为 =====&gt; 匿名偏向锁</span><br><span class="line">2023-12-21 00:34:45 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000005 (biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br><span class="line"></span><br><span class="line">2023-12-21 00:34:45 - main 获取锁 =====&gt; 偏向锁</span><br><span class="line">2023-12-21 00:34:45 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000028761af3005 (biased: 0x00000000a1d86bcc; epoch: 0; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br><span class="line"></span><br><span class="line">2023-12-21 00:34:45 - 暂停，输入任意字符回车继续，可以使用 jstack 查看线程 tid 和 Mark Word 进行对比</span><br><span class="line">2023-12-21 00:34:55 - 偏向锁等到竞争出现才释放锁，因此离开同步方法块后，Mark Word 仍然不变</span><br><span class="line">2023-12-21 00:34:55 - java.lang.Object object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000028761af3005 (biased: 0x00000000a1d86bcc; epoch: 0; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf80001e5</span><br><span class="line"> 12   4        (object alignment gap)    </span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jps | findstr &quot;BiasedLockingBaseTest&quot; | ForEach-Object &#123; jstack $_.Split()[0]&#125; | findstr &quot;main&quot;</span><br><span class="line">&quot;main&quot; #1 prio=5 os_prio=0 tid=0x0000028761af3000 nid=0x8668 waiting on condition [0x000000ff7b8ff000]</span><br><span class="line">        at com.moralok.concurrency.ch2.BiasedLockingBaseTest.main(BiasedLockingBaseTest.java:27)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>2 进制表达</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>匿名偏向锁 <code>Mark Word</code></td>
+<td>00000000000000000000000000000000000000000101</td>
+</tr>
+<tr>
+<td>偏向锁状态 <code>Mark Word</code></td>
+<td>00101000011101100001101011110011000000000101</td>
+</tr>
+<tr>
+<td><code>biased</code></td>
+<td>00000000000010100001110110000110101111001100</td>
+</tr>
+<tr>
+<td><code>main</code> 线程 <code>tid</code></td>
+<td>00101000011101100001101011110011000000000000</td>
+</tr>
+</tbody></table>
+<ul>
+<li>存储的所谓“线程 <code>ID</code>”并非平时所说的线程 <code>ID</code>，<code>jol-core</code> 打印了一个名为 <code>biased</code> 的值与之匹配，该值左移可以得到 <code>jstack</code> 的返回结果中的 <code>tid</code>。</li>
+<li>在离开同步方法块后，<code>Mark Word</code> 不变，验证了<strong>偏向锁使用了一种等到竞争出现才释放锁的机制</strong>。</li>
+</ul>
+<h3 id="关闭偏向锁"><a href="#关闭偏向锁" class="headerlink" title="关闭偏向锁"></a>关闭偏向锁</h3><p>通过以下示例测试关闭偏向锁</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JVM 参数设置为 -XX:-UseBiasedLocking</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试：关闭偏向锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 无锁状态（非可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms&quot;</span>);</span><br><span class="line">    TimeUnit.MILLISECONDS.sleep(<span class="number">4000</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;即使过了偏向延迟时间，创建的对象的对象头的 Mark Word 仍然是 =====&gt; 无锁状态（非可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>《Java 并发编程的艺术》中写的是 <code>-XX:-UseBiasedLocking=false</code>，测试中报错：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Error: Could not create the Java Virtual Machine.</span><br><span class="line">Error: A fatal exception has occurred. Program will exit.</span><br><span class="line">Improperly specified VM option &#x27;UseBiasedLocking=false&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>另外书中说“在关闭偏向锁后程序默认会进入轻量级锁状态”，个人认为可能会让人产生误解，默认在未获取锁时为无锁状态，在获取锁时不会变成轻量级锁状态。</p>
+<h3 id="无锁-轻量级锁"><a href="#无锁-轻量级锁" class="headerlink" title="无锁-&gt;轻量级锁"></a>无锁-&gt;轻量级锁</h3><blockquote>
+<p>一个对象的 <code>Mark Word</code> 不会从无锁状态变成偏向锁。</p>
+</blockquote>
+<p>通过以下示例测试并验证：无锁状态直接变成轻量级锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">    log.info(<span class="string">&quot;轻量级锁基础测试：无锁状态 -&gt; 轻量级锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;在偏向锁激活之前创建的对象为 =====&gt; 无锁状态（可偏向额）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;即使是单线程无竞争获取锁，=====&gt; 轻量级锁&quot;</span>);</span><br><span class="line">        log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        log.info(<span class="string">&quot;暂停，回车继续&quot;</span>);</span><br><span class="line">        scanner.nextLine();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;离开同步块后，-&gt; 无锁状态（可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="偏向锁-轻量级锁"><a href="#偏向锁-轻量级锁" class="headerlink" title="偏向锁-&gt;轻量级锁"></a>偏向锁-&gt;轻量级锁</h3><p>通过以下示例测试并验证：当持有偏向锁的线程已经离开同步块，其他线程尝试获取偏向锁时，将获得轻量级锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">    log.info(<span class="string">&quot;测试：当持有偏向锁的线程已经离开同步块，其他线程尝试获取偏向锁时，将获得轻量级锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;第一个线程 &#123;&#125; 获取锁 =====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">        log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        log.info(<span class="string">&quot;第二个线程 &#123;&#125; 尝试获取锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">        log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第二个线程 &#123;&#125; 获取锁 =====&gt; 轻量级锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread1&quot;</span>);</span><br><span class="line">    thread.start();</span><br><span class="line">    thread.join();</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;离开同步块后轻量级锁释放 =====&gt; 无锁状态（可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很多资料提到在拥有偏向锁的线程死亡后，锁可以偏向新的线程 <code>ID</code>，但是我没有测试到该情况。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试：之前获得偏向锁的线程已死时，新线程获得的仍然是偏向锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.MILLISECONDS.sleep(<span class="number">4000</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第一个线程 &#123;&#125; 获取锁 =====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread1&quot;</span>);</span><br><span class="line">    thread1.start();</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            thread1.join();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">alive</span> <span class="operator">=</span> thread1.isAlive();</span><br><span class="line">        log.info(<span class="string">&quot;第一个线程 &#123;&#125; 是否存活 &#123;&#125;&quot;</span>, thread1.getName(), alive);</span><br><span class="line">        log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;即使第一个线程已死亡，第二个线程 &#123;&#125; 获取锁 =====&gt; 轻量级锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread2&quot;</span>);</span><br><span class="line">    thread2.start();</span><br><span class="line">    thread2.join();</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;离开同步块后轻量级锁释放 =====&gt; 无锁状态（可偏向的）&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="偏向锁-偏向锁"><a href="#偏向锁-偏向锁" class="headerlink" title="偏向锁-&gt;偏向锁"></a>偏向锁-&gt;偏向锁</h3><p>这是一个很奇怪的测试用例，它是唯一出现不同的线程获得同一个偏向锁的情况，但是两个线程的 <code>tid</code> 相同。猜想是本地变量表槽位复用时有什么优化。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试：之前获得偏向锁的线程已死时，新线程获得的仍然是偏向锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.MILLISECONDS.sleep(<span class="number">4000</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第一个线程 &#123;&#125; 获取锁 =====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread1&quot;</span>);</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread1.join();</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第二个线程 &#123;&#125; 获取锁，=====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(<span class="string">&quot;震惊！！！为什么两个 tid 相同啊，有什么复用机制吗&quot;</span>);</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread2&quot;</span>);</span><br><span class="line">    thread2.start();</span><br><span class="line">    thread2.join();</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;偏向锁等到竞争出现才释放锁，因此离开同步方法块后，Mark Word 不变&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="偏向锁-重量级锁"><a href="#偏向锁-重量级锁" class="headerlink" title="偏向锁-&gt;重量级锁"></a>偏向锁-&gt;重量级锁</h3><p>通过以下示例测试偏向锁升级为重量级锁的情况，是否有轻量级锁作为中间状态未知。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">    log.info(<span class="string">&quot;测试：当持有偏向锁的线程尚未离开同步块，其他线程尝试获取偏向锁时，将升级为重量级锁&quot;</span>);</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;sleep 4000ms，等待偏向锁激活&quot;</span>);</span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 匿名偏向锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第一个线程 &#123;&#125; 获取锁 =====&gt; 偏向锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line"></span><br><span class="line">            log.info(<span class="string">&quot;暂停，输入任意字符回车继续&quot;</span>);</span><br><span class="line">            scanner.next();</span><br><span class="line"></span><br><span class="line">            log.info(<span class="string">&quot;第一个线程 &#123;&#125; 持有偏向锁，在同步块内发生竞争 =====&gt; 升级为重量级锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">        log.info(<span class="string">&quot;第一个线程 &#123;&#125; 结束&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">    &#125;, <span class="string">&quot;thread1&quot;</span>);</span><br><span class="line">    thread1.start();</span><br><span class="line"></span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        log.info(<span class="string">&quot;第二个线程 &#123;&#125; 尝试获取偏向锁失败&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;第二个线程 &#123;&#125; 获取锁 =====&gt; 重量级锁&quot;</span>, Thread.currentThread().getName());</span><br><span class="line">            log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="string">&quot;thread2&quot;</span>);</span><br><span class="line">    thread2.start();</span><br><span class="line">    thread2.join();</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;即使离开同步块后 =====&gt; 重量级锁&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="分代年龄的变化"><a href="#分代年龄的变化" class="headerlink" title="分代年龄的变化"></a>分代年龄的变化</h3><p>测试分代年龄的变化。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    log.info(<span class="string">&quot;测试 Mark Word 中的分代年龄&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    log.info(<span class="string">&quot;Mark Word 初始为 =====&gt; 无锁状态，age: 0&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">    System.gc();</span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">    log.info(<span class="string">&quot;GC 后 =====&gt; 无锁状态，age: 1&quot;</span>);</span><br><span class="line">    log.info(ClassLayout.parseInstance(lock).toPrintable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/synchronized/" rel="tag"># synchronized</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/14/install-ELK-using-Docker-Compose/" rel="prev" title="使用 Docker Compose 安装 ELK">
+                  <i class="fa fa-chevron-left"></i> 使用 Docker Compose 安装 ELK
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">103k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:45</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
