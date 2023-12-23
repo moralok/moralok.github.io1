@@ -1,9 +1,7 @@
 ---
 title: 基于 Redis 的分布式锁的简单实现
 date: 2023-11-13 14:02:49
-tags:
-    - distributed lock
-    - redis
+tags: [lock, distributed lock, redis]
 ---
 
 在分布式应用中，并发访问资源需要谨慎考虑。比如读取和修改保存并不是一个原子操作，在并发时，就可能发生修改的结果被覆盖的问题。
