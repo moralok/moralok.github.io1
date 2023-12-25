@@ -52,3 +52,10 @@ leancloud_visitors:
   app_id: 3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI
   app_key: KKBQicvLunsmAfgH3DJJXvng
   security: false
+
+# Social Links
+# Usage: `Key: permalink || icon`
+# Key is the link label showing to end users.
+# Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
+social:
+  GitHub: https://github.com/moralok || fab fa-github
