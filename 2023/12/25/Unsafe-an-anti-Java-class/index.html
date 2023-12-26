@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Unsafe 类位于 sun.misc 包中，它提供了一组用于执行低级别、不安全操作的方法。尽管 Unsafe 类及其所有方法都是公共的，但它的使用受到限制，因为只有受信任的代码才能获取其实例。这个类通常被用于一些底层的、对性能敏感的操作，比如直接内存访问、CAS（Compare and Swap）操作等。本文将介绍这个“反 Java”的类及其方法的典型使用场景。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unsafe，一个“反 Java”的 class">
+<meta property="og:url" content="https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="Unsafe 类位于 sun.misc 包中，它提供了一组用于执行低级别、不安全操作的方法。尽管 Unsafe 类及其所有方法都是公共的，但它的使用受到限制，因为只有受信任的代码才能获取其实例。这个类通常被用于一些底层的、对性能敏感的操作，比如直接内存访问、CAS（Compare and Swap）操作等。本文将介绍这个“反 Java”的类及其方法的典型使用场景。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/Pasted%20image%2020231226005107.png">
+<meta property="article:published_time" content="2023-12-25T00:27:04.000Z">
+<meta property="article:modified_time" content="2023-12-26T16:01:25.272Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/Pasted%20image%2020231226005107.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/","path":"2023/12/25/Unsafe-an-anti-Java-class/","title":"Unsafe，一个“反 Java”的 class"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Unsafe，一个“反 Java”的 class | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-Unsafe-%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">获取 Unsafe 实例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%93%8D%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">内存操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98"><span class="nav-number">2.1.</span> <span class="nav-text">分配堆外内存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAS-%E7%9B%B8%E5%85%B3"><span class="nav-number">3.</span> <span class="nav-text">CAS 相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/25/Unsafe-an-anti-Java-class/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Unsafe，一个“反 Java”的 class | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Unsafe，一个“反 Java”的 class
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-25 08:27:04" itemprop="dateCreated datePublished" datetime="2023-12-25T08:27:04+08:00">2023-12-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-27 00:01:25" itemprop="dateModified" datetime="2023-12-27T00:01:25+08:00">2023-12-27</time>
+    </span>
+
+  
+    <span id="/2023/12/25/Unsafe-an-anti-Java-class/" class="post-meta-item leancloud_visitors" data-flag-title="Unsafe，一个“反 Java”的 class" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><code>Unsafe</code> 类位于 <code>sun.misc</code> 包中，它提供了一组用于执行低级别、不安全操作的方法。尽管 <code>Unsafe</code> 类及其所有方法都是公共的，但它的使用受到限制，因为只有受信任的代码才能获取其实例。这个类通常被用于一些底层的、对性能敏感的操作，比如直接内存访问、<code>CAS</code>（<code>Compare and Swap</code>）操作等。本文将介绍这个“反 <code>Java</code>”的类及其方法的典型使用场景。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>由于 <code>Unsafe</code> 类涉及到直接内存访问和其他底层操作，使用它需要极大的谨慎，因为它可以绕过 <code>Java</code> 语言的一些安全性和健壮性检查。在正常的应用程序代码中，最好避免直接使用 <code>Unsafe</code> 类，以确保代码的可读性和可维护性。在一些特殊情况下，比如一些高性能库的实现，可能会使用 <code>Unsafe</code> 类来进行一些性能优化。</p>
+</blockquote>
+<blockquote>
+<p>尽管在生产中需要谨慎使用 <code>Unsafe</code>，但是可以在测试中使用它来更真实地接触 <code>Java</code> 对象在内存中的存储结构，验证自己的理论知识。</p>
+</blockquote>
+<h2 id="获取-Unsafe-实例"><a href="#获取-Unsafe-实例" class="headerlink" title="获取 Unsafe 实例"></a>获取 Unsafe 实例</h2><blockquote>
+<p>在 <code>Java 9</code> 及之后的版本中，<code>Unsafe</code> 类中的 <code>getUnsafe()</code> 方法被标记为不安全（<code>Unsafe</code>），不再允许普通的 <code>Java</code> 应用程序代码通过此方法获取 <code>Unsafe</code> 实例。这是为了提高 <code>Java</code> 的安全性，防止滥用 <code>Unsafe</code> 类的功能。</p>
+</blockquote>
+<p>在正常的 <code>Java</code> 应用程序中，获取 <code>Unsafe</code> 实例是不被推荐的，因为它违反了 <code>Java</code> 语言的安全性和封装原则。<code>Unsafe</code> 类的设计本意是为了 <code>Java</code> 库和虚拟机的实现使用，而不是为了普通应用程序开发者使用。<code>Unsafe</code> 对象为调用者提供了执行不安全操作的能力，它可用于在任意内存地址读取和写入数据，因此返回的 <code>Unsafe</code> 对象应由调用者仔细保护。它绝不能传递给不受信任的代码。此类中的大多数方法都是非常低级的，并且对应于少量硬件指令。</p>
+<p>获取 <code>Unsafe</code> 实例的静态方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@CallerSensitive</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Unsafe <span class="title function_">getUnsafe</span><span class="params">()</span> &#123;</span><br><span class="line">    Class&lt;?&gt; caller = Reflection.getCallerClass();</span><br><span class="line">    <span class="comment">// 检查调用方法的类是被引导类加载器所加载</span></span><br><span class="line">    <span class="keyword">if</span> (!VM.isSystemDomainLoader(caller.getClassLoader()))</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">SecurityException</span>(<span class="string">&quot;Unsafe&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> theUnsafe;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Unsafe</code> 使用单例模式，可以通过静态方法 <code>getUnsafe</code> 获取 <code>Unsafe</code> 实例，并且调用方法的类为启动类加载器所加载才不会抛出异常。获取 <code>Unsafe</code> 实例有以下两种可行方案：</p>
+<ol>
+<li>通过 <code>-Xbootclasspath/a:$&#123;path&#125;</code> 把调用方法的类所在的 <code>jar</code> 包路径追加到启动类路径中，使该类被启动类加载器加载。关于启动类路径的信息可以参考<a href="https://www.moralok.com/2023/07/13/Java-class-loader-source-code-analysis/#ClassLoader-%E7%9A%84%E6%90%9C%E7%B4%A2%E8%B7%AF%E5%BE%84">Java 类加载器源码分析 | ClassLoader 的搜索路径</a></li>
+<li>通过反射获取 <code>Unsafe</code> 类中的 <code>Unsafe</code> 实例<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Unsafe <span class="title function_">getUnsafe</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">f</span> <span class="operator">=</span> Unsafe.class.getDeclaredField(<span class="string">&quot;theUnsafe&quot;</span>);</span><br><span class="line">        f.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">return</span> (Unsafe) f.get(<span class="literal">null</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchFieldException | IllegalAccessException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="内存操作"><a href="#内存操作" class="headerlink" title="内存操作"></a>内存操作</h2><p><code>Unsafe</code> 类中包含了一些关于内存操作的方法，这些方法通常被认为是不安全的，因为它们可以绕过 <code>Java</code> 语言的内置安全性和类型检查。以下是一些常见的 <code>Unsafe</code> 类中关于内存操作的方法：</p>
+<ul>
+<li><code>allocateMemory</code>: 分配一个给定大小（以字节为单位）的本地内存块，内容未初始化，通常是垃圾。生成的本地指针永远不会为零，并且将针对所有类型进行对齐。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">long</span> <span class="title function_">allocateMemory</span><span class="params">(<span class="type">long</span> bytes)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>reallocateMemory</code>: 将本地内存块的大小调整为给定大小（以字节为单位），超过旧内存块大小的内容未初始化，通常是垃圾。当且仅当请求的大小为零时，生成的本地指针才为零。传递给此方法的地址可能为空，在这种情况下将执行分配。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">long</span> <span class="title function_">reallocateMemory</span><span class="params">(<span class="type">long</span> address, <span class="type">long</span> bytes)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>freeMemory</code>: 释放之前由 <code>allocateMemory</code> 或 <code>reallocateMemory</code> 分配的内存。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">freeMemory</span><span class="params">(<span class="type">long</span> address)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>setMemory</code>: 将给定内存块中的所有字节设置为固定值（通常为零）。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">setMemory</span><span class="params">(Object o, <span class="type">long</span> offset, <span class="type">long</span> bytes, <span class="type">byte</span> value)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setMemory</span><span class="params">(<span class="type">long</span> address, <span class="type">long</span> bytes, <span class="type">byte</span> value)</span> &#123;</span><br><span class="line">    setMemory(<span class="literal">null</span>, address, bytes, value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>copyMemory</code>: 复制指定长度的内存块<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">copyMemory</span><span class="params">(Object srcBase, <span class="type">long</span> srcOffset, Object destBase, <span class="type">long</span> destOffset, <span class="type">long</span> bytes)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>putXxx</code>: 将指定偏移量处的内存设置为指定的值，其中 <code>Xxx</code> 可以是 <code>Object</code>、<code>int</code>、<code>long</code>、<code>float</code> 和 <code>double</code> 等。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">putObject</span><span class="params">(Object o, <span class="type">long</span> offset, Object x)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>getXxx</code>: 从指定偏移量处的内存读取值，其中 <code>Xxx</code> 可以是 <code>Object</code>、<code>int</code>、<code>long</code>、<code>float</code> 和 <code>double</code> 等。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> Object <span class="title function_">getObject</span><span class="params">(Object o, <span class="type">long</span> offset)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>putXxx</code> 和 <code>getXxx</code> 也提供了按绝对基地址操作内存的方法。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">byte</span> <span class="title function_">getByte</span><span class="params">(<span class="type">long</span> address)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">putByte</span><span class="params">(<span class="type">long</span> address, <span class="type">byte</span> x)</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>从内存读取值时，除非满足以下情况之一，否则结果不确定：</p>
+<ol>
+<li>偏移量是通过 <code>objectFieldOffset</code> 从字段的 <code>Field</code> 对象获取的，<code>o</code> 指向的对象的类与字段所属的类兼容。</li>
+<li>偏移量和 <code>o</code> 指向的对象（无论是否为 <code>null</code>）分别是通过 <code>staticFieldOffset</code> 和 <code>staticFieldBase</code> 从 <code>Field</code> 对象获得的。</li>
+<li><code>o</code> 指向的是一个数组，偏移量是一个形式为 <code>B+N*S</code> 的整数，其中 <code>N</code> 是数组的有效索引，<code>B</code> 和 <code>S</code> 分别是通过 <code>arrayBaseOffset</code> 和 <code>arrayIndexScale</code> 获得的值。</li>
+</ol>
+<blockquote>
+<p>做一些“不确定”的测试，比如使用 <code>byte</code> 相关的方法操作 <code>int</code> 所在的内存块，是有意思且有帮助的，了解如何破坏，也可以更好地学习如何保护。</p>
+</blockquote>
+<h3 id="分配堆外内存"><a href="#分配堆外内存" class="headerlink" title="分配堆外内存"></a>分配堆外内存</h3><p>在 <code>Java NIO</code>（<code>New I/O</code>）中，分配堆外内存使用了 <code>Unsafe</code> 类的 <code>allocateMemory</code> 方法。堆外内存是一种在 <code>Java</code> 虚拟机之外分配的内存，它不受 <code>Java</code> 堆内存管理机制的控制。这种内存分配的主要目的是提高 <code>I/O</code> 操作的性能，因为它可以直接与底层操作系统进行交互，而不涉及 <code>Java</code> 堆内存的复杂性。Java 虚拟机的垃圾回收器虽然不直接管理这块内存，但是它通过一种称为“引用清理”（<code>Reference Counting</code>）的机制来处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">DirectByteBuffer(<span class="type">int</span> cap) &#123;</span><br><span class="line">    <span class="built_in">super</span>(-<span class="number">1</span>, <span class="number">0</span>, cap, cap);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">pa</span> <span class="operator">=</span> VM.isDirectMemoryPageAligned();</span><br><span class="line">    <span class="type">int</span> <span class="variable">ps</span> <span class="operator">=</span> Bits.pageSize();</span><br><span class="line">    <span class="type">long</span> <span class="variable">size</span> <span class="operator">=</span> Math.max(<span class="number">1L</span>, (<span class="type">long</span>)cap + (pa ? ps : <span class="number">0</span>));</span><br><span class="line">    Bits.reserveMemory(size, cap);</span><br><span class="line"></span><br><span class="line">    <span class="type">long</span> <span class="variable">base</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 分配本地内存</span></span><br><span class="line">        base = unsafe.allocateMemory(size);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (OutOfMemoryError x) &#123;</span><br><span class="line">        Bits.unreserveMemory(size, cap);</span><br><span class="line">        <span class="keyword">throw</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 初始化本地内存</span></span><br><span class="line">    unsafe.setMemory(base, size, (<span class="type">byte</span>) <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (pa &amp;&amp; (base % ps != <span class="number">0</span>)) &#123;</span><br><span class="line">        <span class="comment">// Round up to page boundary</span></span><br><span class="line">        address = base + ps - (base &amp; (ps - <span class="number">1</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        address = base;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 使用虚引用 Cleaner 对象跟踪 DirectByteBuffer 对象的垃圾回收</span></span><br><span class="line">    cleaner = Cleaner.create(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">Deallocator</span>(base, size, cap));</span><br><span class="line">    att = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当 <code>DirectByteBuffer</code> 对象仅被 <code>Cleaner</code> 对象（虚引用）引用时，它可以在任意一次 <code>GC</code> 中被垃圾回收。在 <code>DirectByteBuffer</code> 对象被垃圾回收后，<code>Cleaner</code> 对象会被加入到引用队列，<code>ReferenceHandler</code> 线程将调用 <code>Deallocator</code> 对象的 <code>run</code> 方法，从而实现本地内存的自动释放。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Deallocator</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> address;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> size;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> capacity;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Deallocator</span><span class="params">(<span class="type">long</span> address, <span class="type">long</span> size, <span class="type">int</span> capacity)</span> &#123;</span><br><span class="line">        <span class="keyword">assert</span> (address != <span class="number">0</span>);</span><br><span class="line">        <span class="built_in">this</span>.address = address;</span><br><span class="line">        <span class="built_in">this</span>.size = size;</span><br><span class="line">        <span class="built_in">this</span>.capacity = capacity;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (address == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// Paranoia</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 释放本地内存</span></span><br><span class="line">        unsafe.freeMemory(address);</span><br><span class="line">        address = <span class="number">0</span>;</span><br><span class="line">        Bits.unreserveMemory(size, capacity);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="CAS-相关"><a href="#CAS-相关" class="headerlink" title="CAS 相关"></a>CAS 相关</h2><p><code>Unsafe</code> 提供了 <code>3</code> 个 <code>CAS</code> 相关操作的方法，方法将内存位置的值与预期原值比较，如果相匹配，则 <code>CPU</code> 会自动将该位置更新为新值，否则，<code>CPU</code> 不做任何操作。这些方法的底层实现对应着 <code>CPU</code> 指令 <code>cmpxchg</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果 Java 变量当前符合预期，则自动将其更新为 x。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapObject</span><span class="params">(Object o, <span class="type">long</span> offset, Object expected, Object x)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapInt</span><span class="params">(Object o, <span class="type">long</span> offset, <span class="type">int</span> expected, <span class="type">int</span> x)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapLong</span><span class="params">(Object o, <span class="type">long</span> offset, <span class="type">long</span> expected, <span class="type">long</span> x)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>AtomicInteger</code> 的实现中，静态字段 <code>valueOffset</code> 即为字段 <code>value</code> 的内存偏移地址，<code>valueOffset</code> 的值在 <code>AtomicInteger</code> 初始化时，在静态代码块中通过 <code>Unsafe</code> 的 <code>objectFieldOffset</code> 方法获取。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicInteger</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6214790243416807050L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// setup to use Unsafe.compareAndSwapInt for updates</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CAS 更新变量的值的内存变化如下：</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/25/Unsafe-an-anti-Java-class/Pasted%20image%2020231226005107.png" class="" title="CAS 更新变量的值"></div>
+
+<p>配合 <code>ClassLayout</code> 打印 <code>AtomicInteger</code> 的内部结构更直观地感受 <code>offset</code> 的含义：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java.util.concurrent.atomic.AtomicInteger object internals:</span><br><span class="line">OFF  SZ   TYPE DESCRIPTION               VALUE</span><br><span class="line">  0   8        (object header: mark)     0x0000000000000001 (non-biasable; age: 0)</span><br><span class="line">  8   4        (object header: class)    0xf8003dbc</span><br><span class="line"> 12   4    int AtomicInteger.value       1</span><br><span class="line">Instance size: 16 bytes</span><br><span class="line">Space losses: 0 bytes internal + 0 bytes external = 0 bytes total</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html">Java魔法类：Unsafe应用解析</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/" rel="prev" title="synchronized 锁机制的分析和验证">
+                  <i class="fa fa-chevron-left"></i> synchronized 锁机制的分析和验证
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">107k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:56</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
