@@ -188,6 +188,8 @@ Space losses: 0 bytes internal + 7 bytes external = 7 bytes total
 
 注意到指向对象类型数据的指针仅 `4` 个字节，这是因为默认情况下 `JVM` 参数 `UseCompressedOops` 是启用的。
 
+[markOop.hpp](https://hg.openjdk.org/jdk8/jdk8/hotspot/file/87ee5ee27509/src/share/vm/oops/markOop.hpp)
+
 ```text
 |--------------------------------------------------------------------------------------------------------------|--------------------|
 |                                            Object Header (96 bits)                                           |        State       |
@@ -645,7 +647,7 @@ public static void main(String[] args) throws InterruptedException {
 }
 ```
 
-##### 特例：偏向锁->偏向锁
+##### 偏向锁->偏向锁（特例）
 
 这是一个很奇怪的测试用例，它是在测试中唯一发生不同线程对同一个锁获得偏向锁的情况。但是排查过程中发现两个线程的 `tid` 相同，猜测是局部变量表槽位复用时有什么优化机制。
 
@@ -736,7 +738,7 @@ public static void main(String[] args) throws InterruptedException {
     }
 
     int hashCode = lock.hashCode();
-    log.info("在计算 hashCode 后：Mark Word =====> 无锁状态");
+    log.info("离开同步块后再计算 hashCode：Mark Word =====> 无锁状态");
     log.info(ClassLayout.parseInstance(lock).toPrintable());
 }
 ```
