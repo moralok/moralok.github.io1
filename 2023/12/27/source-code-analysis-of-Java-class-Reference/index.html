@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="我们知道 Java 扩充了“引用”的概念，引入了软引用、弱引用和虚引用，它们都属于 Reference 类型，也都可以配合 ReferenceQueue 使用。你是否好奇常常被一笔带过的“引用对象的处理过程”？你是否在探究 NIO 堆外内存的自动释放时看到了 Cleaner 的关键代码但不太能梳理整个过程？你是否好奇在研究 JVM 时偶尔看到的 Reference Handler 线程？本文将分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 类 Reference 的源码分析">
+<meta property="og:url" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="我们知道 Java 扩充了“引用”的概念，引入了软引用、弱引用和虚引用，它们都属于 Reference 类型，也都可以配合 ReferenceQueue 使用。你是否好奇常常被一笔带过的“引用对象的处理过程”？你是否在探究 NIO 堆外内存的自动释放时看到了 Cleaner 的关键代码但不太能梳理整个过程？你是否好奇在研究 JVM 时偶尔看到的 Reference Handler 线程？本文将分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227230915.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227192404.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227191324.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227191330.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Snipaste_2023-12-27_19-41-19.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227235157.png">
+<meta property="article:published_time" content="2023-12-27T01:43:28.000Z">
+<meta property="article:modified_time" content="2023-12-27T16:31:17.008Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227230915.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/","path":"2023/12/27/source-code-analysis-of-Java-class-Reference/","title":"Java 类 Reference 的源码分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java 类 Reference 的源码分析 | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">1.</span> <span class="nav-text">Reference</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7"><span class="nav-number">1.2.</span> <span class="nav-text">属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="nav-number">1.2.1.</span> <span class="nav-text">成员变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">静态变量</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReferenceHandler-%E7%BA%BF%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">ReferenceHandler 线程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建线程并启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#run-%E5%A4%84%E7%90%86%E9%80%BB%E8%BE%91"><span class="nav-number">1.3.2.</span> <span class="nav-text">run 处理逻辑</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E8%81%94%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%98%9F%E5%88%97%E7%9B%B8%E5%85%B3%E6%96%B9%E6%B3%95"><span class="nav-number">1.4.</span> <span class="nav-text">关联对象和队列相关方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReferenceQueue"><span class="nav-number">2.</span> <span class="nav-text">ReferenceQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7-1"><span class="nav-number">2.1.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A5%E9%98%9F"><span class="nav-number">2.2.</span> <span class="nav-text">入队</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BA%E9%98%9F"><span class="nav-number">2.3.</span> <span class="nav-text">出队</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%8F%98%E5%8C%96"><span class="nav-number">2.4.</span> <span class="nav-text">状态变化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/27/source-code-analysis-of-Java-class-Reference/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java 类 Reference 的源码分析 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java 类 Reference 的源码分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-27 09:43:28" itemprop="dateCreated datePublished" datetime="2023-12-27T09:43:28+08:00">2023-12-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-28 00:31:17" itemprop="dateModified" datetime="2023-12-28T00:31:17+08:00">2023-12-28</time>
+    </span>
+
+  
+    <span id="/2023/12/27/source-code-analysis-of-Java-class-Reference/" class="post-meta-item leancloud_visitors" data-flag-title="Java 类 Reference 的源码分析" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>我们知道 <code>Java</code> 扩充了“引用”的概念，引入了软引用、弱引用和虚引用，它们都属于 <code>Reference</code> 类型，也都可以配合 <code>ReferenceQueue</code> 使用。你是否好奇常常被一笔带过的“<code>引用对象</code>的处理过程”？你是否在探究 <code>NIO</code> 堆外内存的自动释放时看到了 <code>Cleaner</code> 的关键代码但不太能梳理整个过程？你是否好奇在研究 <code>JVM</code> 时偶尔看到的 <code>Reference Handler</code> 线程？本文将分析 <code>Reference</code> 和 <code>ReferenceQueue</code> 的源码带你理解<code>引用对象</code>的工作机制。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>事实上，个人感觉在无相关前置知识的情况下，单纯看 <code>JDK</code> 的 <code>Java</code> 代码是没办法很好地理解<code>引用对象</code>是如何被添加到<code>引用队列</code>中的。因为 <code>Reference</code> 的 <code>pending</code> 字段的含义和赋值操作是隐藏在 <code>JVM</code> 的 <code>C++</code> 代码中，本文搁置了其中的细节，仅分析 <code>JDK</code> 中相关的 <code>Java</code> 代码。</p>
+</blockquote>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><code>Reference</code> 是<code>引用对象</code>的抽象基类。此类定义了所有引用对象通用的操作。由于引用对象是与垃圾收集器密切合作实现的，因此该类可能无法直接子类化。</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227230915.png" class="" title="Reference 相关类图"></div>
+
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><ul>
+<li><code>referent</code>: <code>引用对象</code>关联的对象</li>
+<li><code>queue</code>: <code>引用对象</code>准备注册到的<code>引用队列</code></li>
+</ul>
+<p><code>Reference</code> 提供了两个构造函数，一个需要传入<code>引用队列</code>（<code>ReferenceQueue</code>），一个不需要。如果一个<code>引用对象</code>（<code>Reference</code>）注册到一个<code>引用队列</code>，在检测到适当的可达性变化后，垃圾收集器将把该<code>引用对象</code>添加到该引用队列。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Reference(T referent) &#123;</span><br><span class="line">    <span class="built_in">this</span>(referent, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Reference(T referent, ReferenceQueue&lt;? <span class="built_in">super</span> T&gt; queue) &#123;</span><br><span class="line">    <span class="built_in">this</span>.referent = referent;</span><br><span class="line">    <span class="comment">// ReferenceQueue.NULL 表示没有注册到引用队列</span></span><br><span class="line">    <span class="built_in">this</span>.queue = (queue == <span class="literal">null</span>) ? ReferenceQueue.NULL : queue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><h4 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h4><ul>
+<li><code>referent</code>: <code>引用对象</code>关联的对象，<strong>该对象将被垃圾收集器特殊对待</strong>。我们很难直观地感受何谓“被垃圾收集器特殊对待”，它大概对应着“在检测到关联对象有特定的可达性变化后，垃圾收集器将把<code>引用对象</code>添加到该引用队列”。</li>
+<li><code>queue</code>: <code>引用对象</code>注册到的<code>引用队列</code></li>
+<li><code>next</code>: 用于指向下一个<code>引用对象</code>，当<code>引用对象</code>已经添加到<code>引用队列</code>中，<code>next</code> 指向<code>引用队列</code>中的下一个<code>引用对象</code></li>
+<li><code>discovered</code>: 用于指向下一个<code>引用对象</code>，用于在全局的 <code>pending</code> 链表中，指向下一个待添加到<code>引用队列</code>的<code>引用对象</code></li>
+</ul>
+<div style="width:60%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227192404.png" class="" title="引用对象"></div>
+
+<h4 id="静态变量"><a href="#静态变量" class="headerlink" title="静态变量"></a>静态变量</h4><blockquote>
+<p>注意：<code>lock</code> 和 <code>pending</code> 是全局共享的。</p>
+</blockquote>
+<ul>
+<li><code>lock</code>: 用于与垃圾收集器同步的对象，<strong>垃圾收集器必须在每个收集周期开始时获取此锁</strong>。因此至关重要的是持有此锁的任何代码必须尽快运行完，不分配新对象并避免调用用户代码。</li>
+<li><code>pending</code>: 等待加入<code>引用队列</code>的<code>引用对象</code>链表。垃圾收集器将<code>引用对象</code>添加到 <code>pending</code> 链表中，而 <code>Reference Handler</code> 线程将删除它们，并做清理或入队操作。<code>pending</code> 链表受上述 <code>lock</code> 对象的保护，并使用 <code>discovered</code> 字段来链接下一个元素。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Reference</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> T referent;         <span class="comment">/* Treated specially by GC */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">volatile</span> ReferenceQueue&lt;? <span class="built_in">super</span> T&gt; queue;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;rawtypes&quot;)</span></span><br><span class="line">    <span class="keyword">volatile</span> Reference next;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">private</span> Reference&lt;T&gt; discovered;  <span class="comment">/* used by VM */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Lock</span> &#123; &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Lock</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Reference&lt;Object&gt; pending = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>Reference</code> 其实可以理解为单链表中的一个节点，除了核心的 <code>referent</code> 和 <code>queue</code>，<code>next</code> 和 <code>discovered</code> 都用于指向下一个<code>引用对象</code>，只是分别用于两条不同的单链表上。</p>
+</blockquote>
+<p><code>pending</code> 链表：</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227191324.png" class="" title="pending 链表"></div>
+
+<p><code>ReferenceQueue</code>：</p>
+<div style="width:80%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227191330.png" class="" title="ReferenceQueue"></div>
+
+<h3 id="ReferenceHandler-线程"><a href="#ReferenceHandler-线程" class="headerlink" title="ReferenceHandler 线程"></a>ReferenceHandler 线程</h3><p>启动任意一个非常简单的 Java 程序，通过 JVM 相关的工具，比如 JConsole，你都能看到一个名为 Reference Handler 的线程。</p>
+<div style="width:60%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Snipaste_2023-12-27_19-41-19.png" class="" title="Reference Handler 线程"></div>
+
+<p><code>ReferenceHandler</code> 类本身的代码并不复杂。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ReferenceHandler</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="comment">// 确保类已经初始化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">ensureClassInitialized</span><span class="params">(Class&lt;?&gt; clazz)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Class.forName(clazz.getName(), <span class="literal">true</span>, clazz.getClassLoader());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> (Error) <span class="keyword">new</span> <span class="title class_">NoClassDefFoundError</span>(e.getMessage()).initCause(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="comment">// 预加载和初始化 InterruptedException 和 Cleaner，以避免在 run 方法中懒加载发生内存不足时陷入麻烦（咱也不知道具体啥麻烦）</span></span><br><span class="line">        ensureClassInitialized(InterruptedException.class);</span><br><span class="line">        ensureClassInitialized(Cleaner.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ReferenceHandler(ThreadGroup g, String name) &#123;</span><br><span class="line">        <span class="built_in">super</span>(g, name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// run 方法循环调用 tryHandlePending</span></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            tryHandlePending(<span class="literal">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建线程并启动"><a href="#创建线程并启动" class="headerlink" title="创建线程并启动"></a>创建线程并启动</h4><p><code>ReferenceHandler</code> 线程是通过静态代码块创建并启动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    <span class="comment">// 不断获取父线程组，直到最高的系统线程组</span></span><br><span class="line">    <span class="type">ThreadGroup</span> <span class="variable">tg</span> <span class="operator">=</span> Thread.currentThread().getThreadGroup();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">ThreadGroup</span> <span class="variable">tgn</span> <span class="operator">=</span> tg;</span><br><span class="line">            tgn != <span class="literal">null</span>;</span><br><span class="line">            tg = tgn, tgn = tg.getParent());</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceHandler</span>(tg, <span class="string">&quot;Reference Handler&quot;</span>);</span><br><span class="line">    <span class="comment">// 设置为最高优先级</span></span><br><span class="line">    handler.setPriority(Thread.MAX_PRIORITY);</span><br><span class="line">    <span class="comment">// 设置为守护线程</span></span><br><span class="line">    handler.setDaemon(<span class="literal">true</span>);</span><br><span class="line">    handler.start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// provide access in SharedSecrets</span></span><br><span class="line">    <span class="comment">// 不懂，看到一个说法覆盖 JVM 的默认处理方式</span></span><br><span class="line">    SharedSecrets.setJavaLangRefAccess(<span class="keyword">new</span> <span class="title class_">JavaLangRefAccess</span>() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryHandlePendingReference</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> tryHandlePending(<span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="run-处理逻辑"><a href="#run-处理逻辑" class="headerlink" title="run 处理逻辑"></a>run 处理逻辑</h4><p><code>run</code> 方法的核心处理逻辑。本质上，<code>ReferenceHandler</code> 线程将 <code>pending</code> 链表上的<code>引用对象</code>分发到各自注册的<code>引用队列</code>中。如果理解了 <code>Reference</code> 作为单链表节点的一面，这部分代码不难理解，反而是其中应对 <code>OOME</code> 的处理很值得关注，但更多的可能是看了个寂寞，不好重现问题并验证。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">tryHandlePending</span><span class="params">(<span class="type">boolean</span> waitForNotify)</span> &#123;</span><br><span class="line">    Reference&lt;Object&gt; r;</span><br><span class="line">    Cleaner c;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 加锁（和垃圾回收共用一个锁）</span></span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            <span class="comment">// 如果不为 null</span></span><br><span class="line">            <span class="keyword">if</span> (pending != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 获取头节点</span></span><br><span class="line">                r = pending;</span><br><span class="line">                <span class="comment">// instanceof 可能抛出 OutOfMemoryError，因此在把 r 从 pending 链表中移除前进行</span></span><br><span class="line">                <span class="comment">// 如果是 Cleaner 类型，进行类型转换，后续有特殊处理</span></span><br><span class="line">                c = r <span class="keyword">instanceof</span> Cleaner ? (Cleaner) r : <span class="literal">null</span>;</span><br><span class="line">                <span class="comment">// 从 pending 链表移除 r</span></span><br><span class="line">                pending = r.discovered;</span><br><span class="line">                r.discovered = <span class="literal">null</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 等待锁可能抛出 OutOfMemoryError，因为可能需要分配 exception 对象</span></span><br><span class="line">                <span class="keyword">if</span> (waitForNotify) &#123;</span><br><span class="line">                    lock.wait();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// retry if waited</span></span><br><span class="line">                <span class="keyword">return</span> waitForNotify;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (OutOfMemoryError x) &#123;</span><br><span class="line">        <span class="comment">// 给其他线程 CPU 时间，以便它们能够丢弃一些存活的引用，然后通过 GC 回收一些空间</span></span><br><span class="line">        <span class="comment">// 还可以防止 CPU 密集运行以至于上面的“r instanceof Cleaner”在一段时间内持续抛出 OOME</span></span><br><span class="line">        Thread.<span class="keyword">yield</span>();</span><br><span class="line">        <span class="comment">// retry</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InterruptedException x) &#123;</span><br><span class="line">        <span class="comment">// retry</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果是 Cleaner 类型，快速清理并返回</span></span><br><span class="line">    <span class="keyword">if</span> (c != <span class="literal">null</span>) &#123;</span><br><span class="line">        c.clean();</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果 Reference 对象关联了引用队列，则添加到队列</span></span><br><span class="line">    ReferenceQueue&lt;? <span class="built_in">super</span> Object&gt; q = r.queue;</span><br><span class="line">    <span class="keyword">if</span> (q != ReferenceQueue.NULL) q.enqueue(r);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="关联对象和队列相关方法"><a href="#关联对象和队列相关方法" class="headerlink" title="关联对象和队列相关方法"></a>关联对象和队列相关方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* -- Referent accessor and setters -- */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取关联对象</span></span><br><span class="line"><span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.referent;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 清理关联对象，该操作不会导致引用对象入队</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">clear</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.referent = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* -- Queue operations -- */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断引用对象是否已入队，如果未关联引用队列，则返回 false</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isEnqueued</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="built_in">this</span>.queue == ReferenceQueue.ENQUEUED);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将引用对象添加到其注册的引用队列中，该方法仅 Java 代码调用，JVM 不需要调用本方法可以直接进行入队操作（什么情况下？）</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">enqueue</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.queue.enqueue(<span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ReferenceQueue"><a href="#ReferenceQueue" class="headerlink" title="ReferenceQueue"></a>ReferenceQueue</h2><p><code>引用队列</code>，在检测到适当的可达性更改后，垃圾收集器将已注册的<code>引用对象</code>添加到该队列。</p>
+<h3 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceQueue</span>&lt;T&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构造函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ReferenceQueue</span><span class="params">()</span> &#123; &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 一个不可入队的队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Null</span>&lt;S&gt; <span class="keyword">extends</span> <span class="title class_">ReferenceQueue</span>&lt;S&gt; &#123;</span><br><span class="line">        <span class="type">boolean</span> <span class="title function_">enqueue</span><span class="params">(Reference&lt;? extends S&gt; r)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用于表示一个引用对象没有注册到引用队列</span></span><br><span class="line">    <span class="keyword">static</span> ReferenceQueue&lt;Object&gt; NULL = <span class="keyword">new</span> <span class="title class_">Null</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 用于表示一个引用对象已经添加到引用队列</span></span><br><span class="line">    <span class="keyword">static</span> ReferenceQueue&lt;Object&gt; ENQUEUED = <span class="keyword">new</span> <span class="title class_">Null</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 锁对象</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Lock</span> &#123; &#125;;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Lock</span>();</span><br><span class="line">    <span class="comment">// 头节点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; head = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 队列长度</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> <span class="variable">queueLength</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="入队"><a href="#入队" class="headerlink" title="入队"></a>入队</h3><p><code>enqueue</code> 只能由 <code>Reference</code> 类调用。</p>
+<p><code>引用对象</code>的 <code>queue</code> 字段可以表达<code>引用对象</code>的状态：</p>
+<ul>
+<li><code>NULL</code>：表示没有注册到<code>引用队列</code>或者已经从<code>引用队列</code>中移除</li>
+<li><code>ENQUEUED</code>：表示已经添加到<code>引用队列</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="title function_">enqueue</span><span class="params">(Reference&lt;? extends T&gt; r)</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        <span class="comment">// 检查引用对象的状态是否可以入队</span></span><br><span class="line">        ReferenceQueue&lt;?&gt; queue = r.queue;</span><br><span class="line">        <span class="keyword">if</span> ((queue == NULL) || (queue == ENQUEUED)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 检查注册的 queue 和调用的 queue 是否相同</span></span><br><span class="line">        <span class="keyword">assert</span> queue == <span class="built_in">this</span>;</span><br><span class="line">        <span class="comment">// 标记为已入队</span></span><br><span class="line">        r.queue = ENQUEUED;</span><br><span class="line">        <span class="comment">// 头插法，最后一个节点的 next 指向自身（为什么？）</span></span><br><span class="line">        r.next = (head == <span class="literal">null</span>) ? r : head;</span><br><span class="line">        head = r;</span><br><span class="line">        <span class="comment">// 队列长度加一</span></span><br><span class="line">        queueLength++;</span><br><span class="line">        <span class="keyword">if</span> (r <span class="keyword">instanceof</span> FinalReference) &#123;</span><br><span class="line">            sun.misc.VM.addFinalRefCount(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 通知等待的线程</span></span><br><span class="line">        lock.notifyAll();</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="出队"><a href="#出队" class="headerlink" title="出队"></a>出队</h3><p>轮询队列以查看是否有引用对象可用，如果存在可用的引用对象则将其从队列中删除并返回，否则该方法立即返回 <code>null</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; poll() &#123;</span><br><span class="line">    <span class="comment">// 缩小锁的范围</span></span><br><span class="line">    <span class="keyword">if</span> (head == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        <span class="keyword">return</span> reallyPoll();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; reallyPoll() &#123;</span><br><span class="line">    Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; r = head;</span><br><span class="line">    <span class="keyword">if</span> (r != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">        Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; rn = r.next;</span><br><span class="line">        <span class="comment">// 因为尾节点的 next 指向自身</span></span><br><span class="line">        head = (rn == r) ? <span class="literal">null</span> : rn;</span><br><span class="line">        <span class="comment">// 标记为 NULL，避免再次入队</span></span><br><span class="line">        r.queue = NULL;</span><br><span class="line">        <span class="comment">// next 指向自己</span></span><br><span class="line">        r.next = r;</span><br><span class="line">        <span class="comment">// 队列长度减一</span></span><br><span class="line">        queueLength--;</span><br><span class="line">        <span class="keyword">if</span> (r <span class="keyword">instanceof</span> FinalReference) &#123;</span><br><span class="line">            sun.misc.VM.addFinalRefCount(-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>出队操作提供了等待的选项。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从队列中移除下一个元素，阻塞直到有元素可用。</span></span><br><span class="line"><span class="keyword">public</span> Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; remove() <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="keyword">return</span> remove(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从队列中移除下一个元素，阻塞直到超时或有元素可用，timeout 以毫秒为单位。</span></span><br><span class="line"><span class="keyword">public</span> Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; remove(<span class="type">long</span> timeout)</span><br><span class="line">    <span class="keyword">throws</span> IllegalArgumentException, InterruptedException</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (timeout &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Negative timeout value&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        Reference&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; r = reallyPoll();</span><br><span class="line">        <span class="keyword">if</span> (r != <span class="literal">null</span>) <span class="keyword">return</span> r;</span><br><span class="line">        <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> (timeout == <span class="number">0</span>) ? <span class="number">0</span> : System.nanoTime();</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            lock.wait(timeout);</span><br><span class="line">            r = reallyPoll();</span><br><span class="line">            <span class="keyword">if</span> (r != <span class="literal">null</span>) <span class="keyword">return</span> r;</span><br><span class="line">            <span class="comment">// 如果 timeout 大于 0</span></span><br><span class="line">            <span class="keyword">if</span> (timeout != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.nanoTime();</span><br><span class="line">                <span class="comment">// 计算下一轮等待时间</span></span><br><span class="line">                timeout -= (end - start) / <span class="number">1000_000</span>;</span><br><span class="line">                <span class="comment">// 到时间直接返回 null</span></span><br><span class="line">                <span class="keyword">if</span> (timeout &lt;= <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                <span class="comment">// 更新开始时间</span></span><br><span class="line">                start = end;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="状态变化"><a href="#状态变化" class="headerlink" title="状态变化"></a>状态变化</h3><p><code>Reference</code> 实例（引用对象）可能处于四种内部状态之一：</p>
+<ul>
+<li><code>Active</code>: 新创建的实例处于 <code>Active</code> 状态，受到垃圾收集器的特殊处理。收集器在检测到<code>关联对象</code>的可达性变为适当状态后的一段时间，会将实例的状态更改为 <code>Pending</code> 或 <code>Inactive</code>，具体取决于实例在创建时是否注册到<code>引用队列</code>中。在前一种情况下，它还会将实例添加到待 <code>pending-Reference</code> 列表中。</li>
+<li><code>Pending</code>: 实例处在 <code>pending-Reference</code> 列表中，等待 <code>Reference Handler</code> 线程将其加入<code>引用队列</code>。未注册到<code>引用队列</code>的实例永远不会处于这种状态。</li>
+<li><code>Enqueued</code>: 处在创建实例时注册到的<code>引用队列</code>中。当实例从引用队列中删除时，该实例将变为 <code>Inactive</code> 状态。未注册到<code>引用队列</code>的实例永远不会处于这种状态。</li>
+<li><code>Inactive</code>: 没有进一步的操作。一旦实例变为 <code>Inactive</code> 状态，其状态将永远不会再改变。</li>
+</ul>
+<p><code>Reference</code> 实例（引用对象）的状态由 <code>queue</code> 和 <code>next</code> 字段共同表达：</p>
+<ul>
+<li><code>Active</code>: <code>(queue == ReferenceQueue || queue == ReferenceQueue.NULL) &amp;&amp; next == null</code></li>
+<li><code>Pending</code>: <code>queue == ReferenceQueue &amp;&amp; next == this</code></li>
+<li><code>Enqueued</code>: <code>queue == ReferenceQueue.ENQUEUED &amp;&amp; (next == Following || this)</code>（在队列末尾时，<code>next</code> 指向自身，目前没有体现出这么设计的必要性啊？）</li>
+<li><code>Inactive</code>: <code>queue == ReferenceQueue.NULL &amp;&amp; next == this</code></li>
+</ul>
+<div style="width:80%;margin:auto"><img src="/2023/12/27/source-code-analysis-of-Java-class-Reference/Pasted%20image%2020231227235157.png" class="" title="Reference 相关类图"></div>
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1366147">你不可不知的Java引用类型之——Reference源码解析</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/9fd68714c366">Java引用类型之：Reference源码解析</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6942026483489734693">JVM之Reference源码分析</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/25/Unsafe-an-anti-Java-class/" rel="prev" title="Unsafe，一个“反 Java”的 class">
+                  <i class="fa fa-chevron-left"></i> Unsafe，一个“反 Java”的 class
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">110k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:05</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
