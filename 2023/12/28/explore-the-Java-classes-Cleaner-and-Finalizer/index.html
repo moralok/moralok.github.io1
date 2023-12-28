@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Java 类 Cleaner 和 Finalizer 都实现了一种 finalization 机制，前者更轻量和强大，你可能在了解 NIO 的堆外内存自动释放机制中注意过它；后者为人所诟病，finalize 方法被人强烈反对使用。本文想要解析它们的原因不在于它们实现的功能，而在于它们是 Reference 的具体子类。Reference 作为和 GC 紧密联系的类，你可能从很多文字描述中了解过 S">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探索 Java 类 Cleaner 和 Finalizer">
+<meta property="og:url" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="Java 类 Cleaner 和 Finalizer 都实现了一种 finalization 机制，前者更轻量和强大，你可能在了解 NIO 的堆外内存自动释放机制中注意过它；后者为人所诟病，finalize 方法被人强烈反对使用。本文想要解析它们的原因不在于它们实现的功能，而在于它们是 Reference 的具体子类。Reference 作为和 GC 紧密联系的类，你可能从很多文字描述中了解过 S">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231228220806.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231229012917.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231228230444.png">
+<meta property="og:image" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Snipaste_2023-12-28_23-09-21.png">
+<meta property="article:published_time" content="2023-12-28T04:59:48.000Z">
+<meta property="article:modified_time" content="2023-12-28T19:40:01.986Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231228220806.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/","path":"2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/","title":"探索 Java 类 Cleaner 和 Finalizer"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>探索 Java 类 Cleaner 和 Finalizer | Moralok</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E5%BC%95%E7%94%A8%E4%B9%8B-Cleaner"><span class="nav-number">1.</span> <span class="nav-text">虚引用之 Cleaner</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E5%BC%95%E7%94%A8%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">虚引用介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cleaner-%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.2.</span> <span class="nav-text">Cleaner 介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0-cleaner"><span class="nav-number">1.4.</span> <span class="nav-text">添加 cleaner</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-%E6%96%B9%E6%B3%95"><span class="nav-number">1.5.</span> <span class="nav-text">clean 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cleaner-%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="nav-number">1.6.</span> <span class="nav-text">Cleaner 处理流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%88%E7%BB%93%E5%BC%95%E7%94%A8%E4%B9%8B-Finalizer"><span class="nav-number">2.</span> <span class="nav-text">终结引用之 Finalizer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0-1"><span class="nav-number">2.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0-Finalizer"><span class="nav-number">2.2.</span> <span class="nav-text">添加 Finalizer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalizer-%E7%BA%BF%E7%A8%8B"><span class="nav-number">2.3.</span> <span class="nav-text">Finalizer 线程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#run-%E6%96%B9%E6%B3%95"><span class="nav-number">2.3.1.</span> <span class="nav-text">run 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%92%8C%E5%90%AF%E5%8A%A8"><span class="nav-number">2.3.2.</span> <span class="nav-text">创建和启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-Finalizer-%E5%B9%B6%E8%B0%83%E7%94%A8"><span class="nav-number">2.3.3.</span> <span class="nav-text">获取 Finalizer 并调用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#finalize-%E7%9A%84%E8%B0%83%E7%94%A8%E5%8E%9F%E7%90%86"><span class="nav-number">2.4.</span> <span class="nav-text">finalize 的调用原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalizer-%E7%9A%84%E6%B3%A8%E5%86%8C%E6%97%B6%E6%9C%BA"><span class="nav-number">2.5.</span> <span class="nav-text">Finalizer 的注册时机</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="探索 Java 类 Cleaner 和 Finalizer | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          探索 Java 类 Cleaner 和 Finalizer
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-28 12:59:48" itemprop="dateCreated datePublished" datetime="2023-12-28T12:59:48+08:00">2023-12-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-29 03:40:01" itemprop="dateModified" datetime="2023-12-29T03:40:01+08:00">2023-12-29</time>
+    </span>
+
+  
+    <span id="/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/" class="post-meta-item leancloud_visitors" data-flag-title="探索 Java 类 Cleaner 和 Finalizer" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>10 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><code>Java</code> 类 <code>Cleaner</code> 和 <code>Finalizer</code> 都实现了一种 <code>finalization</code> 机制，前者更轻量和强大，你可能在了解 <code>NIO</code> 的堆外内存自动释放机制中注意过它；后者为人所诟病，<code>finalize</code> 方法被人强烈反对使用。本文想要解析它们的原因不在于它们实现的功能，而在于它们是 <code>Reference</code> 的具体子类。<br><code>Reference</code> 作为和 <code>GC</code> 紧密联系的类，你可能从很多文字描述中了解过 <code>SoftReference</code>、<code>WeakReference</code> 还有 <code>PhantomReference</code> 但是却很少从代码层面了解过它们，当你牢记“一个对象是否可以被回收的判断依据是它是否从 <code>Root</code> 对象可达”这条规则再面对 <code>Reference</code> 的子类时是否产生过割裂感；你是否好奇过 <code>Finalizer</code> 如何和重写 <code>finalize</code> 方法的类产生联系，本文将从 <code>Cleaner</code> 和 <code>Finalizer</code> 的源码揭示一些你可能已知的结论背后的朴素原理。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>本文的写作动机继承自 <a href="/2023/12/27/source-code-analysis-of-Java-class-Reference/" title="Java 类 Reference 的源码分析">Java 类 Reference 的源码分析</a>，有时候也会自我怀疑研究一个涉及大家极力劝阻使用的 <code>finalize</code> 是否浪费精力，只能说确实如此！要不是半途而废会膈应难受肯定就停了！只能说这个过程确实帮助自己对 <code>Java</code> 引用和 <code>GC</code> 对其的处理有更加深刻的理解。</p>
+</blockquote>
+<h2 id="虚引用之-Cleaner"><a href="#虚引用之-Cleaner" class="headerlink" title="虚引用之 Cleaner"></a>虚引用之 Cleaner</h2><h3 id="虚引用介绍"><a href="#虚引用介绍" class="headerlink" title="虚引用介绍"></a>虚引用介绍</h3><p><code>PhantomReference</code> 对象在垃圾收集器确定其<code>关联对象</code>可以被回收时或可以被回收后一段时间，将被入队。“可以被回收”更明确的描述是“虚引用的<code>关联对象</code>变成 <strong><code>phantom reachable</code></strong> ，即只有虚引用引用了它”。但是和软引用和弱引用不同，<strong>当虚引用入队时并不会被垃圾收集器自动清理（其关联对象）</strong>。一个 <code>phantom reachable</code> 的对象会一直维持原样直到所有虚引用被清理或者它们自身变得不可达。</p>
+<p><code>PhantomReference</code> 的代码非常简单：</p>
+<ol>
+<li><code>PhantomReference</code> 仅提供了一个 <code>public</code> 构造函数，必须提供 <code>ReferenceQueue</code> 参数。它不像 <code>SoftReference</code> 和 <code>WeakReference</code> 可以离开 <code>ReferenceQueue</code> 单独使用，尽管 <code>queue</code> 可以为 <code>null</code>，但是这样做并没有意义。</li>
+<li><code>get()</code> 返回 <code>null</code>，这意味着不能通过 <code>PhantomReference</code> 获取其关联的对象 <code>referent</code>。</li>
+</ol>
+<blockquote>
+<p><code>get()</code> 返回 <code>null</code> 并不是可以随意忽略的事情，它保证了 <code>phantom reachable</code> 对象不会被重新触达和修改（这是为清理工作留出时间吗）。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PhantomReference</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Reference</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">PhantomReference</span><span class="params">(T referent, ReferenceQueue&lt;? <span class="built_in">super</span> T&gt; q)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(referent, q);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过以下示例验证 <code>GC</code> 不会自动清理虚引用的关联对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line"></span><br><span class="line">    <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">100</span> * <span class="number">1024</span> * <span class="number">1024</span>];</span><br><span class="line">    ReferenceQueue&lt;<span class="type">byte</span>[]&gt; queue = <span class="keyword">new</span> <span class="title class_">ReferenceQueue</span>&lt;&gt;();</span><br><span class="line">    PhantomReference&lt;<span class="type">byte</span>[]&gt; phantomReference = <span class="keyword">new</span> <span class="title class_">PhantomReference</span>&lt;&gt;(bytes, queue);</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">for</span> (; ; ) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Reference&lt;? <span class="keyword">extends</span> <span class="title class_">byte</span>[]&gt; remove = queue.remove(<span class="number">0</span>);</span><br><span class="line">                System.out.println(remove + <span class="string">&quot; enqueued&quot;</span>);</span><br><span class="line">                <span class="comment">// 需要调用 clear 主动清理关联对象，可以验证 gc 后总堆内存占用下降</span></span><br><span class="line">                <span class="comment">// remove.clear();</span></span><br><span class="line">                <span class="comment">// System.gc();</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot; interrupt&quot;</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    thread.start();</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;暂停查看堆内存占用&quot;</span>);</span><br><span class="line">    scanner.next();</span><br><span class="line"></span><br><span class="line">    bytes = <span class="literal">null</span>;</span><br><span class="line">    System.gc();</span><br><span class="line">    System.out.println(<span class="string">&quot;gc 后 sleep 3s，查看总堆内存占用未下降&quot;</span>);</span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    scanner.next();</span><br><span class="line">    thread.interrupt();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Cleaner-介绍"><a href="#Cleaner-介绍" class="headerlink" title="Cleaner 介绍"></a>Cleaner 介绍</h3><p>虚引用最常用于以比 <code>finalization</code> 更灵活的方式安排清理工作，比如其子类 <code>Cleaner</code> 就是一种基于虚引用的清理器，它比 <code>finalization</code> 更轻量但更强大。<code>Cleaner</code> 追踪其<code>关联对象</code>并封装任意的清理代码，在 <code>GC</code> 检测到其<code>关联对象</code>变成 <code>phantom reachable</code> 后一段时间，<code>Reference-Handler</code> 线程将运行清理代码。同时 <code>Cleaner</code> 可以被直接调用，它是线程安全的并且可以保证清理代码最多运行一次。但是 <code>Cleaner</code> 不是 <code>finalization</code> 的替代品，为了避免阻塞 <code>Reference-Handler</code> 线程，清理代码应极其简单和直接。</p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p><code>Cleaner</code> 的构造函数为 <code>private</code>，仅可通过 <code>create</code> 方法创建实例。</p>
+<ul>
+<li><code>referent</code>: <code>关联对象</code></li>
+<li><code>dummyQueue</code>: 假队列，需要它仅仅是因为 <code>PhantomReference</code> 的构造函数需要一个 <code>queue</code> 参数，但是这个 <code>queue</code> 完全没用，在 <code>Reference</code> 中 <code>Reference-Handler</code> 线程会显式调用 <code>cleaners</code> 而不会执行入队操作。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Cleaner</span> <span class="keyword">extends</span> <span class="title class_">PhantomReference</span>&lt;Object&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ReferenceQueue&lt;Object&gt; dummyQueue = <span class="keyword">new</span> <span class="title class_">ReferenceQueue</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Runnable thunk;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Cleaner</span><span class="params">(Object referent, Runnable thunk)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(referent, dummyQueue);</span><br><span class="line">        <span class="built_in">this</span>.thunk = thunk;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Cleaner <span class="title function_">create</span><span class="params">(Object ob, Runnable thunk)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (thunk == <span class="literal">null</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 添加到 Cleaner 自身维护的双链表</span></span><br><span class="line">        <span class="keyword">return</span> add(<span class="keyword">new</span> <span class="title class_">Cleaner</span>(ob, thunk));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加-cleaner"><a href="#添加-cleaner" class="headerlink" title="添加 cleaner"></a>添加 <code>cleaner</code></h3><ul>
+<li>使用 <code>synchronized</code> 同步</li>
+<li><code>Cleaner</code> 自身维护一个双向链表存储 <code>cleaners</code>，通过静态变量 <code>first</code> 存储头节点，以防止 <code>cleaners</code> 比其<code>关联对象</code>更早被 <code>GC</code>。</li>
+</ul>
+<div style="width:70%;margin:auto"><img src="/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231228220806.png" class="" title="Cleaner 双向链表"></div>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 头节点</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">private</span> <span class="type">Cleaner</span> <span class="variable">first</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="comment">// 双向指针</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">Cleaner</span> <span class="variable">next</span> <span class="operator">=</span> <span class="literal">null</span>, prev = <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Cleaner <span class="title function_">add</span><span class="params">(Cleaner cl)</span> &#123;</span><br><span class="line">    <span class="comment">// 头插法</span></span><br><span class="line">    <span class="keyword">if</span> (first != <span class="literal">null</span>) &#123;</span><br><span class="line">        cl.next = first;</span><br><span class="line">        first.prev = cl;</span><br><span class="line">    &#125;</span><br><span class="line">    first = cl;</span><br><span class="line">    <span class="keyword">return</span> cl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="clean-方法"><a href="#clean-方法" class="headerlink" title="clean 方法"></a>clean 方法</h3><p>在 <code>Reference</code> 中 <code>Reference-Handler</code> 线程对于 <code>Cleaner</code> 类型的对象，会显式地调用其 <code>clean</code> 方法并返回，而不会将其入队。</p>
+<ol>
+<li>使用 <code>synchronized</code> 同步，从双链表上移除自身</li>
+<li>调用 <code>thunk</code> 的 <code>run</code> 方法</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">clean</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!remove(<span class="built_in">this</span>))</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        thunk.run();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="keyword">final</span> Throwable x) &#123;</span><br><span class="line">        AccessController.doPrivileged(<span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>&lt;Void&gt;() &#123;</span><br><span class="line">            <span class="keyword">public</span> Void <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (System.err != <span class="literal">null</span>)</span><br><span class="line">                    <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Cleaner terminated abnormally&quot;</span>, x).printStackTrace();</span><br><span class="line">                System.exit(<span class="number">1</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="type">boolean</span> <span class="title function_">remove</span><span class="params">(Cleaner cl)</span> &#123;</span><br><span class="line">    <span class="comment">// next 指针指向自身代表已经移除，可以避免重复移除和执行</span></span><br><span class="line">    <span class="keyword">if</span> (cl.next == cl)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 更新双链表</span></span><br><span class="line">    <span class="keyword">if</span> (first == cl) &#123;</span><br><span class="line">        <span class="keyword">if</span> (cl.next != <span class="literal">null</span>)</span><br><span class="line">            first = cl.next;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            first = cl.prev;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (cl.next != <span class="literal">null</span>)</span><br><span class="line">        cl.next.prev = cl.prev;</span><br><span class="line">    <span class="keyword">if</span> (cl.prev != <span class="literal">null</span>)</span><br><span class="line">        cl.prev.next = cl.next;</span><br><span class="line">    <span class="comment">// 通过将 next 指针指向自身表示已经被移除</span></span><br><span class="line">    cl.next = cl;</span><br><span class="line">    cl.prev = cl;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Cleaner-处理流程"><a href="#Cleaner-处理流程" class="headerlink" title="Cleaner 处理流程"></a>Cleaner 处理流程</h3><ul>
+<li>创建的 <code>Cleaner</code> 对象被 <code>Cleaner</code> 类的双链表直接或间接引用（强引用），因此不会被垃圾回收</li>
+<li>一切的起点仍然是 <code>GC</code> 特殊地对待虚引用的关联对象，当关联对象从 <code>reachable</code> 变成 <code>phantom reachable</code>，<code>GC</code> 将 <code>Cleaner</code> 对象将加入 <code>pending-list</code></li>
+<li><code>Reference-Handler</code> 线程又将其移除并调用 <code>clean</code> 方法</li>
+<li>在调用完毕后，<code>Cleaner</code> 对象变成 <code>unreachable</code> 并最终被垃圾回收，其关联对象也被垃圾回收</li>
+</ul>
+<blockquote>
+<p>注意，Cleaner 对象本身在被调用完毕之前始终是被静态变量引用，是 <code>reachable</code> 的，我们讨论的被判定为可回收的、变成 <code>phantom reachable</code> 状态的是关联对象。</p>
+</blockquote>
+<div style="width:70%;margin:auto"><img src="/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231229012917.png" class="" title="Cleaner 处理流程"></div>
+
+<blockquote>
+<p>事实上，个人猜测“虚引用的关联对象不像软引用和弱引用会被自动清理”描述的仅仅是一个表象，判断是否要被垃圾回收的根本法则仍然是“对象是否从 <code>Root</code> 对象可达”，软引用和弱引用的<code>关联对象</code>之所以会被垃圾回收是因为它们在加入 <code>pending-list</code> 时被从<code>引用对象</code>断开，否则当<code>引用对象</code>被添加到<code>引用队列</code>时，<code>引用队列</code>如果从 <code>Root</code> 对象可达，将导致<code>关联对象</code>也从 <code>Root</code> 对象可达。在 <code>Reference</code> 的 <code>clear()</code> 的注释中提及该方法只被 <code>Java</code> 代码调用，<code>GC</code> 不需要调用该方法就可以直接清理，肯定是 <code>GC</code> 有直接清理<code>关联对象</code>的场景。同时 <code>Reference</code> 类有一句注释“<code>GC</code> 在检测到<code>关联对象</code>有特定的可达性变化后，将把<code>引用对象</code>添加到<code>引用队列</code>”，它并未将特定的可达性变化直接描述为<code>关联对象</code>变为不可达。目前尚未从 <code>JVM</code> 源代码验证该猜测。</p>
+</blockquote>
+<h2 id="终结引用之-Finalizer"><a href="#终结引用之-Finalizer" class="headerlink" title="终结引用之 Finalizer"></a>终结引用之 Finalizer</h2><p><code>FinalReference</code> 用于实现 <code>finalization</code>，其代码很简单。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">FinalReference</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Reference</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">FinalReference</span><span class="params">(T referent, ReferenceQueue&lt;? <span class="built_in">super</span> T&gt; q)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(referent, q);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其子类 <code>Finalizer</code> 继承自 <code>FinalReference</code>，<code>Cleaner</code> 在代码设计上和它非常相似。</p>
+<h3 id="构造函数-1"><a href="#构造函数-1" class="headerlink" title="构造函数"></a>构造函数</h3><p><code>Finalizer</code> 的构造函数为 <code>private</code>，仅可通过 <code>register</code> 方法创建实例。</p>
+<ul>
+<li><code>finalizee</code>: <code>关联对象</code>，即重写了 <code>finalize</code> 方法的类的实例</li>
+<li><code>queue</code>: 引用队列</li>
+</ul>
+<blockquote>
+<p>根据注释 <code>register</code> 由 <code>VM</code> 调用，我们可以合理猜测，这里就是重写了 <code>finalize</code> 方法的类的实例和 <code>Finalizer</code> 对象关联的起点。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Finalizer</span> <span class="keyword">extends</span> <span class="title class_">FinalReference</span>&lt;Object&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ReferenceQueue&lt;Object&gt; queue = <span class="keyword">new</span> <span class="title class_">ReferenceQueue</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Finalizer</span><span class="params">(Object finalizee)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(finalizee, queue);</span><br><span class="line">        add();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 由 VM 调用</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">register</span><span class="params">(Object finalizee)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Finalizer</span>(finalizee);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加-Finalizer"><a href="#添加-Finalizer" class="headerlink" title="添加 Finalizer"></a>添加 <code>Finalizer</code></h3><ul>
+<li>使用 <code>synchronized</code> 同步</li>
+<li><code>Finalizer</code> 自身维护一个双向链表存储 <code>finalizers</code>，通过静态变量 <code>unfinalized</code> 存储头节点</li>
+</ul>
+<div style="width:70%;margin:auto"><img src="/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Pasted%20image%2020231228230444.png" class="" title="Finalizer 双向链表"></div>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Finalizer</span> <span class="variable">unfinalized</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line"><span class="keyword">private</span> <span class="type">Finalizer</span> <span class="variable">next</span> <span class="operator">=</span> <span class="literal">null</span>, prev = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        <span class="keyword">if</span> (unfinalized != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="built_in">this</span>.next = unfinalized;</span><br><span class="line">            unfinalized.prev = <span class="built_in">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        unfinalized = <span class="built_in">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Finalizer-线程"><a href="#Finalizer-线程" class="headerlink" title="Finalizer 线程"></a><code>Finalizer</code> 线程</h3><p><code>finalizers</code> 的清理通常是由一条名为 <code>Finalizer</code> 的线程处理。启动任意一个非常简单的 <code>Java</code> 程序，通过 <code>JVM</code> 相关的工具，比如 <code>JConsole</code>，你都能看到一个名为 <code>Finalizer</code> 的线程。</p>
+<div style="width:70%;margin:auto"><img src="/2023/12/28/explore-the-Java-classes-Cleaner-and-Finalizer/Snipaste_2023-12-28_23-09-21.png" class="" title="Finalizer 线程"></div>
+
+<h4 id="run-方法"><a href="#run-方法" class="headerlink" title="run 方法"></a>run 方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FinalizerThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">boolean</span> running;</span><br><span class="line">    FinalizerThread(ThreadGroup g) &#123;</span><br><span class="line">        <span class="built_in">super</span>(g, <span class="string">&quot;Finalizer&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 防止递归调用 run（什么场景？）</span></span><br><span class="line">        <span class="keyword">if</span> (running)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="comment">// Finalizer thread 在 System.initializeSystemClass 被调用前启动，等待 JavaLangAccess 可用</span></span><br><span class="line">        <span class="keyword">while</span> (!VM.isBooted()) &#123;</span><br><span class="line">            <span class="comment">// 推迟直到 VM 初始化完成</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                VM.awaitBooted();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException x) &#123;</span><br><span class="line">                <span class="comment">// 忽略并继续</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">JavaLangAccess</span> <span class="variable">jla</span> <span class="operator">=</span> SharedSecrets.getJavaLangAccess();</span><br><span class="line">        <span class="comment">// 标记为运行中</span></span><br><span class="line">        running = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 从队列中移除</span></span><br><span class="line">                <span class="type">Finalizer</span> <span class="variable">f</span> <span class="operator">=</span> (Finalizer)queue.remove();</span><br><span class="line">                <span class="comment">// 调用 runFinalizer</span></span><br><span class="line">                f.runFinalizer(jla);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException x) &#123;</span><br><span class="line">                <span class="comment">// 忽略并继续</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建和启动"><a href="#创建和启动" class="headerlink" title="创建和启动"></a>创建和启动</h4><p><code>Finalizer</code> 线程是通过静态代码块创建和启动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    <span class="comment">// 向上获取父线程组，直到系统线程组</span></span><br><span class="line">    <span class="type">ThreadGroup</span> <span class="variable">tg</span> <span class="operator">=</span> Thread.currentThread().getThreadGroup();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">ThreadGroup</span> <span class="variable">tgn</span> <span class="operator">=</span> tg;</span><br><span class="line">            tgn != <span class="literal">null</span>;</span><br><span class="line">            tg = tgn, tgn = tg.getParent());</span><br><span class="line">    <span class="comment">// 创建 FinalizerThread 并启动</span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">finalizer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FinalizerThread</span>(tg);</span><br><span class="line">    <span class="comment">// 设置优先级为最高减 2</span></span><br><span class="line">    finalizer.setPriority(Thread.MAX_PRIORITY - <span class="number">2</span>);</span><br><span class="line">    finalizer.setDaemon(<span class="literal">true</span>);</span><br><span class="line">    finalizer.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="获取-Finalizer-并调用"><a href="#获取-Finalizer-并调用" class="headerlink" title="获取 Finalizer 并调用"></a>获取 Finalizer 并调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">runFinalizer</span><span class="params">(JavaLangAccess jla)</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;</span><br><span class="line">        <span class="comment">// 判断是否已经终结过</span></span><br><span class="line">        <span class="keyword">if</span> (hasBeenFinalized()) <span class="keyword">return</span>;</span><br><span class="line">        <span class="comment">// 从双链表上移除</span></span><br><span class="line">        remove();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取关联的 finalizee</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">finalizee</span> <span class="operator">=</span> <span class="built_in">this</span>.get();</span><br><span class="line">        <span class="comment">// 如果不为 null 且不是 Enum 类型</span></span><br><span class="line">        <span class="keyword">if</span> (finalizee != <span class="literal">null</span> &amp;&amp; !(finalizee <span class="keyword">instanceof</span> java.lang.Enum)) &#123;</span><br><span class="line">            <span class="comment">// 调用 invokeFinalize</span></span><br><span class="line">            jla.invokeFinalize(finalizee);</span><br><span class="line">            <span class="comment">// 清理栈槽以降低保守 GC 时误保留的可能性</span></span><br><span class="line">            finalizee = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable x) &#123; &#125;</span><br><span class="line">    <span class="comment">// 清理关联对象</span></span><br><span class="line">    <span class="built_in">super</span>.clear();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 和 Cleaner 类似，使用 next 指向自身表示已被移除</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">hasBeenFinalized</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (next == <span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 和 Cleaner 类似的处理</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">remove</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">        <span class="keyword">if</span> (unfinalized == <span class="built_in">this</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">this</span>.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                unfinalized = <span class="built_in">this</span>.next;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                unfinalized = <span class="built_in">this</span>.prev;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.next != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="built_in">this</span>.next.prev = <span class="built_in">this</span>.prev;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.prev != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="built_in">this</span>.prev.next = <span class="built_in">this</span>.next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">this</span>.next = <span class="built_in">this</span>;</span><br><span class="line">        <span class="built_in">this</span>.prev = <span class="built_in">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="finalize-的调用原理"><a href="#finalize-的调用原理" class="headerlink" title="finalize 的调用原理"></a>finalize 的调用原理</h3><p>关于如何调用 <code>finalize</code> 方法涉及不少平时接触不到的代码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 JavaLangAccess</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">JavaLangAccess</span> <span class="variable">jla</span> <span class="operator">=</span> SharedSecrets.getJavaLangAccess();</span><br><span class="line"><span class="comment">// 通过 JavaLangAccess 调用 finalizee 的 finalize 方法</span></span><br><span class="line">jla.invokeFinalize(finalizee);</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setJavaLangAccess</span><span class="params">(JavaLangAccess jla)</span> &#123;</span><br><span class="line">    javaLangAccess = jla;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>SharedSecrets</code> 的 <code>javaLangAccess</code> 通过 <code>setJavaLangAccess</code> 设置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setJavaLangAccess</span><span class="params">(JavaLangAccess jla)</span> &#123;</span><br><span class="line">    javaLangAccess = jla;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> JavaLangAccess <span class="title function_">getJavaLangAccess</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> javaLangAccess;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>setJavaLangAccess</code> 方法在 <code>System</code> 中被调用，<code>javaLangAccess</code> 被设置为一个匿名类实例，其中 <code>invokeFinalize</code> 方法间接调用了传入对象的 <code>finalize</code> 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setJavaLangAccess</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// Allow privileged classes outside of java.lang</span></span><br><span class="line">    sun.misc.SharedSecrets.setJavaLangAccess(<span class="keyword">new</span> <span class="title class_">sun</span>.misc.JavaLangAccess()&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">invokeFinalize</span><span class="params">(Object o)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">            o.finalize();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>System</code> 的 <code>setJavaLangAccess</code> 方法在 <code>initializeSystemClass</code> 方法中被调用。这里正对应着 <code>FinalizerThread</code> 的 <code>run</code> 方法中等待 <code>VM</code> 初始化完成的处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化 System class，在线程初始化之后调用</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">initializeSystemClass</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// register shared secrets</span></span><br><span class="line">    setJavaLangAccess();</span><br><span class="line">    <span class="comment">// 通知 wait 的线程</span></span><br><span class="line">    sun.misc.VM.booted();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Finalizer-的注册时机"><a href="#Finalizer-的注册时机" class="headerlink" title="Finalizer 的注册时机"></a>Finalizer 的注册时机</h3><p>你是否好奇过 <code>JVM</code> 是如何保证 <code>finalize</code> 方法最多被调用一次的？如果曾经猜测过 <code>JVM</code> 可能在对象中留有标记，那么在我们研究过对象的内部结构之后可以确认其中并没有用于记录对象是否已经 <code>finalized</code> 的地方。同时我们注意到 <code>hasBeenFinalized</code> 方法通过 <code>next</code> 指针是否指向自己表示是否已经 <code>finalized</code>。我们可以合理猜测 <code>register</code> 的调用时机是在对象创建时，因此最多仅有一次被注册。</p>
+<p>通过以下示例可以测试：</p>
+<ul>
+<li>在创建重写了 <code>finalize</code> 方法的类创建对象期间会调用 <code>register</code> 创建并注册 <code>Finalizer</code></li>
+<li>在未重写 <code>finalize</code> 方法的类创建对象期间不会调用<code>register</code></li>
+<li><code>Finalizer</code> 不仅可以保证 <code>finalize</code> 只会被调用一次，甚至不会第二次被添加到 <code>pending-list</code>，因为 <code>runFinalizer</code> 最后调用了 <code>super.clear()</code>，<code>JVM</code> 不会特殊对待复活的对象</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FinalReferenceTest_1</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">FinalizeObj</span> <span class="variable">save</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;创建 finalize obj，使用 Debug 强制运行到 Finalizer.register&quot;</span>);</span><br><span class="line">        <span class="type">FinalizeObj</span> <span class="variable">finalizeObj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FinalizeObj</span>();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;gc&quot;</span>);</span><br><span class="line">        finalizeObj = <span class="literal">null</span>;</span><br><span class="line">        System.gc();</span><br><span class="line">        System.out.println(<span class="string">&quot;sleep 1s&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">        save.echo();</span><br><span class="line"></span><br><span class="line">        save = <span class="literal">null</span>;</span><br><span class="line">        System.gc();</span><br><span class="line">        System.out.println(<span class="string">&quot;sleep 1s&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">        System.out.println(save == <span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FinalizeObj</span> &#123;</span><br><span class="line">        FinalizeObj() &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;SaveSelf created&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;finalized&quot;</span>);</span><br><span class="line">            save = <span class="built_in">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">echo</span><span class="params">()</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;I am alive.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/21809922/how-is-an-object-marked-as-finalized-in-java-so-that-the-finalize-method-wouldn">How is an object marked as finalized in Java (so that the finalize method wouldn’t be called the second time)?</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/27/source-code-analysis-of-Java-class-Reference/" rel="prev" title="Java 类 Reference 的源码分析">
+                  <i class="fa fa-chevron-left"></i> Java 类 Reference 的源码分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Moralok</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">113k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:16</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
