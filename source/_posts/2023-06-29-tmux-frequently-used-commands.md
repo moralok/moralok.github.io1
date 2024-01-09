@@ -5,50 +5,71 @@ tags:
     - tmux
 ---
 
+本文记录了 `Tmux` 常用命令和快捷键作为备忘笔记（好容易忘啊 Orz）。
+
+<!-- more -->
+
 ## Tmux 是什么
-Tmux 是一个终端复用器（Terminal Multiplexer），它可以将终端的会话和窗口解绑分离，达到窗口关闭，会话不终止，并且还能使用窗口再次绑定目标会话的效果，从而避免因为网络中断或者窗口关闭导致会话中运行的进程终止。
+`Tmux` 是一个终端复用器（`Terminal Multiplexer`），它可以将终端的会话和窗口解绑分离，达到窗口关闭，会话不终止，并且还能使用窗口再次绑定目标会话的效果，从而避免因为网络中断或者窗口关闭导致会话中运行的进程终止。
 
+`Ubuntu server 20.04` 默认已安装 `Tmux`。如果没有，可以通过以下命令安装：
 
-## 基本用法
-Ubuntu server 20.04 默认已安装 Tmux。如果没有，可以通过以下命令安装：
 ```shell
 $ sudo apt-get install tmux
 ```
 
+## 基本用法
+
 ### 会话管理
+
 #### 新建会话
+
 ```shell
 $ tmux new -s <session-name>
 ```
+
 #### 分离会话
+
 ```shell
 $ tmux detach
 ```
+
 #### 查看会话列表
+
 ```shell
 $ tmux ls
 ```
+
 #### 接入会话
+
 ```shell
 $ tmux attach -t <session-name>
 $ tmux attach -t <session-id>
 ```
+
 #### 杀死会话
+
 ```shell
 $ tmux kill-session -t <session-name>
 $ tmux kill-session -t <session-id>
 ```
+
 #### 切换会话
+
 ```shell
 $ tmux switch -t <session-name>
 $ tmux switch -t <session-id>
 ```
+
 #### 重命名会话
+
 ```shell
 $ tmux rename-session -t <old> <new>
 $ tmux rename-session <new>
 ```
+
 #### 会话快捷键
+
 - **`Ctrl+b d`：分离当前会话，猜测 detach**
 - **`Ctrl+b s`：查看会话列表并选择，session**
 - **`Ctrl+b $`：重命名当前会话名称**
@@ -56,26 +77,34 @@ $ tmux rename-session <new>
 
 
 ### 窗口管理
+
 #### 新建窗口
+
 ```shell
 $ tmux new-window -n <window-name>
 ```
 #### 关闭窗口
+
 ```shell
 $ tmux kill-window -t <window-name>
 $ tmux kill-window
 ```
+
 #### 切换窗口
+
 ```shell
 $ tmux select-window -t <window-name>
 $ tmux select-window -t <window-id>
 ```
 #### 重命名窗口
+
 ```shell
 $ tmux rename-window -t <old> <new>
 $ tmux rename-window <new>
 ```
+
 #### 窗口快捷键
+
 - **`Ctrl+b c`：创建一个新窗口，状态栏会显示窗口信息**
 - `Ctrl+b p`：切换到上一个窗口，prev
 - `Ctrl+b n`：切换到下一个窗口，next
@@ -86,14 +115,19 @@ $ tmux rename-window <new>
 
 
 ### 窗格管理
+
 #### 划分窗格
+
 猜测 vertical，horizontal。
+
 ```shell
 $ tmux split-window [-v]
 $ tmux split-window -h
 ```
 #### 移动光标
+
 猜测 upper，down，left，right。
+
 ```shell
 $ tmux select-pane -U
 $ tmux select-pane -D
@@ -101,12 +135,16 @@ $ tmux select-pane -L
 $ tmux select-pane -R
 ```
 #### 交换窗格
+
 当前窗格和上一个或下一个窗格交换位置。
+
 ```shell
 $ tmux swap-pane -U
 $ tmux swap-pane -D
 ```
+
 #### 窗格快捷键
+
 - **`Ctrl+b "`：上下划分窗格**
 - **`Ctrl+b %`：左右划分窗格**
 - **`Ctrl+b <arrow key>`：使用方向键切换窗格**
@@ -121,14 +159,20 @@ $ tmux swap-pane -D
 
 
 ### 其他命令
+
 #### 进入翻页模式
+
 - **`Ctrl+b [`：进入翻页模式**
 - `q`：退出翻页模式
+
 #### 列出所有快捷键，及其对应的 Tmux 命令
+
 ```shell
 $ tmux list-keys
 ```
+
 #### 列出所有 Tmux 命令及其参数
+
 ```shell
 $ tmux list-commands
 ```
