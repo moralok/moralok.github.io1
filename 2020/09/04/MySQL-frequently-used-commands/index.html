@@ -19,28 +19,28 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="安装 OpenVPN ConnectmacOS 访问官网下载。iOS 访问 AppStore，需要登录外区 Apple ID。 配置 OpenVPN Connect客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。 配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.">
+    <meta name="description" content="根据个人使用经验记录常用的 MySQL 命令作为备忘清单。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="在 iOS 和 macOS 上安装 OpenVPN 客户端">
-<meta property="og:url" content="https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/index.html">
+<meta property="og:title" content="MySQL 常用命令">
+<meta property="og:url" content="https://www.moralok.com/2020/09/04/MySQL-frequently-used-commands/index.html">
 <meta property="og:site_name" content="Moralok">
-<meta property="og:description" content="安装 OpenVPN ConnectmacOS 访问官网下载。iOS 访问 AppStore，需要登录外区 Apple ID。 配置 OpenVPN Connect客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。 配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.">
+<meta property="og:description" content="根据个人使用经验记录常用的 MySQL 命令作为备忘清单。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-06-07T09:04:23.000Z">
+<meta property="article:published_time" content="2020-09-04T07:39:05.000Z">
 <meta property="article:modified_time" content="2024-01-11T14:52:44.492Z">
 <meta property="article:author" content="Moralok">
-<meta property="article:tag" content="openvpn">
+<meta property="article:tag" content="mysql">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/">
+<link rel="canonical" href="https://www.moralok.com/2020/09/04/MySQL-frequently-used-commands/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/","path":"2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/","title":"在 iOS 和 macOS 上安装 OpenVPN 客户端"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2020/09/04/MySQL-frequently-used-commands/","path":"2020/09/04/MySQL-frequently-used-commands/","title":"MySQL 常用命令"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>在 iOS 和 macOS 上安装 OpenVPN 客户端 | Moralok</title>
+<title>MySQL 常用命令 | Moralok</title>
   
 
 
@@ -143,7 +143,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-OpenVPN-Connect"><span class="nav-number">1.</span> <span class="nav-text">安装 OpenVPN Connect</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-OpenVPN-Connect"><span class="nav-number">2.</span> <span class="nav-text">配置 OpenVPN Connect</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%B8%80-client-ovpn"><span class="nav-number">2.1.</span> <span class="nav-text">单一 client.ovpn</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#client-ovpn-client-opvn12"><span class="nav-number">2.2.</span> <span class="nav-text">client.ovpn + client.opvn12</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8-NAT"><span class="nav-number">3.</span> <span class="nav-text">路由器 NAT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL"><span class="nav-number">1.</span> <span class="nav-text">MySQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8"><span class="nav-number">3.</span> <span class="nav-text">表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5"><span class="nav-number">4.</span> <span class="nav-text">增删改查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1"><span class="nav-number">5.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7"><span class="nav-number">6.</span> <span class="nav-text">用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">7.</span> <span class="nav-text">变量</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -206,7 +206,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2020/09/04/MySQL-frequently-used-commands/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,12 +219,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="在 iOS 和 macOS 上安装 OpenVPN 客户端 | Moralok">
+      <meta itemprop="name" content="MySQL 常用命令 | Moralok">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          在 iOS 和 macOS 上安装 OpenVPN 客户端
+          MySQL 常用命令
         </h1>
 
         <div class="post-meta-container">
@@ -235,7 +235,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-06-07 17:04:23" itemprop="dateCreated datePublished" datetime="2023-06-07T17:04:23+08:00">2023-06-07</time>
+      <time title="创建时间：2020-09-04 15:39:05" itemprop="dateCreated datePublished" datetime="2020-09-04T15:39:05+08:00">2020-09-04</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -246,7 +246,7 @@
     </span>
 
   
-    <span id="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" class="post-meta-item leancloud_visitors" data-flag-title="在 iOS 和 macOS 上安装 OpenVPN 客户端" title="阅读次数">
+    <span id="/2020/09/04/MySQL-frequently-used-commands/" class="post-meta-item leancloud_visitors" data-flag-title="MySQL 常用命令" title="阅读次数">
       <span class="post-meta-item-icon">
         <i class="far fa-eye"></i>
       </span>
@@ -259,7 +259,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>645</span>
+      <span>549</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -277,25 +277,217 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h2 id="安装-OpenVPN-Connect"><a href="#安装-OpenVPN-Connect" class="headerlink" title="安装 OpenVPN Connect"></a>安装 OpenVPN Connect</h2><p>macOS 访问<a target="_blank" rel="noopener" href="https://openvpn.net/client-connect-vpn-for-mac-os/">官网下载</a>。<br>iOS 访问 <a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8">AppStore</a>，需要登录外区 Apple ID。</p>
-<h2 id="配置-OpenVPN-Connect"><a href="#配置-OpenVPN-Connect" class="headerlink" title="配置 OpenVPN Connect"></a>配置 OpenVPN Connect</h2><p>客户端提供了两种方式导入配置文件，一是通过 URL，建议 URL 仅限在私有网络内访问，二是通过其他方式例如邮件，下载为本地文件再导入。</p>
-<p>配置文件的组织方式又分为两种形式，一种是将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 的内容复制粘贴到 client.ovpn 中，形成一个联合配置文件；另一种是使用 openssl 将 CA 根证书 ca.crt，客户端证书 client.crt，客户端密钥 client.key 转换为 PKCS#12 文件，先后导入 client.ovpn12 和 client.ovpn。</p>
-<h3 id="单一-client-ovpn"><a href="#单一-client-ovpn" class="headerlink" title="单一 client.ovpn"></a>单一 client.ovpn</h3><p>从目录 <code>C：\Program Files\OpenVPN\sample-config</code> 复制客户端配置文件模板 client.ovpn，修改以下配置：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">remote your-server 1194</span><br><span class="line"></span><br><span class="line"><span class="comment">;ca ca.crt</span></span><br><span class="line"><span class="comment">;cert client.crt</span></span><br><span class="line"><span class="comment">;key client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;tls-auth ta.key 1</span></span><br><span class="line"></span><br><span class="line">&lt;ca&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of ca.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/ca&gt;</span><br><span class="line">&lt;cert&gt;</span><br><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">paste contents of client.crt</span><br><span class="line">-----END CERTIFICATE-----</span><br><span class="line">&lt;/cert&gt;</span><br><span class="line">&lt;key&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">paste contents of client.key</span><br><span class="line">-----END PRIVATE KEY-----</span><br><span class="line">&lt;/key&gt;</span><br></pre></td></tr></table></figure>
-<p>将 <code>remote your-server 1194</code> 中的地址和端口替换成你的 OpenVPN server 的地址和端口。将 <code>ca ca.crt</code>， <code>cert client.crt</code>， <code>key client.key</code>， <code>tls-auth ta.key 1</code> 注释掉，将各自文件中的内容以上述类 XML 的形式粘贴到 client.ovpn 中。</p>
-<p>将修改好的客户端配置文件导入到客户端中即可。</p>
-<h3 id="client-ovpn-client-opvn12"><a href="#client-ovpn-client-opvn12" class="headerlink" title="client.ovpn + client.opvn12"></a>client.ovpn + client.opvn12</h3><p>使用 openssl 命令将客户端的证书和私钥文件转换为 PKCS#12 形式的文件。该命令会提示 <code>Enter Export Password</code>，可以为空，但为了安全建议设置密码。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -in cert -inkey key -certfile ca -name MyClient -out client.ovpn12</span><br></pre></td></tr></table></figure>
-<p>由于在 iOS 中导入 PKCS#12 文件到 Keychain 中时只导入了客户端证书和密钥，CA 根证书并没有导入，client.ovpn 文件中必须要保留 CA 根证书的配置。<br>既可以用传统的引用文件的方式：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ca ca.crt</span><br></pre></td></tr></table></figure>
-<p>也可以用类 XML 的形式粘贴 ca.crt 内容到 client.ovpn 中：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;ca&gt;</span><br><span class="line">paste contents of ca.crt here</span><br><span class="line">&lt;/ca&gt;</span><br></pre></td></tr></table></figure>
-<p>先导入 client.ovpn12（需要输入转换时的密码），再导入 client.ovpn。</p>
+        <p>根据个人使用经验记录常用的 <code>MySQL</code> 命令作为备忘清单。</p>
+<span id="more"></span>
+
+<h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>mysql –h localhost –u root -P 3306 –p</code></td>
+<td>连接数据库</td>
+</tr>
+</tbody></table>
+<h2 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SHOW DATABASES;</code></td>
+<td>列出数据库</td>
+</tr>
+<tr>
+<td><code>CREATE DATABASE IF NOT EXISTS `db_name` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;</code></td>
+<td>创建数据库</td>
+</tr>
+<tr>
+<td><code>DROP DATABASE `db_name`;</code></td>
+<td>删除数据库</td>
+</tr>
+<tr>
+<td><code>SHOW CREATE DATABASE `db_name`;</code></td>
+<td>查看数据库的创建信息</td>
+</tr>
+<tr>
+<td><code>USE `db_name`;</code></td>
+<td>选择数据库</td>
+</tr>
+</tbody></table>
+<h2 id="表"><a href="#表" class="headerlink" title="表"></a>表</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SHOW TABLES;</code></td>
+<td>列出表</td>
+</tr>
+<tr>
+<td><code>CREATE TABLE `table_name` (</code> </br> <code>`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT &#39;主键 id&#39;,</code> </br> <code>`uid` varchar(20) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;uid&#39;,</code> </br> <code>`status` tinyint(1) NOT NULL DEFAULT &#39;1&#39; COMMENT &#39;状态: 0 无效 1 有效&#39;,</code> </br> <code>`gmt_create` bigint(13) unsigned NOT NULL COMMENT &#39;创建时间&#39;,</code> </br> <code>PRIMARY KEY (`id`),</code> </br> <code>UNIQUE KEY `unq_idx_uid` (`uid`)</code> </br> <code>) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC COMMENT=&#39;表的描述&#39;;</code></td>
+<td>创建表</td>
+</tr>
+<tr>
+<td><code>DROP TABLE `table_name`;</code></td>
+<td>删除表</td>
+</tr>
+<tr>
+<td><code>SHOW CREATE TABLE `table_name`;</code></td>
+<td>查看表的创建信息</td>
+</tr>
+<tr>
+<td><code>DESC `table_name`;</code></td>
+<td>查看表的字段</td>
+</tr>
+<tr>
+<td><code>ALTER TABLE `table_name` RENAME `new_table_name`;</code></td>
+<td>查看表的字段</td>
+</tr>
+<tr>
+<td><code>ALTER TABLE `table_name` MODIFY `field_name` field_type;</code></td>
+<td>修改字段类型</td>
+</tr>
+<tr>
+<td><code>ALTER TABLE `table_name` ADD `field_name` field_type AFTER `another_field_name`;</code></td>
+<td>添加字段</td>
+</tr>
+<tr>
+<td><code>ALTER TABLE `table_name` DROP `field_name`;</code></td>
+<td>删除字段</td>
+</tr>
+<tr>
+<td><code>ALTER TABLE `table_name` CHANGE `field_name` `new_field_name` new_field_type;</code></td>
+<td>修改字段名称</td>
+</tr>
+</tbody></table>
+<h2 id="增删改查"><a href="#增删改查" class="headerlink" title="增删改查"></a>增删改查</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>INSERT INTO `table_name` (field_name1, field_name2) VALUES (value1, value2);</code></td>
+<td>新增</td>
+</tr>
+<tr>
+<td><code>SELECT * FROM `table_name` WHERE `field_name` = value;</code></td>
+<td>查询</td>
+</tr>
+<tr>
+<td><code>UPDATE `table_name` SET `field_name1` = value1 WHERE `field_name2` = value2;</code></td>
+<td>更新</td>
+</tr>
+<tr>
+<td><code>DELETE FROM `table_name` WHERE `field_name` = value;</code></td>
+<td>删除</td>
+</tr>
+<tr>
+<td><code>TRUNCATE `table_name`;</code></td>
+<td>清空</td>
+</tr>
+</tbody></table>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BEGIN;</code> </br> <code>START TRANSACTION;</code></td>
+<td>开启事务</td>
+</tr>
+<tr>
+<td><code>START TRANSACTION WITH CONSISTENT SNAPSHOT;</code></td>
+<td>开启事务并立即创建 read-view</td>
+</tr>
+<tr>
+<td><code>ROLLBACK;</code></td>
+<td>回滚事务</td>
+</tr>
+<tr>
+<td><code>COMMIT;</code></td>
+<td>提交事务</td>
+</tr>
+<tr>
+<td><code>SELECT @@autocommit;</code></td>
+<td>查看 autocommit，默认 1</td>
+</tr>
+<tr>
+<td><code>SET @@autocommit = 0;</code></td>
+<td>设置为手动提交</td>
+</tr>
+<tr>
+<td><code> SHOW VARIABLES LIKE &#39;transaction_isolation&#39;;</code> </br> <code>SHOW VARIABLES LIKE &#39;tx_isolation&#39;;</code></td>
+<td>查看隔离级别</td>
+</tr>
+<tr>
+<td><code>SET transaction_isolation = &#39;READ-UNCOMMITTED&#39;|&#39;READ-COMMITTED&#39;|&#39;REPEATABLE-READ&#39;|&#39;SERIALIZABLE&#39;;</code> </br> <code>SET SESSION transaction isolation level READ UNCOMMITTED|READ COMMITTED|REPEATABLE-READ|SERIALIZABLE;</code></td>
+<td>设置隔离级别</td>
+</tr>
+</tbody></table>
+<h2 id="用户"><a href="#用户" class="headerlink" title="用户"></a>用户</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CREATE USER &#39;username&#39;@&#39;ip&#39; IDENTIFIED BY &#39;password&#39;;</code></td>
+<td>创建用户</td>
+</tr>
+<tr>
+<td><code>GRANT ALL ON db_name.* TO &#39;username&#39;@&#39;ip&#39;;</code></td>
+<td>授权</td>
+</tr>
+<tr>
+<td><code>FLUSH PRIVILEGES;</code></td>
+<td>刷新权限</td>
+</tr>
+<tr>
+<td><code>REVOKE ALL ON db_name.* FROM &#39;username&#39;@&#39;ip&#39;;</code></td>
+<td>取消授权</td>
+</tr>
+<tr>
+<td><code>DROP USER &#39;username&#39;@&#39;ip&#39;;</code></td>
+<td>删除用户</td>
+</tr>
+</tbody></table>
+<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><p>全局变量、会话变量、用户变量、局部变量。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SHOW [GLOBAL|SESSION] VARIABLES;</code></td>
+<td>查看全部变量</td>
+</tr>
+<tr>
+<td><code>SHOW [GLOBAL|SESSION] VARIABLES [LIKE 匹配的模式];</code> </br> <code>SELECT @@[GLOBAL|SESSION].variable_name</code></td>
+<td>查看单个变量</td>
+</tr>
+<tr>
+<td><code>SET [GLOBAL|SESSION] variable_name = value;</code> </br> <code>SET @@[GLOBAL|SESSION].variable_name = value</code></td>
+<td>设置单个变量</td>
+</tr>
+</tbody></table>
 <blockquote>
-<p>但是我失败了……导入 client.ovpn12 时密码一直错误，搜索到类似的案例，但是没有找到解决方案。不确定是不是 openssl 版本引起的。</p>
+<p><code>SESSION</code> 可以省略。</p>
 </blockquote>
-<h2 id="路由器-NAT"><a href="#路由器-NAT" class="headerlink" title="路由器 NAT"></a>路由器 NAT</h2><p>在路由器管理后台的 NAT 设置功能里，配置好对外端口号和 Windows 10 主机上 OpenVPN 端口号的映射关系。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://openvpn.net/vpn-server-resources/faq-regarding-openvpn-connect-ios/">iOS 使用 OpenVPN 的 FAQ</a><br><a target="_blank" rel="noopener" href="https://openvpn.net/faq/how-do-i-use-a-client-certificate-and-private-key-from-the-ios-keychain/">如何通过 iOS Keychain 使用客户端证书和密钥</a><br><a target="_blank" rel="noopener" href="https://help.endian.com/hc/en-us/articles/360008350974-How-to-configure-iOS-OpenVPN-client-with-certificate-authentication">如何配置 iOS OpenVPN 客户端的证书认证</a></p>
 
     </div>
 
@@ -305,20 +497,20 @@
 
     <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/openvpn/" rel="tag"># openvpn</a>
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" rel="prev" title="在 Windows 10 上安装 OpenVPN 服务器">
-                  <i class="fa fa-chevron-left"></i> 在 Windows 10 上安装 OpenVPN 服务器
+                <a href="/2020/08/19/docker-frequently-used-commands/" rel="prev" title="Docker 常用命令列表">
+                  <i class="fa fa-chevron-left"></i> Docker 常用命令列表
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2023/06/07/how-to-use-OpenVPN-to-access-home-network/" rel="next" title="使用 OpenVPN 访问家庭内网">
-                  使用 OpenVPN 访问家庭内网 <i class="fa fa-chevron-right"></i>
+                <a href="/2023/05/27/how-to-install-clash-on-ubuntu/" rel="next" title="在 Ubuntu 上安装 Clash">
+                  在 Ubuntu 上安装 Clash <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
