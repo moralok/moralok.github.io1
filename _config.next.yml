@@ -32,6 +32,13 @@ sidebar:
   # Sidebar offset from top menubar in pixels (only for Pisces | Gemini).
   offset: 12
 
+# Social Links
+# Usage: `Key: permalink || icon`
+# Key is the link label showing to end users.
+# Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
+social:
+  GitHub: https://github.com/moralok || fab fa-github
+
 # hexo-word-counter
 post_meta:
   item_text: true # 是否显示文字
@@ -53,9 +60,12 @@ leancloud_visitors:
   app_key: KKBQicvLunsmAfgH3DJJXvng
   security: false
 
-# Social Links
-# Usage: `Key: permalink || icon`
-# Key is the link label showing to end users.
-# Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
-social:
-  GitHub: https://github.com/moralok || fab fa-github
+# Google Analytics
+# See: https://analytics.google.com
+google_analytics:
+  tracking_id: G-2MBCXKHJL0
+  # By default, NexT will load an external gtag.js script on your site.
+  # If you only need the pageview feature, set the following option to true to get a better performance.
+  only_pageview: false
+  # only needed if you are using `only_pageview` mode, https://developers.google.com/analytics/devguides/collection/protocol/ga4
+  measure_protocol_api_secret:
