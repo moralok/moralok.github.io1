@@ -14,10 +14,10 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="印象里每次安装 ElK 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：Getting started with the Elastic Stack and Docker Compose: Part 1 通过 docker compose 安装 elasticsearch、kibana、metricbeat、filebeat 和 logstash，但是移除了 ssl">
 <meta property="og:type" content="article">
@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_05-59-47.png">
 <meta property="og:image" content="https://www.moralok.com/2023/12/14/install-ELK-using-Docker-Compose/Snipaste_2023-12-15_06-03-42.png">
 <meta property="article:published_time" content="2023-12-14T11:35:00.000Z">
-<meta property="article:modified_time" content="2024-01-11T14:52:44.520Z">
+<meta property="article:modified_time" content="2024-01-12T15:38:23.232Z">
 <meta property="article:author" content="Moralok">
 <meta property="article:tag" content="docker">
 <meta property="article:tag" content="elasticsearch">
@@ -51,6 +51,11 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>使用 Docker Compose 安装 ELK | Moralok</title>
   
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
 
 
 
@@ -66,8 +71,8 @@
   <div class="headband"></div>
 
   <main class="main">
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
         <span class="toggle-line"></span>
@@ -86,7 +91,7 @@
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
         <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
@@ -128,15 +133,9 @@
     </div>
   </div>
 
-</div>
+</header>
         
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-
   <aside class="sidebar">
 
     <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
@@ -157,15 +156,15 @@
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
   <p class="site-author-name" itemprop="name">Moralok</p>
   <div class="site-description" itemprop="description">假如生命只剩一天</div>
 </div>
-<div class="site-state-wrap site-overview-item animated">
+<div class="site-state-wrap animated">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -176,33 +175,21 @@
       </div>
   </nav>
 </div>
-  <div class="links-of-author site-overview-item animated">
+  <div class="links-of-author animated">
       <span class="links-of-author-item">
-        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
   </div>
-
-
 
         </div>
       </div>
     </div>
-  </aside>
-  <div class="sidebar-dimmer"></div>
-
-
-    </header>
 
     
-  <div class="back-to-top" role="button" aria-label="返回顶部">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+  </aside>
 
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
 
+    </div>
 
     <div class="main-inner post posts-expand">
 
@@ -251,7 +238,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-11 22:52:44" itemprop="dateModified" datetime="2024-01-11T22:52:44+08:00">2024-01-11</time>
+      <time title="修改时间：2024-01-12 23:38:23" itemprop="dateModified" datetime="2024-01-12T23:38:23+08:00">2024-01-12</time>
     </span>
 
   
@@ -285,8 +272,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-        <p>印象里每次安装 <code>ElK</code> 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：<a target="_blank" rel="noopener" href="https://www.elastic.co/cn/blog/getting-started-with-the-elastic-stack-and-docker-compose">Getting started with the Elastic Stack and Docker Compose: Part 1</a> 通过 <code>docker compose</code> 安装 <code>elasticsearch</code>、<code>kibana</code>、<code>metricbeat</code>、<code>filebeat</code> 和 <code>logstash</code>，但是移除了 <code>ssl</code> 相关的配置。你可以直接按照原文档进行安装，但是对照本文可以帮助你更快速地移除不需要的配置以及绕开可能踩到的坑。<br>此安装方式尽量<strong>使用环境变量代替编写配置文件</strong>，便于在备份和分享时将敏感信息留存在本地。本次安装时间为 <code>2023-12-14</code>，使用官方镜像，版本为 <code>8.11.2</code>。</p>
+    <div class="post-body" itemprop="articleBody"><p>印象里每次安装 <code>ElK</code> 组件的体验都不是很好，或多或少都遇到过奇奇怪怪的问题。本文几乎完全按照官方文档：<a target="_blank" rel="noopener" href="https://www.elastic.co/cn/blog/getting-started-with-the-elastic-stack-and-docker-compose">Getting started with the Elastic Stack and Docker Compose: Part 1</a> 通过 <code>docker compose</code> 安装 <code>elasticsearch</code>、<code>kibana</code>、<code>metricbeat</code>、<code>filebeat</code> 和 <code>logstash</code>，但是移除了 <code>ssl</code> 相关的配置。你可以直接按照原文档进行安装，但是对照本文可以帮助你更快速地移除不需要的配置以及绕开可能踩到的坑。<br>此安装方式尽量<strong>使用环境变量代替编写配置文件</strong>，便于在备份和分享时将敏感信息留存在本地。本次安装时间为 <code>2023-12-14</code>，使用官方镜像，版本为 <code>8.11.2</code>。</p>
 <span id="more"></span>
 
 <blockquote>
@@ -431,12 +417,12 @@
           <div class="post-nav">
             <div class="post-nav-item">
                 <a href="/2023/12/13/how-to-grant-when-MySQL-started-with-skip-name-resolve-mode/" rel="prev" title="当 MySQL 以 skip-name-resolve 模式启动时如何使用 grant 命令">
-                  <i class="fa fa-chevron-left"></i> 当 MySQL 以 skip-name-resolve 模式启动时如何使用 grant 命令
+                  <i class="fa fa-angle-left"></i> 当 MySQL 以 skip-name-resolve 模式启动时如何使用 grant 命令
                 </a>
             </div>
             <div class="post-nav-item">
                 <a href="/2023/12/19/analysis-and-verification-of-the-synchronized-lock-mechanism/" rel="next" title="synchronized 锁机制的分析和验证">
-                  synchronized 锁机制的分析和验证 <i class="fa fa-chevron-right"></i>
+                  synchronized 锁机制的分析和验证 <i class="fa fa-angle-right"></i>
                 </a>
             </div>
           </div>
@@ -455,27 +441,26 @@
   <footer class="footer">
     <div class="footer-inner">
 
-
-<div class="copyright">
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Moralok</span>
-</div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
 <div class="wordcount">
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">112k</span>
+    <span title="站点总字数">117k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:15</span>
+    <span title="站点阅读时长">6:30</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
@@ -485,12 +470,24 @@
   </footer>
 
   
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
-  
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
+
+
 
 
 

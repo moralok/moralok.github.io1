@@ -14,10 +14,10 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="@PropertySource 注解提供了一种方便的声明性机制，用于将 PropertySource 添加到 Spring 容器的 Environment 环境中。该注解通常搭配 @Configuration 注解一起使用。本文将介绍如何使用 @PropertySource 注解，并通过分析源码解释外部配置文件是如何被解析进入 Spring 的 Environment 中。">
 <meta property="og:type" content="article">
@@ -29,7 +29,7 @@
 <meta property="og:image" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_21-12-20.png">
 <meta property="og:image" content="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/Snipaste_2023-12-07_22-49-22.png">
 <meta property="article:published_time" content="2023-12-07T03:55:49.000Z">
-<meta property="article:modified_time" content="2024-01-11T14:52:44.520Z">
+<meta property="article:modified_time" content="2024-01-12T15:38:23.232Z">
 <meta property="article:author" content="Moralok">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="spring">
@@ -46,6 +46,11 @@
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Spring 中 @PropertySource 注解的使用和源码分析 | Moralok</title>
   
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
 
 
 
@@ -61,8 +66,8 @@
   <div class="headband"></div>
 
   <main class="main">
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
         <span class="toggle-line"></span>
@@ -81,7 +86,7 @@
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
         <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
@@ -123,15 +128,9 @@
     </div>
   </div>
 
-</div>
+</header>
         
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-
   <aside class="sidebar">
 
     <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
@@ -152,15 +151,15 @@
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
   <p class="site-author-name" itemprop="name">Moralok</p>
   <div class="site-description" itemprop="description">假如生命只剩一天</div>
 </div>
-<div class="site-state-wrap site-overview-item animated">
+<div class="site-state-wrap animated">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -171,33 +170,21 @@
       </div>
   </nav>
 </div>
-  <div class="links-of-author site-overview-item animated">
+  <div class="links-of-author animated">
       <span class="links-of-author-item">
-        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
   </div>
-
-
 
         </div>
       </div>
     </div>
-  </aside>
-  <div class="sidebar-dimmer"></div>
-
-
-    </header>
 
     
-  <div class="back-to-top" role="button" aria-label="返回顶部">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+  </aside>
 
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
 
+    </div>
 
     <div class="main-inner post posts-expand">
 
@@ -246,7 +233,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-11 22:52:44" itemprop="dateModified" datetime="2024-01-11T22:52:44+08:00">2024-01-11</time>
+      <time title="修改时间：2024-01-12 23:38:23" itemprop="dateModified" datetime="2024-01-12T23:38:23+08:00">2024-01-12</time>
     </span>
 
   
@@ -280,8 +267,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-        <p><code>@PropertySource</code> 注解提供了一种方便的声明性机制，用于将 <code>PropertySource</code> 添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。该注解通常搭配 <code>@Configuration</code> 注解一起使用。本文将介绍如何使用 <code>@PropertySource</code> 注解，并通过分析源码解释外部配置文件是如何被解析进入 <code>Spring</code> 的 <code>Environment</code> 中。</p>
+    <div class="post-body" itemprop="articleBody"><p><code>@PropertySource</code> 注解提供了一种方便的声明性机制，用于将 <code>PropertySource</code> 添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。该注解通常搭配 <code>@Configuration</code> 注解一起使用。本文将介绍如何使用 <code>@PropertySource</code> 注解，并通过分析源码解释外部配置文件是如何被解析进入 <code>Spring</code> 的 <code>Environment</code> 中。</p>
 <span id="more"></span>
 
 <h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p><code>@Configuration</code> 注解表示这是一个配置类，<code>Spring</code> 在处理配置类时，会解析并处理配置类上的 <code>@PropertySource</code> 注解，将对应的配置文件解析为 <code>PropertySource</code>，添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。这样就可以在其他的 <code>Bean</code> 中，使用 <code>@Value</code> 注解使用这些配置</p>
@@ -359,12 +345,12 @@
           <div class="post-nav">
             <div class="post-nav-item">
                 <a href="/2023/12/06/how-does-Spring-Boot-SPI-works/" rel="prev" title="Spring Boot SPI 的工作原理">
-                  <i class="fa fa-chevron-left"></i> Spring Boot SPI 的工作原理
+                  <i class="fa fa-angle-left"></i> Spring Boot SPI 的工作原理
                 </a>
             </div>
             <div class="post-nav-item">
                 <a href="/2023/12/08/source-code-analysis-of-AutowiredAnnotationBeanPostProcessor-in-Spring/" rel="next" title="Spring AutowiredAnnotationBeanPostProcessor 的源码分析">
-                  Spring AutowiredAnnotationBeanPostProcessor 的源码分析 <i class="fa fa-chevron-right"></i>
+                  Spring AutowiredAnnotationBeanPostProcessor 的源码分析 <i class="fa fa-angle-right"></i>
                 </a>
             </div>
           </div>
@@ -383,27 +369,26 @@
   <footer class="footer">
     <div class="footer-inner">
 
-
-<div class="copyright">
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Moralok</span>
-</div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
 <div class="wordcount">
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">112k</span>
+    <span title="站点总字数">117k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:15</span>
+    <span title="站点阅读时长">6:30</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
@@ -413,12 +398,24 @@
   </footer>
 
   
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
-  
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
+
+
 
 
 
