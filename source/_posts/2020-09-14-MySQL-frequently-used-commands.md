@@ -55,13 +55,15 @@ tags: [mysql]
 |命令|描述|
 |--|--|
 |` BEGIN; ` </br> ` START TRANSACTION; `|开启事务|
-|` START TRANSACTION WITH CONSISTENT SNAPSHOT; `|开启事务并立即创建 read-view|
+|` START TRANSACTION WITH CONSISTENT SNAPSHOT; `|开启事务并立即创建 read view|
 |` ROLLBACK; `|回滚事务|
 |` COMMIT; `|提交事务|
+|` COMMIT WORK AND CHAIN; `|提交事务并开启下一个事务（减少一次命令交互）|
 |` SELECT @@autocommit; `|查看 autocommit，默认 1|
 |` SET @@autocommit = 0; `|设置为手动提交|
 |` SHOW VARIABLES LIKE 'transaction_isolation';` </br> ` SHOW VARIABLES LIKE 'tx_isolation'; `|查看隔离级别|
 |` SET transaction_isolation = 'READ-UNCOMMITTED'\|'READ-COMMITTED'\|'REPEATABLE-READ'\|'SERIALIZABLE'; ` </br> ` SET SESSION transaction isolation level READ UNCOMMITTED\|READ COMMITTED\|REPEATABLE-READ\|SERIALIZABLE; `|设置隔离级别|
+|` SELECT * FROM information_schema.innodb_trx WHERE TIME_TO_SEC(timediff(now(), trx_started)) > 60; `|查找持续 60s 以上的事务|
 
 ## 用户
 

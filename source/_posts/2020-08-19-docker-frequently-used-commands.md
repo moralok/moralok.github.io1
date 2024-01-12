@@ -1,8 +1,7 @@
 ---
-title: Docker 常用命令列表
+title: Docker 常用命令
 date: 2020-08-19 22:33:24
-tags:
-    - docker
+tags: [docker]
 ---
 
 根据个人使用经验从 `Docker` 官方命令行参考中选取常用的命令作为备忘清单。
