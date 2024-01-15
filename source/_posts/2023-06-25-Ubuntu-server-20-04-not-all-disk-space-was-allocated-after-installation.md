@@ -1,14 +1,18 @@
 ---
 title: Ubuntu server 20.04 安装后没有分配全部磁盘空间
 date: 2023-06-25 00:04:43
-tags:
-    - ubuntu
+tags: [linux, ubuntu]
 ---
 
-最近在本地测试 Kubesphere 和 Minikube，使用 Ubuntu server 20.04 搭建了多个虚拟机，磁盘空间紧张。注意到安装后，磁盘空间仅占据分配的一半左右。
-如果 Ubuntu server 20.04 安装时使用默认的 lvm 选项，就会出现这种情况。
+使用 `VMware` 安装 `Ubuntu server 20.04`，注意到实际文件系统的总空间大小仅占设置的虚拟磁盘空间大小的一半左右。本文介绍了如何解决该问题。
 
-分配了 40GB 磁盘空间，可用仅 19GB。
+<!-- more -->
+
+> 最近在本地测试 `Kubesphere` 和 `Minikube`，使用 `Ubuntu server 20.04` 搭建了多个虚拟机，磁盘空间紧张。注意到在安装后，实际文件系统的总空间大小仅占设置的虚拟磁盘空间大小的一半左右。如果 `Ubuntu server 20.04` 安装时使用默认的 `LVM` 选项，就会出现这种情况。
+
+## 解决步骤
+
+1. 使用 `df -h` 命令显示文件系统的总空间和可用空间信息。分配了 `40G` 磁盘空间，可用仅 `19G`。
 ```shell
 $ df -h
 Filesystem                         Size  Used Avail Use% Mounted on
@@ -25,8 +29,7 @@ tmpfs                              3.9G     0  3.9G   0% /sys/fs/cgroup
 tmpfs                              792M     0  792M   0% /run/user/1000
 /dev/loop3                          54M   54M     0 100% /snap/snapd/19457
 ```
-
-查看发现 Free  PE / Size 还有 19GB。
+2. 使用 `sudo vgdisplay` 命令查看发现 `Free  PE / Size` 还有 `19G`。
 ```shell
 $ sudo vgdisplay
   --- Volume group ---
@@ -50,21 +53,21 @@ $ sudo vgdisplay
   Free  PE / Size       4864 / 19.00 GiB
   VG UUID               NuEjzH-CKXm-W6lA-gqzj-4bds-IR1Y-dTZ8IP
   ```
-
-重新分配空间。
+3. 使用 `sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv` 调整逻辑卷的大小。
 ```shell
 $ sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
 Size of logical volume ubuntu-vg/ubuntu-lv changed from <19.00 GiB (4863 extents) to <38.00 GiB (9727 extents).
 Logical volume ubuntu-vg/ubuntu-lv successfully resized.
-
+```
+4. 使用 `sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv` 调整文件系统的大小。
+```shell
 $ sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
 resize2fs 1.45.5 (07-Jan-2020)
 Filesystem at /dev/mapper/ubuntu--vg-ubuntu--lv is mounted on /; on-line resizing required
 old_desc_blocks = 3, new_desc_blocks = 5
 The filesystem on /dev/mapper/ubuntu--vg-ubuntu--lv is now 9960448 (4k) blocks long.
 ```
-
-再次查看。
+5. 使用 `df -h` 命令再次查看，确认文件系统的总空间大小调整为 `38G`。
 ```shell
 df -h
 Filesystem                         Size  Used Avail Use% Mounted on
