@@ -12,7 +12,7 @@ tags: [mysql]
 
 |命令|描述|
 |--|--|
-|` mysql –h localhost –u root -P 3306 –p `|连接数据库|
+|` mysql -h localhost -u root -P 3306 -p `|连接数据库|
 
 ## 数据库
 
