@@ -8,7 +8,9 @@ tags: [linux]
 
 <!-- more -->
 
-## 获取帮助信息
+## 帮助
+
+> 个人感觉以下获取帮助信息的方式重要的地方之一在于可以查阅得到第一手的权威注释，对于难以记忆或者不了解的命令参数，帮助信息往往也并非简单明了到可以临时快速阅读，不如直接在网络上搜索再加以记录。推荐参阅 [Linux 命令大全|菜鸟教程](https://www.runoob.com/linux/linux-command-manual.html)。
 
 |命令|描述|
 |--|--|
@@ -19,63 +21,67 @@ tags: [linux]
 
 |命令|描述|
 |--|--|
-|`ls` </br> `ls -al`|列出文件信息|
-|`cd`|切换工作目录|
-|`pwd`|显示当前工作目录|
+|`ls` </br> `ls -al`（`ll`）|list，列出文件信息|
+|`cd`|change directory，切换工作目录|
+|`pwd`|print working directory，显示当前工作目录|
 |`touch`|更新访问和修改时间为当前时间，常用于创建空文件|
 |`cat`|查看文件|
 |`more`|查看文件，可翻页|
 |`less`|查看文件，可翻页|
 |`tail`|查看文件，末尾，可实时|
 |`mkdir`|创建目录|
-|`cp`|复制文件|
-|`mv`|重命名或移动文件|
-|`rm`|删除文件|
+|`cp`|copy，复制文件|
+|`mv`|move，重命名或移动文件|
+|`rm`|remove，删除文件|
 |`find`|查找文件|
 |`vim`|编辑文件|
 |`nano`|编辑文件|
-|`tar`|归档|
 
 ## 文件权限
 
-|命令|描述|
-|--|--|
-|`chgrp [-R] groupname /tmp/test`|修改文件所属用户组|
-|`chown [-R] username /tmp/test`|修改文件拥有者|
-|`chmod [-R] xyz /tmp/test` </br> `chmod 644 /tmp/test` </br> `chmod u=rwx,go=rx /tmp/test`  </br> `chmod a-x /tmp/test`|修改文件的权限|
+> `r`、`w`、`x` 分别代表读（`read`）、写（`write`）、执行（`execute`）权限，分别对应值 `4`、`2`、`1`。
+`u`、`g`、`o` 分别代表拥有者（`owner`）、所属群组（`group`）、其他人（`other`），`a` 代表全部。
+`+`、`-` 分别代表新增和删除权限。
 
 |命令|描述|
 |--|--|
-|`su -`|切换 root 用户|
+|`chown [-R] username /tmp/testfile`|change owner，修改文件的拥有者|
+|`chgrp [-R] groupname /tmp/testfile`|change group，修改文件的所属群组|
+|`chmod [-R] 644 /tmp/testfile` </br> `chmod [-R] u=rwx,go=rx /tmp/testfile`  </br> `chmod [-R] a-x /tmp/testfile`|change mode，修改文件的权限模式|
+
+## 用户
+
+|命令|描述|
+|--|--|
+|`su username` </br> `su -`（切换root）|switch user，切换用户|
+|`adduser username`（交互式，便捷） </br> `useradd username`|新增用户|
+|`passwd username`|修改密码|
+|`cat /etc/passwd`|查看UID和账号的对应关系|
+|`cat /etc/group`|查看GID和账号的对应关系|
+|`cat /etc/shadow`|查看账号和密码的对应关系|
 
 ## 排查问题
 
 |命令|描述|
 |--|--|
-|`ifconfig`|显示网络设备情况|
-|`who`|查看目前在线用户|
-|`netstat -a`|查看网络的联机状态|
-|`netstat -tunlp \| grep 端口号`|查看网络的联机状态|
-|`ps -ef`|列出当前所有进程|
-|`ps -aux`|列出进程|
-|`du -h /opt/test`|查看目录使用情况|
-|`df -h`|查看磁盘空间使用情况|
-|`top`|显示系统当前进程信息|
-|`kill -s 9 27810`|杀死进程|
-|`last`|查看登录记录|
+|`top`|显示系统的整体性能信息以及正在运行的进程的相关信息|
+|`ps -ef` </br> `ps -aux`|process status，显示当前进程的状态|
+|`kill -s 9 pid`|删除执行中的程序或工作|
+|`ifconfig`|显示网络设备信息|
+|`netstat -a` </br> `netstat -tunlp \| grep port`|查看网络的联机状态|
+|`du -h /tmp`|disk usage，显示目录或文件的大小|
+|`df -h`|disk free，显示文件系统磁盘空间使用情况|
+|`who`|显示当前在线用户|
+|`last`|显示用户最近登录信息|
 
 ## 数据流重定向
 
-- 标准输入（stdin）：代码为 0，使用 < 或 <<
-- 标准输出（stdout）：代码为 1，使用 > 或 >>
-- 标准错误输出（stderr）：代码为 2，使用 2> 或 2>>
-
-- `>` 覆盖写
-- `>>` 追加写
+> 标准输入（`stdin`）：代码为 `0`，使用 `<` 或 `<<`；标准输出（`stdout`）：代码为 `1`，使用 `>` 或 `>>`；标准错误输出（`stderr`）：代码为 `2`，使用 `2>` 或 `2>>`。
+`>` 覆盖写；`>>` 追加写。
 
 |命令|描述|
 |--|--|
-|`ll / > ~/rootfile`||
+|`ll / > /tmp/rootfile`||
 
 ## 管道命令
 
@@ -93,17 +99,6 @@ tags: [linux]
 |`tee [-a] file`||
 |`split [--bl] file PREFIX`||
 
-
-## 其他
-
-|命令|描述|
-|--|--|
-|`echo ${PATH}`|显示文本、变量|
-|`date`|显示日期和时间|
-|`cal [month] [year]`|显示日历|
-|`locale`|显示支持的语系|
-|`bc`|简单计算器，scale=小数位数|
-
 ## 关机或重启
 
 |命令|描述|
@@ -115,11 +110,27 @@ tags: [linux]
 |`shutdown -r now`|立即重启|
 |`reboot`|重新启动|
 
+## 其他
+
+|命令|描述|
+|--|--|
+|`echo ${PATH}`|显示文本、变量|
+|`date`|显示日期和时间|
+|`cal [month] [year]`|显示日历|
+|`locale`|显示支持的语系|
+|`bc`|简单计算器，scale=小数位数|
+|`tar` </br> `tar -zcvf test.tar.gz ./test`（压缩） </br> `tar -zxvf test.tar.gz`（解压）|归档|
+
 ## 快捷键
 
 |命令|描述|
 |--|--|
 |`[Tab]`|命令补全；文件补全；选项参数补全|
+|`[Ctrl]-a`|移动光标到开头|
+|`[Ctrl]-e`|移动光标到结尾|
 |`[Ctrl]-c`|终止|
-|`[Ctrl]-d`|键盘输入结束|
-|`[Shift]-{[Page Up]\|[Page Down]}`|翻页|
+|`[Ctrl]-d`|退出当前窗口|
+|`[Ctrl]-l`|清屏|
+|`[Ctrl]-u`|剪切、删除光标之前的内容|
+|`[Ctrl]-k`|剪切、删除光标之后的内容|
+|`[Ctrl]-r`|查找最近使用的指令|
