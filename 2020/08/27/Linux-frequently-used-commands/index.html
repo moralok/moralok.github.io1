@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="根据个人使用经验记录常用的 Linux 命令作为备忘清单。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 常用命令和快捷键">
+<meta property="og:url" content="https://www.moralok.com/2020/08/27/Linux-frequently-used-commands/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="根据个人使用经验记录常用的 Linux 命令作为备忘清单。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-27T04:35:32.000Z">
+<meta property="article:modified_time" content="2024-01-17T11:10:41.663Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="linux">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2020/08/27/Linux-frequently-used-commands/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2020/08/27/Linux-frequently-used-commands/","path":"2020/08/27/Linux-frequently-used-commands/","title":"Linux 常用命令和快捷键"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux 常用命令和快捷键 | Moralok</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%AE%E5%8A%A9"><span class="nav-number">1.</span> <span class="nav-text">帮助</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%9B%B8%E5%85%B3"><span class="nav-number">2.</span> <span class="nav-text">文件相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90"><span class="nav-number">3.</span> <span class="nav-text">文件权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7"><span class="nav-number">4.</span> <span class="nav-text">用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">排查问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81%E9%87%8D%E5%AE%9A%E5%90%91"><span class="nav-number">6.</span> <span class="nav-text">数据流重定向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%A1%E9%81%93%E5%91%BD%E4%BB%A4"><span class="nav-number">7.</span> <span class="nav-text">管道命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E6%9C%BA%E6%88%96%E9%87%8D%E5%90%AF"><span class="nav-number">8.</span> <span class="nav-text">关机或重启</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">9.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="nav-number">10.</span> <span class="nav-text">快捷键</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2020/08/27/Linux-frequently-used-commands/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux 常用命令和快捷键 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 常用命令和快捷键
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-08-27 12:35:32" itemprop="dateCreated datePublished" datetime="2020-08-27T12:35:32+08:00">2020-08-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-01-17 19:10:41" itemprop="dateModified" datetime="2024-01-17T19:10:41+08:00">2024-01-17</time>
+    </span>
+
+  
+    <span id="/2020/08/27/Linux-frequently-used-commands/" class="post-meta-item leancloud_visitors" data-flag-title="Linux 常用命令和快捷键" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>976</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>根据个人使用经验记录常用的 <code>Linux</code> 命令作为备忘清单。</p>
+<span id="more"></span>
+
+<h2 id="帮助"><a href="#帮助" class="headerlink" title="帮助"></a>帮助</h2><blockquote>
+<p>个人感觉以下获取帮助信息的方式重要的地方之一在于可以查阅得到第一手的权威注释，对于难以记忆或者不了解的命令参数，帮助信息往往也并非简单明了到可以临时快速阅读，不如直接在网络上搜索再加以记录。推荐参阅 <a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-command-manual.html">Linux 命令大全|菜鸟教程</a>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>man command</code></td>
+<td>显示命令的操作说明</td>
+</tr>
+<tr>
+<td><code>command --help</code></td>
+<td>显示命令的帮助信息</td>
+</tr>
+</tbody></table>
+<h2 id="文件相关"><a href="#文件相关" class="headerlink" title="文件相关"></a>文件相关</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ls</code> </br> <code>ls -al</code>（<code>ll</code>）</td>
+<td>list，列出文件信息</td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td>change directory，切换工作目录</td>
+</tr>
+<tr>
+<td><code>pwd</code></td>
+<td>print working directory，显示当前工作目录</td>
+</tr>
+<tr>
+<td><code>touch</code></td>
+<td>更新访问和修改时间为当前时间，常用于创建空文件</td>
+</tr>
+<tr>
+<td><code>cat</code></td>
+<td>查看文件</td>
+</tr>
+<tr>
+<td><code>more</code></td>
+<td>查看文件，可翻页</td>
+</tr>
+<tr>
+<td><code>less</code></td>
+<td>查看文件，可翻页</td>
+</tr>
+<tr>
+<td><code>tail</code></td>
+<td>查看文件，末尾，可实时</td>
+</tr>
+<tr>
+<td><code>mkdir</code></td>
+<td>创建目录</td>
+</tr>
+<tr>
+<td><code>cp</code></td>
+<td>copy，复制文件</td>
+</tr>
+<tr>
+<td><code>mv</code></td>
+<td>move，重命名或移动文件</td>
+</tr>
+<tr>
+<td><code>rm</code></td>
+<td>remove，删除文件</td>
+</tr>
+<tr>
+<td><code>find</code></td>
+<td>查找文件</td>
+</tr>
+<tr>
+<td><code>vim</code></td>
+<td>编辑文件</td>
+</tr>
+<tr>
+<td><code>nano</code></td>
+<td>编辑文件</td>
+</tr>
+</tbody></table>
+<h2 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h2><blockquote>
+<p><code>r</code>、<code>w</code>、<code>x</code> 分别代表读（<code>read</code>）、写（<code>write</code>）、执行（<code>execute</code>）权限，分别对应值 <code>4</code>、<code>2</code>、<code>1</code>。<br><code>u</code>、<code>g</code>、<code>o</code> 分别代表拥有者（<code>owner</code>）、所属群组（<code>group</code>）、其他人（<code>other</code>），<code>a</code> 代表全部。<br><code>+</code>、<code>-</code> 分别代表新增和删除权限。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chown [-R] username /tmp/testfile</code></td>
+<td>change owner，修改文件的拥有者</td>
+</tr>
+<tr>
+<td><code>chgrp [-R] groupname /tmp/testfile</code></td>
+<td>change group，修改文件的所属群组</td>
+</tr>
+<tr>
+<td><code>chmod [-R] 644 /tmp/testfile</code> </br> <code>chmod [-R] u=rwx,go=rx /tmp/testfile</code>  </br> <code>chmod [-R] a-x /tmp/testfile</code></td>
+<td>change mode，修改文件的权限模式</td>
+</tr>
+</tbody></table>
+<h2 id="用户"><a href="#用户" class="headerlink" title="用户"></a>用户</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>su username</code> </br> <code>su -</code>（切换root）</td>
+<td>switch user，切换用户</td>
+</tr>
+<tr>
+<td><code>adduser username</code>（交互式，便捷） </br> <code>useradd username</code></td>
+<td>新增用户</td>
+</tr>
+<tr>
+<td><code>passwd username</code></td>
+<td>修改密码</td>
+</tr>
+<tr>
+<td><code>cat /etc/passwd</code></td>
+<td>查看UID和账号的对应关系</td>
+</tr>
+<tr>
+<td><code>cat /etc/group</code></td>
+<td>查看GID和账号的对应关系</td>
+</tr>
+<tr>
+<td><code>cat /etc/shadow</code></td>
+<td>查看账号和密码的对应关系</td>
+</tr>
+</tbody></table>
+<h2 id="排查问题"><a href="#排查问题" class="headerlink" title="排查问题"></a>排查问题</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>top</code></td>
+<td>显示系统的整体性能信息以及正在运行的进程的相关信息</td>
+</tr>
+<tr>
+<td><code>ps -ef</code> </br> <code>ps -aux</code></td>
+<td>process status，显示当前进程的状态</td>
+</tr>
+<tr>
+<td><code>kill -s 9 pid</code></td>
+<td>删除执行中的程序或工作</td>
+</tr>
+<tr>
+<td><code>ifconfig</code></td>
+<td>显示网络设备信息</td>
+</tr>
+<tr>
+<td><code>netstat -a</code> </br> <code>netstat -tunlp | grep port</code></td>
+<td>查看网络的联机状态</td>
+</tr>
+<tr>
+<td><code>du -h /tmp</code></td>
+<td>disk usage，显示目录或文件的大小</td>
+</tr>
+<tr>
+<td><code>df -h</code></td>
+<td>disk free，显示文件系统磁盘空间使用情况</td>
+</tr>
+<tr>
+<td><code>who</code></td>
+<td>显示当前在线用户</td>
+</tr>
+<tr>
+<td><code>last</code></td>
+<td>显示用户最近登录信息</td>
+</tr>
+</tbody></table>
+<h2 id="数据流重定向"><a href="#数据流重定向" class="headerlink" title="数据流重定向"></a>数据流重定向</h2><blockquote>
+<p>标准输入（<code>stdin</code>）：代码为 <code>0</code>，使用 <code>&lt;</code> 或 <code>&lt;&lt;</code>；标准输出（<code>stdout</code>）：代码为 <code>1</code>，使用 <code>&gt;</code> 或 <code>&gt;&gt;</code>；标准错误输出（<code>stderr</code>）：代码为 <code>2</code>，使用 <code>2&gt;</code> 或 <code>2&gt;&gt;</code>。<br><code>&gt;</code> 覆盖写；<code>&gt;&gt;</code> 追加写。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ll / &gt; /tmp/rootfile</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="管道命令"><a href="#管道命令" class="headerlink" title="管道命令"></a>管道命令</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ls -al /etc | less</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>echo $&#123;PATH&#125; | cut -d &#39;:&#39; -f 5</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>export | cut  -c 12-</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>last | cut -d &#39; &#39; -f 1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>grep [-acinv] [--color=auto] &#39;查找字符&#39; filename</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ps-ef | grep java</code></td>
+<td>列出当前所有进程</td>
+</tr>
+<tr>
+<td><code>sort [-fbMnrtuk] filename</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>uniq [-ic]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>wc [-lwm]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>tee [-a] file</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>split [--bl] file PREFIX</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="关机或重启"><a href="#关机或重启" class="headerlink" title="关机或重启"></a>关机或重启</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sync</code></td>
+<td>将数据同步写入硬盘</td>
+</tr>
+<tr>
+<td><code>shutdown</code></td>
+<td>关机</td>
+</tr>
+<tr>
+<td><code>shutdown -h now</code></td>
+<td>立刻关机</td>
+</tr>
+<tr>
+<td><code>shutdown -r -t 60</code></td>
+<td>60秒后重启</td>
+</tr>
+<tr>
+<td><code>shutdown -r now</code></td>
+<td>立即重启</td>
+</tr>
+<tr>
+<td><code>reboot</code></td>
+<td>重新启动</td>
+</tr>
+</tbody></table>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>echo $&#123;PATH&#125;</code></td>
+<td>显示文本、变量</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>显示日期和时间</td>
+</tr>
+<tr>
+<td><code>cal [month] [year]</code></td>
+<td>显示日历</td>
+</tr>
+<tr>
+<td><code>locale</code></td>
+<td>显示支持的语系</td>
+</tr>
+<tr>
+<td><code>bc</code></td>
+<td>简单计算器，scale&#x3D;小数位数</td>
+</tr>
+<tr>
+<td><code>tar</code> </br> <code>tar -zcvf test.tar.gz ./test</code>（压缩） </br> <code>tar -zxvf test.tar.gz</code>（解压）</td>
+<td>归档</td>
+</tr>
+</tbody></table>
+<h2 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[Tab]</code></td>
+<td>命令补全；文件补全；选项参数补全</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-a</code></td>
+<td>移动光标到开头</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-e</code></td>
+<td>移动光标到结尾</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-c</code></td>
+<td>终止</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-d</code></td>
+<td>退出当前窗口</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-l</code></td>
+<td>清屏</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-u</code></td>
+<td>剪切、删除光标之前的内容</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-k</code></td>
+<td>剪切、删除光标之后的内容</td>
+</tr>
+<tr>
+<td><code>[Ctrl]-r</code></td>
+<td>查找最近使用的指令</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/19/docker-frequently-used-commands/" rel="prev" title="Docker 常用命令">
+                  <i class="fa fa-angle-left"></i> Docker 常用命令
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/09/04/MySQL-frequently-used-commands/" rel="next" title="MySQL 常用命令">
+                  MySQL 常用命令 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">120k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:39</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

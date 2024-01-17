@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.0.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="GParted 是一款适用于 Linux 的图形化磁盘分区管理工具，通过它可以便捷地为 VMware 中的 Ubuntu Desktop 增大磁盘空间。然而你可能正在使用 Ubuntu Server，并不想要安装或并不被允许安装图形化界面，本文介绍了如何在不使用 GParted 的情况下，通过命令行使用自带的工具为 VMware 中的 Ubuntu Server 增大磁盘空间。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间">
+<meta property="og:url" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="GParted 是一款适用于 Linux 的图形化磁盘分区管理工具，通过它可以便捷地为 VMware 中的 Ubuntu Desktop 增大磁盘空间。然而你可能正在使用 Ubuntu Server，并不想要安装或并不被允许安装图形化界面，本文介绍了如何在不使用 GParted 的情况下，通过命令行使用自带的工具为 VMware 中的 Ubuntu Server 增大磁盘空间。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_20-43-56.png">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_22-58-12.png">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-02-55.png">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-03-52.png">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-04-23.png">
+<meta property="og:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-05-05.png">
+<meta property="article:published_time" content="2024-01-14T07:49:47.000Z">
+<meta property="article:modified_time" content="2024-01-17T11:10:41.699Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="ubuntu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_20-43-56.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/","path":"2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/","title":"不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间 | Moralok</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">背景介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.</span> <span class="nav-text">解决步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.1.</span> <span class="nav-text">调整虚拟磁盘大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E5%88%86%E5%8C%BA%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.2.</span> <span class="nav-text">调整分区大小</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E5%8C%BA%E7%AE%A1%E7%90%86"><span class="nav-number">2.2.1.</span> <span class="nav-text">分区管理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E7%89%A9%E7%90%86%E5%8D%B7%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.2.2.</span> <span class="nav-text">调整物理卷大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E9%80%BB%E8%BE%91%E5%8D%B7%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.2.3.</span> <span class="nav-text">调整逻辑卷大小</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.3.</span> <span class="nav-text">调整文件系统大小</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-14 15:49:47" itemprop="dateCreated datePublished" datetime="2024-01-14T15:49:47+08:00">2024-01-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-01-17 19:10:41" itemprop="dateModified" datetime="2024-01-17T19:10:41+08:00">2024-01-17</time>
+    </span>
+
+  
+    <span id="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/" class="post-meta-item leancloud_visitors" data-flag-title="不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><code>GParted</code> 是一款适用于 <code>Linux</code> 的图形化磁盘分区管理工具，通过它可以便捷地为 <code>VMware</code> 中的 <code>Ubuntu Desktop</code> 增大磁盘空间。然而你可能正在使用 <code>Ubuntu Server</code>，并不想要安装或并不被允许安装图形化界面，本文介绍了如何在不使用 <code>GParted</code> 的情况下，通过命令行使用自带的工具为 <code>VMware</code> 中的 <code>Ubuntu Server</code> 增大磁盘空间。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>请注意辨别磁盘空间是真的接近耗尽，而不是在系统安装时只真正使用了大约一半空间。参见 <a href="/2023/06/24/Ubuntu-server-20-04-not-all-disk-space-was-allocated-after-installation/" title="Ubuntu server 20.04 安装后没有分配全部磁盘空间">Ubuntu server 20.04 安装后没有分配全部磁盘空间</a></p>
+</blockquote>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>环境如下：</p>
+<ul>
+<li>VMware® Workstation 17 Pro 17.5.0 build-22583795</li>
+<li>Ubuntu 20.04.6 LTS (GNU&#x2F;Linux 5.4.0-169-generic x86_64)</li>
+</ul>
+<p>尽管最初按照心理预期为 <code>Ubuntu Server</code> 分配了 <code>50G</code> 的磁盘空间，主要用于运行一些 <code>Docker</code> 容器，但是不知不觉之间发现磁盘空间的占用率还是上升到了 <code>90%</code>。一时之间想不到可以清理什么，决定先增大一些磁盘空间。</p>
+<ul>
+<li>使用 <code>df -h</code> 命令显示文件系统的总空间和可用空间信息。可知 <code>/dev/mapper/ubuntu--vg-ubuntu--lv</code> 已使用 <code>95%</code>。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">udev                               7.8G     0  7.8G   0% /dev</span><br><span class="line">tmpfs                              1.6G  3.0M  1.6G   1% /run</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv   48G   43G  2.5G  95% /</span><br><span class="line">tmpfs                              7.8G     0  7.8G   0% /dev/shm</span><br><span class="line">tmpfs                              5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs                              7.8G     0  7.8G   0% /sys/fs/cgroup</span><br><span class="line">vmhgfs-fuse                        932G  859G   73G  93% /mnt/hgfs</span><br><span class="line">/dev/sda2                          2.0G  209M  1.6G  12% /boot</span><br><span class="line">/dev/loop0                          64M   64M     0 100% /snap/core20/2015</span><br><span class="line">/dev/loop1                          64M   64M     0 100% /snap/core20/2105</span><br><span class="line">/dev/loop2                          41M   41M     0 100% /snap/snapd/20290</span><br><span class="line">/dev/loop3                          92M   92M     0 100% /snap/lxd/24061</span><br><span class="line">/dev/loop4                          41M   41M     0 100% /snap/snapd/20671</span><br><span class="line">tmpfs                              1.6G     0  1.6G   0% /run/user/1000</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="解决步骤"><a href="#解决步骤" class="headerlink" title="解决步骤"></a>解决步骤</h2><h3 id="调整虚拟磁盘大小"><a href="#调整虚拟磁盘大小" class="headerlink" title="调整虚拟磁盘大小"></a>调整虚拟磁盘大小</h3><blockquote>
+<p>不论如何，需要先修改 <code>VMware</code> 的相关设置。</p>
+</blockquote>
+<ol>
+<li>先将客户机 <code>Ubuntu server</code> 关机</li>
+<li>然后通过“虚拟机设置 -&gt; 硬盘 -&gt; 扩展 -&gt; 最大磁盘大小”将最大虚拟磁盘大小设置为目标值（<code>50G -&gt; 80G</code>）</li>
+<li>根据提示可知，在 <code>VMware</code> 中的扩展操作仅增大虚拟磁盘的大小，分区和文件系统的大小不受影响。你必须从客户机操作系统内部对磁盘重新进行分区和扩展文件系统。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_20-43-56.png" class="" width="600" title="设置 VMware 虚拟磁盘大小"></li>
+</ol>
+<h3 id="调整分区大小"><a href="#调整分区大小" class="headerlink" title="调整分区大小"></a>调整分区大小</h3><h4 id="分区管理"><a href="#分区管理" class="headerlink" title="分区管理"></a>分区管理</h4><ol>
+<li>使用 <code>sudo cfdisk</code> 命令进入分区管理的交互式界面。可知可用空间为新增的 <code>30G</code>。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_22-58-12.png" class="" width="800" title="cfdisk 分区管理"></li>
+<li>使用上下方向键选择准备调整大小的分区 <code>/dev/sda3</code>，使用左右方向键选择 <code>Resize</code> 操作。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-02-55.png" class="" width="800" title="cfdisk Resize 操作"></li>
+<li>输入新的分区大小，默认为原大小加上可用空间大小等于 <code>78G</code>。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-03-52.png" class="" width="800" title="cfdisk 设置新的分区大小"></li>
+<li>使用左右方向键选择 <code>Write</code> 操作，写入修改。然后输入 <code>yes</code> 确认。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-04-23.png" class="" width="800" title="cfdisk Write 操作"></li>
+<li>提示分区表已改变。然后使用左右方向键选择 <code>Quit</code> 操作，退出分区管理的交互式界面。<img src="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/Snipaste_2024-01-14_23-05-05.png" class="" width="800" title="cfdisk Write 操作结果"></li>
+<li>退出时提示如下。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo cfdisk</span><br><span class="line">GPT PMBR size mismatch (104857599 != 167772159) will be corrected by write.</span><br><span class="line"></span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="调整物理卷大小"><a href="#调整物理卷大小" class="headerlink" title="调整物理卷大小"></a>调整物理卷大小</h4><ol>
+<li>使用 <code>sudo pvresize /dev/sda3</code> 命令调整 <code>LVM</code> 中物理卷的大小。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo pvresize /dev/sda3</span><br><span class="line">  Physical volume &quot;/dev/sda3&quot; changed</span><br><span class="line">  1 physical volume(s) resized or updated / 0 physical volume(s) not resized</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="调整逻辑卷大小"><a href="#调整逻辑卷大小" class="headerlink" title="调整逻辑卷大小"></a>调整逻辑卷大小</h4><ol>
+<li>使用 <code>sudo fdisk -l</code> 命令显示物理卷和逻辑卷的大小差异。在末尾可见 <code>/dev/sda3</code> 的大小为 <code>78G</code>，<code>/dev/mapper/ubuntu--vg-ubuntu--lv</code> 的大小为 <code>47.102G</code>。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">$ sudo fdisk -l</span><br><span class="line">Disk /dev/loop0: 63.48 MiB, 66547712 bytes, 129976 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/loop1: 63.93 MiB, 67014656 bytes, 130888 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/loop2: 40.88 MiB, 42840064 bytes, 83672 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/loop3: 91.85 MiB, 96292864 bytes, 188072 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/loop4: 40.44 MiB, 42393600 bytes, 82800 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/fd0: 1.42 MiB, 1474560 bytes, 2880 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel type: dos</span><br><span class="line">Disk identifier: 0x90909090</span><br><span class="line"></span><br><span class="line">Device     Boot      Start        End    Sectors  Size Id Type</span><br><span class="line">/dev/fd0p1      2425393296 4850786591 2425393296  1.1T 90 unknown</span><br><span class="line">/dev/fd0p2      2425393296 4850786591 2425393296  1.1T 90 unknown</span><br><span class="line">/dev/fd0p3      2425393296 4850786591 2425393296  1.1T 90 unknown</span><br><span class="line">/dev/fd0p4      2425393296 4850786591 2425393296  1.1T 90 unknown</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/sda: 80 GiB, 85899345920 bytes, 167772160 sectors</span><br><span class="line">Disk model: VMware Virtual S</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel type: gpt</span><br><span class="line">Disk identifier: 81C6F71E-C634-49E6-BC3D-9272C86326A4</span><br><span class="line"></span><br><span class="line">Device       Start       End   Sectors Size Type</span><br><span class="line">/dev/sda1     2048      4095      2048   1M BIOS boot</span><br><span class="line">/dev/sda2     4096   4198399   4194304   2G Linux filesystem</span><br><span class="line">/dev/sda3  4198400 167772126 163573727  78G Linux filesystem</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/mapper/ubuntu--vg-ubuntu--lv: 47.102 GiB, 51535413248 bytes, 100655104 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br></pre></td></tr></table></figure></li>
+<li>使用 <code>sudo lvresize -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv</code> 命令调整逻辑卷的大小。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lvresize -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv</span><br><span class="line">  Size of logical volume ubuntu-vg/ubuntu-lv changed from &lt;48.00 GiB (12287 extents) to &lt;78.00 GiB (19967 extents).</span><br><span class="line">  Logical volume ubuntu-vg/ubuntu-lv successfully resized.</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="调整文件系统大小"><a href="#调整文件系统大小" class="headerlink" title="调整文件系统大小"></a>调整文件系统大小</h3><ol>
+<li>使用 <code>sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv</code> 命令调整文件系统的大小。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv</span><br><span class="line">resize2fs 1.45.5 (07-Jan-2020)</span><br><span class="line">Filesystem at /dev/mapper/ubuntu--vg-ubuntu--lv is mounted on /; on-line resizing required</span><br><span class="line">old_desc_blocks = 6, new_desc_blocks = 10</span><br><span class="line">The filesystem on /dev/mapper/ubuntu--vg-ubuntu--lv is now 20446208 (4k) blocks long.</span><br></pre></td></tr></table></figure></li>
+<li>使用 <code>df -h</code> 命令显示文件系统的总空间和可用空间信息。确认 <code>/dev/mapper/ubuntu--vg-ubuntu--lv</code> 的大小已调整为 <code>77G</code>。<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">udev                               7.8G     0  7.8G   0% /dev</span><br><span class="line">tmpfs                              1.6G  3.1M  1.6G   1% /run</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv   77G   43G   31G  59% /</span><br><span class="line">tmpfs                              7.8G     0  7.8G   0% /dev/shm</span><br><span class="line">tmpfs                              5.0M     0  5.0M   0% /run/lock</span><br><span class="line">tmpfs                              7.8G     0  7.8G   0% /sys/fs/cgroup</span><br><span class="line">vmhgfs-fuse                        932G  859G   73G  93% /mnt/hgfs</span><br><span class="line">/dev/sda2                          2.0G  209M  1.6G  12% /boot</span><br><span class="line">/dev/loop0                          64M   64M     0 100% /snap/core20/2015</span><br><span class="line">/dev/loop1                          64M   64M     0 100% /snap/core20/2105</span><br><span class="line">/dev/loop2                          41M   41M     0 100% /snap/snapd/20290</span><br><span class="line">/dev/loop3                          92M   92M     0 100% /snap/lxd/24061</span><br><span class="line">/dev/loop4                          41M   41M     0 100% /snap/snapd/20671</span><br><span class="line">tmpfs                              1.6G     0  1.6G   0% /run/user/1000</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://razvanm.ro/tutorial/increase-disk-space-on-ubuntu-guest-vm-no-gui-or-gparted/#Increase-Physical-Volume">Increase disk space on Ubuntu guest VM – no GUI or GParted</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/ubuntu/" rel="tag"># ubuntu</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/01/06/talk-about-isolation-of-MySQL-transactions/" rel="prev" title="谈谈 MySQL 事务的隔离性">
+                  <i class="fa fa-angle-left"></i> 谈谈 MySQL 事务的隔离性
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">120k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:39</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
