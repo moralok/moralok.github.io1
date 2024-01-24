@@ -32,7 +32,7 @@ tags: [linux]
 |`mkdir`|创建目录|
 |`cp`|copy，复制文件|
 |`mv`|move，重命名或移动文件|
-|`rm`|remove，删除文件|
+|`rm` </br> `rm -rf /usr/local/go`（卸载go）|remove，删除文件|
 |`find`|查找文件|
 |`vim`|编辑文件|
 |`nano`|编辑文件|
@@ -54,11 +54,16 @@ tags: [linux]
 |命令|描述|
 |--|--|
 |`su username` </br> `su -`（切换root）|switch user，切换用户|
-|`adduser username`（交互式，便捷） </br> `useradd username`|新增用户|
+|`adduser username sudo`（交互式，便捷） </br> `useradd username`|新增用户|
 |`passwd username`|修改密码|
+|`groups username`|查看用户所属的群组|
+|`groupadd docker`|添加群组|
+|`usermod -aG docker $USER`|将当前用户添加到群组|
+|`newgrp docker`|切换群组登录|
 |`cat /etc/passwd`|查看UID和账号的对应关系|
 |`cat /etc/group`|查看GID和账号的对应关系|
 |`cat /etc/shadow`|查看账号和密码的对应关系|
+|`cat /etc/ssh/sshd_config`|查看sshd配置|
 
 ## 排查问题
 
@@ -73,6 +78,13 @@ tags: [linux]
 |`df -h`|disk free，显示文件系统磁盘空间使用情况|
 |`who`|显示当前在线用户|
 |`last`|显示用户最近登录信息|
+
+|命令|描述|
+|--|--|
+|`vim /etc/profile`|修改系统范围的配置|
+|`vim $HOME/.bashrc`|修改用户范围的配置|
+|`source /etc/profile`|重新加载配置文件|
+|`export PATH=$PATH:/usr/local/go/bin`|导出变量|
 
 ## 数据流重定向
 
