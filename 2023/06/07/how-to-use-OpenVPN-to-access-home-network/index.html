@@ -19,16 +19,17 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="网络概况宽带是电信宽带，分配了动态的公网 IP。光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机">
+    <meta name="description" content="本文记录了如何使用 OpenVPN 访问家庭内网。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用 OpenVPN 访问家庭内网">
 <meta property="og:url" content="https://www.moralok.com/2023/06/07/how-to-use-OpenVPN-to-access-home-network/index.html">
 <meta property="og:site_name" content="Moralok">
-<meta property="og:description" content="网络概况宽带是电信宽带，分配了动态的公网 IP。光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机">
+<meta property="og:description" content="本文记录了如何使用 OpenVPN 访问家庭内网。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-06-07T14:19:17.000Z">
-<meta property="article:modified_time" content="2024-01-24T18:10:58.027Z">
+<meta property="article:modified_time" content="2024-01-25T11:49:56.734Z">
 <meta property="article:author" content="Moralok">
+<meta property="article:tag" content="proxy">
 <meta property="article:tag" content="openvpn">
 <meta name="twitter:card" content="summary">
 
@@ -229,7 +230,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-25 02:10:58" itemprop="dateModified" datetime="2024-01-25T02:10:58+08:00">2024-01-25</time>
+      <time title="修改时间：2024-01-25 19:49:56" itemprop="dateModified" datetime="2024-01-25T19:49:56+08:00">2024-01-25</time>
     </span>
 
   
@@ -246,7 +247,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>744</span>
+      <span>738</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -263,7 +264,16 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="网络概况"><a href="#网络概况" class="headerlink" title="网络概况"></a>网络概况</h2><p>宽带是电信宽带，分配了动态的公网 IP。<br>光猫使用桥接模式，通过路由器拨号上网（PPPoE），路由器局域网为 192.168.3.0&#x2F;24。<br>一台 Windows 10 主机，在路由器局域网上的 IP 192.168.3.120。。<br>Windows 10 主机上运行 Vmware 虚拟机，网络采用 NAT 模式。子网为 192.168.46.0&#x2F;24。运行了 Linux 主机，IP 192.168.46.128。Windows 10 主机在子网中的 IP 为 192.168.3.1。</p>
+    <div class="post-body" itemprop="articleBody"><p>本文记录了如何使用 <code>OpenVPN</code> 访问家庭内网。</p>
+<span id="more"></span>
+
+
+<h2 id="网络概况"><a href="#网络概况" class="headerlink" title="网络概况"></a>网络概况</h2><ul>
+<li>宽带是电信宽带，分配了动态的公网 <code>IP</code>。</li>
+<li>光猫使用桥接模式，通过路由器拨号上网（<code>PPPoE</code>），路由器局域网为 <code>192.168.3.0/24</code>。</li>
+<li>一台 <code>Windows 10</code> 主机，在路由器局域网上的 <code>IP</code> <code>192.168.3.120</code>。</li>
+<li><code>Windows 10</code> 主机上运行 <code>Vmware</code> 虚拟机，网络采用 <code>NAT</code> 模式。子网为 <code>192.168.46.0/24</code>。运行了 <code>Linux</code> 主机，<code>IP</code> <code>192.168.46.128</code>。<code>Windows 10</code> 主机在子网中的 <code>IP</code> 为 <code>192.168.3.1</code>。</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -293,26 +303,27 @@
 </tr>
 </tbody></table>
 <h2 id="目标和考虑因素"><a href="#目标和考虑因素" class="headerlink" title="目标和考虑因素"></a>目标和考虑因素</h2><ol>
-<li>能从公网访问家庭内网，包括 Windows 10 主机和虚拟机上的 Linux 主机。</li>
-<li>不想通过路由器的 NAT 功能直接将路由器局域网上的设备映射到公网。一是为了安全，二是为了避免运营商审查。</li>
-<li>已经尝试过使用 ZeroTier，将所需设备组建在一个局域网当中，可以作为备选方案。同时不想每次新增设备都安装 ZeroTier。</li>
-<li>想利用公网 IP 以及上行带宽尝尝鲜。</li>
-<li>想要能直连虚拟机上的 Linux 主机，而不是通过 Vmware 的 NAT 映射。不想每次新增服务都要设置 NAT，修改 Windows Defender 的规则。</li>
+<li>能从公网访问家庭内网，包括 <code>Windows 10</code> 主机和虚拟机上的 <code>Linux</code> 主机。</li>
+<li>不想通过路由器的 <code>NAT</code> 功能直接将局域网上的设备映射到公网。一是为了安全，二是为了避免运营商审查。</li>
+<li>已经使用 <code>ZeroTier</code> 将所需设备组建在一个局域网当中作为备选方案。</li>
+<li>想利用公网 <code>IP</code> 以及上行带宽尝尝鲜。</li>
+<li>想要能直连虚拟机上的 <code>Linux</code> 主机，而不是通过 <code>Vmware</code> 的 <code>NAT</code> 映射。否则每次新增服务都要设置 <code>NAT</code>，修改 <code>Windows Defender</code> 的端口暴露规则。</li>
 </ol>
-<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="在-Windows-10-上安装-OpenVPN-服务器"><a href="#在-Windows-10-上安装-OpenVPN-服务器" class="headerlink" title="在 Windows 10 上安装 OpenVPN 服务器"></a>在 Windows 10 上安装 OpenVPN 服务器</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" title="在 Windows 10 上安装 OpenVPN 服务器">在 Windows 10 上安装 OpenVPN 服务器</a>。</p>
-<h3 id="在-iOS-和-macOS-上安装-OpenVPN-客户端"><a href="#在-iOS-和-macOS-上安装-OpenVPN-客户端" class="headerlink" title="在 iOS 和 macOS 上安装 OpenVPN 客户端"></a>在 iOS 和 macOS 上安装 OpenVPN 客户端</h3><p>见<a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" title="在 iOS 和 macOS 上安装 OpenVPN 客户端">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>。</p>
-<h3 id="客户端访问服务端其他的私有子网"><a href="#客户端访问服务端其他的私有子网" class="headerlink" title="客户端访问服务端其他的私有子网"></a>客户端访问服务端其他的私有子网</h3><p>如果在所需的每一个设备上都安装 OpenVPN，将它们连接在 VPN 的子网 10.8.0.0&#x2F;24 中，也是可以满足需求的，但是这和每个设备都安装 ZeroTier 差不多。</p>
-<h4 id="server-ovpn-新增配置"><a href="#server-ovpn-新增配置" class="headerlink" title="server.ovpn 新增配置"></a>server.ovpn 新增配置</h4><p>在 <code>server.ovpn</code> 配置文件中新增一行配置，这个配置的意思是将该路由配置统一推送给客户端，让它们可以访问服务端的其他私有子网。相当于将服务端的其他私有子网的情况告知客户端，这样客户端就知道发往 192.168.46.128 的 Packet 是发向哪里的。</p>
+<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="在-Windows-10-上安装-OpenVPN-服务器"><a href="#在-Windows-10-上安装-OpenVPN-服务器" class="headerlink" title="在 Windows 10 上安装 OpenVPN 服务器"></a>在 Windows 10 上安装 OpenVPN 服务器</h3><p>见 <a href="/2023/06/07/how-to-setup-OpenVPN-server-on-windows-10/" title="在 Windows 10 上安装 OpenVPN 服务端">在 Windows 10 上安装 OpenVPN 服务器</a>。</p>
+<h3 id="在-iOS-和-macOS-上安装-OpenVPN-客户端"><a href="#在-iOS-和-macOS-上安装-OpenVPN-客户端" class="headerlink" title="在 iOS 和 macOS 上安装 OpenVPN 客户端"></a>在 iOS 和 macOS 上安装 OpenVPN 客户端</h3><p>见 <a href="/2023/06/07/how-to-setup-OpenVPN-connect-client-on-iOS-and-macOS/" title="在 iOS 和 macOS 上安装 OpenVPN 客户端">在 iOS 和 macOS 上安装 OpenVPN 客户端</a>。</p>
+<h3 id="客户端访问服务端其他的私有子网"><a href="#客户端访问服务端其他的私有子网" class="headerlink" title="客户端访问服务端其他的私有子网"></a>客户端访问服务端其他的私有子网</h3><p>如果在所需的每一个设备上都安装 <code>OpenVPN</code>，将它们连接在 <code>VPN</code> 的子网 <code>10.8.0.0/24</code> 中，也是可以满足需求的，但是这样略有些麻烦。</p>
+<h4 id="server-ovpn-新增配置"><a href="#server-ovpn-新增配置" class="headerlink" title="server.ovpn 新增配置"></a>server.ovpn 新增配置</h4><p>在 <code>server.ovpn</code> 配置文件中新增一行配置，这个配置的意思是将该路由配置统一推送给客户端，让它们可以访问服务端的其他私有子网。相当于将服务端的其他私有子网的情况告知客户端，这样客户端就知道发往 <code>192.168.46.128</code> 的 <code>Packet</code> 是发向哪里的。</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">push &quot;route 192.168.46.0 255.255.255.0&quot;</span><br></pre></td></tr></table></figure>
 
 <h4 id="打开-Windows-10-主机的路由转发功能"><a href="#打开-Windows-10-主机的路由转发功能" class="headerlink" title="打开 Windows 10 主机的路由转发功能"></a>打开 Windows 10 主机的路由转发功能</h4><ol>
-<li><code>Win + R</code> 输入 regedit 打开注册表。</li>
-<li>找到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters</code>，修改 <code>IPEnableRouter</code> 为 1。</li>
-<li>重启</li>
+<li><code>Win + R</code> 输入 <code>regedit</code> 打开注册表。</li>
+<li>找到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters</code>，修改 <code>IPEnableRouter</code> 为 <code>1</code>。</li>
+<li>重启主机</li>
 </ol>
-<h4 id="为虚拟机上的-Linux-主机新增路由"><a href="#为虚拟机上的-Linux-主机新增路由" class="headerlink" title="为虚拟机上的 Linux 主机新增路由"></a>为虚拟机上的 Linux 主机新增路由</h4><p>在终端中输入命令：</p>
+<h4 id="为虚拟机上的-Linux-主机新增路由"><a href="#为虚拟机上的-Linux-主机新增路由" class="headerlink" title="为虚拟机上的 Linux 主机新增路由"></a>为虚拟机上的 Linux 主机新增路由</h4><p>在终端中输入命令，这是为了让 <code>OpenVPN</code> 服务端的其他私有子网上的设备知道来自 <code>10.8.0.0/24</code> 的 <code>Packet</code> 应该路由回 <code>OpenVPN</code> 服务端。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route add -net 10.8.0.0/24 gw 192.168.46.1</span><br></pre></td></tr></table></figure>
-<p>这是为了让 OpenVPN 服务端的其他私有子网上的设备知道来自 10.8.0.0&#x2F;24 的 IP Packet 应该路由回 OpenVPN 服务端。</p>
+
+
 <h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.51cto.com/richie/389636">透过openvpn来访问内网资源</a><br><a target="_blank" rel="noopener" href="https://limbo.moe/posts/2018/openvpn-routes">OpenVPN 路由详解</a><br><a target="_blank" rel="noopener" href="https://qastack.cn/superuser/865302/yet-another-routing-issue-in-openvpn-cannot-access-local-machines-while-on-vpn">OpenVPN中的另一个路由问题 - 在VPN上无法访问本地计算机</a><br><a target="_blank" rel="noopener" href="https://www.nixops.me/articles/openvpn-add-local-routing-table.html">openvpn添加本地路由表</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43615820/article/details/113660623">windows开启路由转发</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/snake-hand/p/3143041.html">linux route命令的使用详解</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/bcbobo21cn/article/details/52548923">Windows命令行route命令使用图解</a></p>
 
     </div>
@@ -323,6 +334,7 @@
 
     <footer class="post-footer">
           <div class="post-tags">
+              <a href="/tags/proxy/" rel="tag"># proxy</a>
               <a href="/tags/openvpn/" rel="tag"># openvpn</a>
           </div>
 
@@ -368,13 +380,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">120k</span>
+    <span title="站点总字数">121k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:40</span>
+    <span title="站点阅读时长">6:44</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
