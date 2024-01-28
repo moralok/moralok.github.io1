@@ -133,6 +133,16 @@ tags: [linux]
 |`bc`|简单计算器，scale=小数位数|
 |`tar` </br> `tar -zcvf test.tar.gz ./test`（压缩） </br> `tar -zxvf test.tar.gz`（解压）|归档|
 
+|命令|描述|
+|--|--|
+|`systemctl daemon-reload`|重新加载systemd配置|
+|`systemctl enable node_exporter`|enable一个或多个units文件|
+|`systemctl disable node_exporter`|disable一个或多个units文件|
+|`systemctl status node_exporter.service`|显示一个或多个units的运行时状态|
+|`systemctl start node_exporter.service`|启动一个或多个units|
+|`systemctl stop node_exporter.service`|停止一个或多个units|
+|`systemctl restart node_exporter.service`|重启一个或多个units|
+
 ## 快捷键
 
 |命令|描述|
