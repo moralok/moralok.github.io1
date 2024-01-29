@@ -21,39 +21,42 @@ tags: [linux]
 
 |命令|描述|
 |--|--|
-|`ls` </br> `ls -al`（`ll`）|list，列出文件信息|
-|`cd`|change directory，切换工作目录|
-|`pwd`|print working directory，显示当前工作目录|
-|`touch`|更新访问和修改时间为当前时间，常用于创建空文件|
-|`cat`|查看文件|
-|`more`|查看文件，可翻页|
-|`less`|查看文件，可翻页|
-|`tail`|查看文件，末尾，可实时|
-|`mkdir`|创建目录|
-|`cp`|copy，复制文件|
-|`mv`|move，重命名或移动文件|
-|`rm` </br> `rm -rf /usr/local/go`（卸载go）|remove，删除文件|
-|`find`|查找文件|
-|`vim`|编辑文件|
-|`nano`|编辑文件|
+|`ls [OPTION]... [FILE]...` </br> `-a, --all, do not ignore entries starting with .` </br> `-l, use a long listing format`|List information about the FILEs (the current directory by default).|
+|`cd`|Change the shell working directory.|
+|`pwd`|Print the name of the current working directory.|
+|`touch [OPTION]... FILE...`|Update the access and modification times of each FILE to the current time.|
+|`cat [OPTION]... [FILE]...`|Concatenate FILE(s) to standard output.|
+|`more [options] <file>...`|A file perusal filter for CRT viewing.|
+|`less`|opposite of more|
+|`tail [OPTION]... [FILE]...` </br> `-f, --follow` </br> `-n, --lines=[+]NUM`|Print the last 10 lines of each FILE to standard output.|
+|`tee [OPTION]... [FILE]...` </br> `-a, --append`|Copy standard input to each FILE, and also to standard output.|
+|`mkdir [OPTION]... DIRECTORY...`|Create the DIRECTORY(ies), if they do not already exist.|
+|`rmdir [OPTION]... DIRECTORY...`|Remove the DIRECTORY(ies), if they are empty.|
+|`cp`|Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.|
+|`mv`|Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.|
+|`rm [OPTION]... [FILE]...` </br> `-f, --force` </br> `-r, -R, --recursive`|Remove (unlink) the FILE(s).|
+|`find [-H] [-L] [-P] [-Olevel] [-D debugopts] [path...] [expression]`|search for files in a directory hierarchy|
+|`vim [arguments] [file ..]`|edit specified file(s)|
+|`nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...`|a small and friendly editor.|
 
 ## 文件权限
 
 > `r`、`w`、`x` 分别代表读（`read`）、写（`write`）、执行（`execute`）权限，分别对应值 `4`、`2`、`1`。
 `u`、`g`、`o` 分别代表拥有者（`owner`）、所属群组（`group`）、其他人（`other`），`a` 代表全部。
-`+`、`-` 分别代表新增和删除权限。
+`+`、`-`、`=` 分别代表新增、删除和指定权限。
 
 |命令|描述|
 |--|--|
 |`chown [-R] username /tmp/testfile`|change owner，修改文件的拥有者|
 |`chgrp [-R] groupname /tmp/testfile`|change group，修改文件的所属群组|
-|`chmod [-R] 644 /tmp/testfile` </br> `chmod [-R] u=rwx,go=rx /tmp/testfile`  </br> `chmod [-R] a-x /tmp/testfile`|change mode，修改文件的权限模式|
+|`chmod [OPTION]... MODE[,MODE]... FILE...` </br> `chmod [OPTION]... OCTAL-MODE FILE...`  </br> `-R, --recursive`|Change the mode of each FILE to MODE.  </br> Each MODE is of the form '\[ugoa\]*(\[-+=\](\[rwxXst\]*\|\[ugo\]))+\|\[-+=\][0-7]+'.|
 
 ## 用户
 
 |命令|描述|
 |--|--|
-|`su username` </br> `su -`（切换root）|switch user，切换用户|
+|`su [options] [-] [<user> [<argument>...]]` </br> `-, -l, --login`|Change the effective user ID and group ID to that of <user>. If <user> is not given, root is assumed.|
+|`exit`|Exit the shell.|
 |`adduser username sudo`（交互式，便捷） </br> `useradd username`|新增用户|
 |`passwd username`|修改密码|
 |`groups username`|查看用户所属的群组|
@@ -78,6 +81,7 @@ tags: [linux]
 |`df -h`|disk free，显示文件系统磁盘空间使用情况|
 |`who`|显示当前在线用户|
 |`last`|显示用户最近登录信息|
+|`which [-a] filename ...`|locate a command|
 
 |命令|描述|
 |--|--|
@@ -126,7 +130,7 @@ tags: [linux]
 
 |命令|描述|
 |--|--|
-|`echo ${PATH}`|显示文本、变量|
+|`echo ${PATH}`|echo sth. `$PATH` `$SHELL`|
 |`date`|显示日期和时间|
 |`cal [month] [year]`|显示日历|
 |`locale`|显示支持的语系|
