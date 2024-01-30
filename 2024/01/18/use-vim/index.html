@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文记录了 Vim 常用的快捷键作为备忘清单。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 Vim">
+<meta property="og:url" content="https://www.moralok.com/2024/01/18/use-vim/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="本文记录了 Vim 常用的快捷键作为备忘清单。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-18T00:34:08.000Z">
+<meta property="article:modified_time" content="2024-01-30T14:25:16.198Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="vim">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2024/01/18/use-vim/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2024/01/18/use-vim/","path":"2024/01/18/use-vim/","title":"使用 Vim"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 Vim | Moralok</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="nav-number">1.</span> <span class="nav-text">常用快捷键</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E5%85%89%E6%A0%87"><span class="nav-number">1.1.</span> <span class="nav-text">移动光标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E5%92%8C%E6%9B%BF%E6%8D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">查找和替换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4-%E5%A4%8D%E5%88%B6-%E7%B2%98%E8%B4%B4"><span class="nav-number">1.3.</span> <span class="nav-text">删除&#x2F;复制&#x2F;粘贴</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5%E7%BC%96%E8%BE%91%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.4.</span> <span class="nav-text">进入编辑模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98%E5%92%8C%E9%80%80%E5%87%BA"><span class="nav-number">1.5.</span> <span class="nav-text">保存和退出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E5%8A%9F%E8%83%BD"><span class="nav-number">2.</span> <span class="nav-text">额外功能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E8%A7%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">可视模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E6%96%87%E4%BB%B6%E7%BC%96%E8%BE%91"><span class="nav-number">2.2.</span> <span class="nav-text">多文件编辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%AA%97%E5%8F%A3%E5%8A%9F%E8%83%BD"><span class="nav-number">2.3.</span> <span class="nav-text">多窗口功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%AF%8D%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="nav-number">2.4.</span> <span class="nav-text">关键词自动补全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">环境配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/01/18/use-vim/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用 Vim | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 Vim
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-18 08:34:08" itemprop="dateCreated datePublished" datetime="2024-01-18T08:34:08+08:00">2024-01-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-01-30 22:25:16" itemprop="dateModified" datetime="2024-01-30T22:25:16+08:00">2024-01-30</time>
+    </span>
+
+  
+    <span id="/2024/01/18/use-vim/" class="post-meta-item leancloud_visitors" data-flag-title="使用 Vim" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文记录了 <code>Vim</code> 常用的快捷键作为备忘清单。</p>
+<span id="more"></span>
+
+<h2 id="常用快捷键"><a href="#常用快捷键" class="headerlink" title="常用快捷键"></a>常用快捷键</h2><h3 id="移动光标"><a href="#移动光标" class="headerlink" title="移动光标"></a>移动光标</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>h</code>, <code>←</code></td>
+<td>光标向左移动一个字符</td>
+</tr>
+<tr>
+<td><code>j</code>, <code>↓</code></td>
+<td>光标向下移动一个字符</td>
+</tr>
+<tr>
+<td><code>k</code>, <code>↑</code></td>
+<td>光标向上移动一个字符</td>
+</tr>
+<tr>
+<td><code>l</code>, <code>→</code></td>
+<td>光标向右移动一个字符</td>
+</tr>
+<tr>
+<td><code>Ctrl + f</code>, <code>Page Down</code></td>
+<td>屏幕向下移动一页</td>
+</tr>
+<tr>
+<td><code>Ctrl + b</code>, <code>Page Up</code></td>
+<td>屏幕向上移动一页</td>
+</tr>
+<tr>
+<td><code>0</code></td>
+<td>光标移动至本行开头</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>光标移动至本行末尾</td>
+</tr>
+<tr>
+<td><code>G</code></td>
+<td>光标移动至文件最后一行</td>
+</tr>
+<tr>
+<td><code>nG</code></td>
+<td>光标移动至文件第n行</td>
+</tr>
+<tr>
+<td><code>gg</code></td>
+<td>光标移动至文件第一行</td>
+</tr>
+<tr>
+<td><code>n&lt;Enter&gt;</code></td>
+<td>光标向下移动n行</td>
+</tr>
+<tr>
+<td><code>n&lt;space&gt;</code></td>
+<td>光标向右移动n个字符</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td>光标移动至本行第一个非空字符处</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>光标移动到下一个词 （上一个字母和数字组成的词之后）</td>
+</tr>
+<tr>
+<td><code>W</code></td>
+<td>光标移动到下一个词 （以空格分隔的词）</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>光标移动到上一个词 （下一个字母和数字组成的词之前）</td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td>光标移动到上一个词 （以空格分隔的词）</td>
+</tr>
+</tbody></table>
+<h3 id="查找和替换"><a href="#查找和替换" class="headerlink" title="查找和替换"></a>查找和替换</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/word</code></td>
+<td>向光标之后搜索word</td>
+</tr>
+<tr>
+<td><code>?word</code></td>
+<td>向光标之前搜索word</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>重复前一个查找操作</td>
+</tr>
+<tr>
+<td><code>N</code></td>
+<td>反向进行前一个查找操作</td>
+</tr>
+<tr>
+<td><code>:n1,n2s/original/replacement/g</code></td>
+<td>在第n1行到第n2行之间查找original并替换为replacement</td>
+</tr>
+<tr>
+<td><code>:1,$s/original/replacement/g</code></td>
+<td>在第1行到最后一行之间查找original并替换为replacement</td>
+</tr>
+<tr>
+<td><code>:1,$s/original/replacement/gc</code></td>
+<td>在第1行到最后一行之间查找original并替换为replacement，替换前需确认</td>
+</tr>
+<tr>
+<td><code>:%s/original/replacement</code></td>
+<td>在所有行中查找行中第一个出现的original并替换为replacement</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>替换格式如下 <code>:[range]s/&lt;pattern&gt;/[string]/[flags] [count]</code></p>
+</blockquote>
+<h3 id="删除-复制-粘贴"><a href="#删除-复制-粘贴" class="headerlink" title="删除&#x2F;复制&#x2F;粘贴"></a>删除&#x2F;复制&#x2F;粘贴</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>x</code></td>
+<td>向后删除一个字符，相当于 Del</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>向前删除一个字符，相当于 Backspace</td>
+</tr>
+<tr>
+<td><code>nx</code></td>
+<td>向前删除n个字符</td>
+</tr>
+<tr>
+<td><code>dd</code></td>
+<td>删除（剪切）光标所在的行</td>
+</tr>
+<tr>
+<td><code>ndd</code></td>
+<td>删除（剪切）光标所在开始的n行</td>
+</tr>
+<tr>
+<td><code>d1G</code></td>
+<td>删除（剪切）光标所在到第1行的所有行</td>
+</tr>
+<tr>
+<td><code>dG</code></td>
+<td>删除（剪切）光标所在到最后一行的所有行</td>
+</tr>
+<tr>
+<td><code>d$</code></td>
+<td>删除（剪切）光标所在到该行的最后一个字符</td>
+</tr>
+<tr>
+<td><code>d0</code></td>
+<td>删除（剪切）光标所在到该行的第一个字符</td>
+</tr>
+<tr>
+<td><code>yy</code></td>
+<td>复制光标所在的行</td>
+</tr>
+<tr>
+<td><code>nyy</code></td>
+<td>复制光标所在开始的n行</td>
+</tr>
+<tr>
+<td><code>y1G</code></td>
+<td>复制光标所在到第1行的所有行</td>
+</tr>
+<tr>
+<td><code>yG</code></td>
+<td>复制光标所在到最后一行的所有行</td>
+</tr>
+<tr>
+<td><code>y$</code></td>
+<td>复制光标所在到该行的最后一个字符</td>
+</tr>
+<tr>
+<td><code>y0</code></td>
+<td>复制光标所在到该行的第一个字符</td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>将复制的内容粘贴到光标所在的下一行</td>
+</tr>
+<tr>
+<td><code>P</code></td>
+<td>将复制的内容粘贴到光标所在的上一行</td>
+</tr>
+<tr>
+<td><code>u</code></td>
+<td>恢复前一个操作</td>
+</tr>
+<tr>
+<td><code>Ctrl+r</code></td>
+<td>重做上一个操作</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>重复前一个操作</td>
+</tr>
+</tbody></table>
+<h3 id="进入编辑模式"><a href="#进入编辑模式" class="headerlink" title="进入编辑模式"></a>进入编辑模式</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>i</code></td>
+<td>进入插入模式，从光标所在处开始插入</td>
+</tr>
+<tr>
+<td><code>I</code></td>
+<td>进入插入模式，从光标所在行的第一个非空格开始插入</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>进入插入模式，从光标所在的下一个字符处开始插入</td>
+</tr>
+<tr>
+<td><code>A</code></td>
+<td>进入插入模式，从光标所在行的最后一个字符处开始插入</td>
+</tr>
+<tr>
+<td><code>o</code></td>
+<td>进入插入模式，在光标所在行的下一行插入新的一行</td>
+</tr>
+<tr>
+<td><code>O</code></td>
+<td>进入插入模式，在光标所在行的上一行插入新的一行</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>进入替换模式，只会替换光标所在的字符一次</td>
+</tr>
+<tr>
+<td><code>R</code></td>
+<td>进入替换模式，替换光标所在的字符，直到通过Esc退出</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>退出编辑模式，回到一般命令模式</td>
+</tr>
+</tbody></table>
+<h3 id="保存和退出"><a href="#保存和退出" class="headerlink" title="保存和退出"></a>保存和退出</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>:w</code></td>
+<td>保存文件</td>
+</tr>
+<tr>
+<td><code>:w!</code></td>
+<td>若文件为只读，强制保存</td>
+</tr>
+<tr>
+<td><code>:q</code></td>
+<td>退出 Vim，如果文件已修改，将退出失败</td>
+</tr>
+<tr>
+<td><code>:q!</code></td>
+<td>强制退出 Vim，不保存文件修改</td>
+</tr>
+<tr>
+<td><code>:wq</code></td>
+<td>保存文件并退出 Vim</td>
+</tr>
+<tr>
+<td><code>:w filename</code></td>
+<td>另存为新文件</td>
+</tr>
+<tr>
+<td><code>ZZ</code></td>
+<td>退出 Vim，若文件无修改，则不保存退出；如果文件已修改，保存并退出</td>
+</tr>
+<tr>
+<td><code>:r filename</code></td>
+<td>读入另一个文件的数据并添加到光标所在行之后</td>
+</tr>
+</tbody></table>
+<h2 id="额外功能"><a href="#额外功能" class="headerlink" title="额外功能"></a>额外功能</h2><h3 id="可视模式"><a href="#可视模式" class="headerlink" title="可视模式"></a>可视模式</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>v</code></td>
+<td>字符选择，将光标经过的地方反白选择</td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td>行选择，将光标经过的行反白选择</td>
+</tr>
+<tr>
+<td><code>Ctrl + v</code></td>
+<td>区块选择，用矩形的方式反白选择</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>复制反白选择的地方</td>
+</tr>
+<tr>
+<td><code>d</code></td>
+<td>删除反白选择的地方</td>
+</tr>
+<tr>
+<td><code>~</code></td>
+<td>对反白选择的地方切换大小写</td>
+</tr>
+</tbody></table>
+<h3 id="多文件编辑"><a href="#多文件编辑" class="headerlink" title="多文件编辑"></a>多文件编辑</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>:n</code></td>
+<td>编辑下一个文件</td>
+</tr>
+<tr>
+<td><code>:N</code></td>
+<td>编辑上一个文件</td>
+</tr>
+<tr>
+<td><code>:files</code></td>
+<td>列出当前 Vim 打开的所有文件</td>
+</tr>
+</tbody></table>
+<h3 id="多窗口功能"><a href="#多窗口功能" class="headerlink" title="多窗口功能"></a>多窗口功能</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>:sp [filename]</code></td>
+<td>打开一个新窗口</td>
+</tr>
+<tr>
+<td><code>Ctrl + w</code> + <code>j</code> </br> <code>Ctrl + w</code> + <code>↓</code></td>
+<td>光标移动到下方的窗口</td>
+</tr>
+<tr>
+<td><code>Ctrl + w</code> + <code>k</code> </br> <code>Ctrl + w</code> + <code>↑</code></td>
+<td>光标移动到上方的窗口</td>
+</tr>
+<tr>
+<td><code>Ctrl + w</code> + <code>q</code> </br> <code>:q</code> </br> <code>:close</code></td>
+<td>关闭窗口</td>
+</tr>
+</tbody></table>
+<h3 id="关键词自动补全"><a href="#关键词自动补全" class="headerlink" title="关键词自动补全"></a>关键词自动补全</h3><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Ctrl + x</code> + <code>Ctrl + n</code></td>
+<td>使用当前文件的内容文字作为关键词，予以补齐</td>
+</tr>
+<tr>
+<td><code>Ctrl + x</code> + <code>Ctrl + f</code></td>
+<td>使用当前目录的文件名作为关键词，予以补齐</td>
+</tr>
+<tr>
+<td><code>Ctrl + x</code> + <code>Ctrl + o</code></td>
+<td>使用扩展名作为语法补充，以 Vim 内置的关键词，予以补齐</td>
+</tr>
+</tbody></table>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><table>
+<thead>
+<tr>
+<th>设置参数</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>:set nu</code> </br> <code>:set nonu</code></td>
+<td>设置和取消行号</td>
+</tr>
+<tr>
+<td><code>:syntax on</code> </br> <code>:syntax off</code></td>
+<td>是否依据程序相关语法显示不同颜色</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>可以通过 <code>vim ~/.vimrc</code> 修改配置文件。</p>
+</blockquote>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://linux.vbird.org/linux_basic/centos7/0310vi.php">vim 程式編輯器</a></li>
+<li><a target="_blank" rel="noopener" href="https://linux.cn/article-8144-1.html">Vim 快捷键速查表</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2018/09/vimrc.html">Vim 配置入门</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/vim/" rel="tag"># vim</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/01/14/increase-disk-space-of-Ubuntu-server-on-VMware-without-using-GParted/" rel="prev" title="不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间">
+                  <i class="fa fa-angle-left"></i> 不使用 GParted 的情况下为 VMware 中的 Ubuntu Server 增大磁盘空间
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">123k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:49</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
