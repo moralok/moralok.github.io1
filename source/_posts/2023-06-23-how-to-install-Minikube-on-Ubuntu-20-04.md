@@ -1,8 +1,7 @@
 ---
 title: 如何在 Ubuntu 20.04 上安装 Minikube
 date: 2023-06-23 21:04:20
-tags:
-    - minikube
+tags: [minikube, k8s]
 ---
 
 ## 环境搭建
