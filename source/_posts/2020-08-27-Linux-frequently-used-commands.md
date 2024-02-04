@@ -72,6 +72,7 @@ tags: [linux]
 
 |命令|描述|
 |--|--|
+|`ssh -i ~/.ssh/ecs.pem ecs-user@10.10.xx.xxx`|使用 SSH 登录|
 |`top`|显示系统的整体性能信息以及正在运行的进程的相关信息|
 |`ps -ef` </br> `ps -aux`|process status，显示当前进程的状态|
 |`kill -s 9 pid`|删除执行中的程序或工作|
@@ -114,6 +115,27 @@ tags: [linux]
 |`wc [-lwm]`||
 |`tee [-a] file`||
 |`split [--bl] file PREFIX`||
+
+## apt
+
+Usage: `apt [options] command`
+
+|命令|描述|
+|--|--|
+|`apt --help`|help|
+|`sudo apt update`|update list of available packages|
+|`sudo apt install <pkg>`|install packages|
+|`sudo apt reinstall <pkg>`|reinstall packages|
+|`sudo apt install --only-upgrade <pkg>`|update packages|
+|`sudo apt remove <pkg>`|remove packages|
+|`sudo apt show <pkg>`|show package details|
+|`sudo apt autoremove`|Remove automatically all unused packages|
+|`sudo apt search <keyword>`|search in package descriptions|
+|`sudo apt upgrade`|upgrade the system by installing/upgrading packages|
+|`apt list --upgradeable`|list upgradeable packages|
+|`apt list --installed`|list installed packages|
+|`apt list --all-versions`|list installed packages with version info|
+|`sudo apt edit-sources`|edit your sources.list|
 
 ## 关机或重启
 

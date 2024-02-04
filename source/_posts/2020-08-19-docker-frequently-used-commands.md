@@ -70,7 +70,7 @@ tags: [docker]
 | `docker info` | `-f` | 显示 Docker 信息 |
 | `docker version` |  | 显示 Docker 版本 |
 
-## systemd 相关
+## systemd
 
 | 命令 | 补充 |描述|
 |------|------|------|
@@ -79,6 +79,27 @@ tags: [docker]
 | `systemctl restart docker` |  | 重启 Docker 服务 |
 | `systemctl status docker` |  | 查看 Docker 服务状态 |
 | `systemctl enable docker` |  | 设置 Docker 服务开启自启动 |
+
+
+## Docker Compose
+
+Define and run multi-container applications with Docker.
+
+Usage:  `docker compose [OPTIONS] COMMAND`
+
+| 命令 | 补充 |描述|
+|------|------|------|
+| `docker compose ls` |  | List running compose projects |
+| `docker compose up` | `-d` | Create and start containers |
+| `docker compose down` |  | Stop and remove containers, networks |
+| `docker compose start` |  | Start services |
+| `docker compose stop` |  | Stop services |
+| `docker compose restart` |  | Restart service containers |
+| `docker compose logs` | `-f` | View output from containers |
+| `docker compose ps` |  | List containers |
+| `docker compose images` |  | List images used by the created containers |
+| `docker compose top` |  | Display the running processes |
+| `docker compose version` |  | Show the Docker Compose version information |
 
 
 ## 参考链接
