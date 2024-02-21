@@ -14,8 +14,9 @@ tags: [linux]
 
 |命令|描述|
 |--|--|
-|`man command`|显示命令的操作说明|
+|`man command`|manual，显示命令的操作说明|
 |`command --help`|显示命令的帮助信息|
+|`tldr`|Simplified and community-driven man pages|
 
 ## 文件相关
 
@@ -35,7 +36,7 @@ tags: [linux]
 |`cp`|Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.|
 |`mv`|Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.|
 |`rm [OPTION]... [FILE]...` </br> `-f, --force` </br> `-r, -R, --recursive`|Remove (unlink) the FILE(s).|
-|`find [-H] [-L] [-P] [-Olevel] [-D debugopts] [path...] [expression]`|search for files in a directory hierarchy|
+|`find [-H] [-L] [-P] [-Olevel] [-D debugopts] [path...] [expression]` </br> `find . -name src -type d` </br> `find . -path '**/src/*.py' -type f` </br> `find . -name filename -exec rm {} \;` </br> `find . -mtime -1`|search for files in a directory hierarchy|
 |`vim [arguments] [file ..]`|edit specified file(s)|
 |`nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...`|a small and friendly editor.|
 
@@ -67,6 +68,7 @@ tags: [linux]
 |`cat /etc/group`|查看GID和账号的对应关系|
 |`cat /etc/shadow`|查看账号和密码的对应关系|
 |`cat /etc/ssh/sshd_config`|查看sshd配置|
+|`cat /etc/shells`|查看shell配置|
 
 ## 排查问题
 
@@ -108,7 +110,7 @@ tags: [linux]
 |`echo ${PATH} \| cut -d ':' -f 5`||
 |`export \| cut  -c 12-`||
 |`last \| cut -d ' ' -f 1`||
-|`grep [-acinv] [--color=auto] '查找字符' filename`||
+|`grep [OPTION]... PATTERNS [FILE]...` </br> `grep foo bar.txt` </br> `grep -R foo .`|Search for PATTERNS in each FILE.|
 |`ps-ef \| grep java`|列出当前所有进程|
 |`sort [-fbMnrtuk] filename`||
 |`uniq [-ic]`||
@@ -182,3 +184,13 @@ Usage: `apt [options] command`
 |`[Ctrl]-u`|剪切、删除光标之前的内容|
 |`[Ctrl]-k`|剪切、删除光标之后的内容|
 |`[Ctrl]-r`|查找最近使用的指令|
+
+## 替代方案
+
+|软件|描述或替代目标|
+|--|--|
+|`tidr`|`man`|
+|`fdfind`(`fd-find`), `locate`(`mlocate`)|`find`|
+|`rg`(`ripgrep`)|`grep`|
+|`fzf`|`[Ctrl]-r`|
+|`tree`, `broot`|`ls -R`|
