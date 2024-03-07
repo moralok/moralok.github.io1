@@ -74,6 +74,20 @@ tags: [mysql]
 |` FLUSH PRIVILEGES; `|刷新权限|
 |` REVOKE ALL ON db_name.* FROM 'username'@'ip'; `|取消授权|
 |` DROP USER 'username'@'ip'; `|删除用户|
+|` SELECT * FROM mysql.user; `|查询用户列表|
+|` ALTER USER 'username'@'ip' IDENTIFIED BY '123456'; `|修改用户密码|
+|` SHOW VARIABLES LIKE 'default_authentication_plugin'; `|查询默认验证插件|
+
+## 主从同步
+
+|命令|描述|
+|--|--|
+|` GRANT REPLICATION SLAVE ON '*.*' TO 'username'@'ip'; `|授予主从同步权限|
+|` SHOW MASTER STATUS; `|查询 MASTER 状态|
+|` SHOW SLAVE STATUS; `|查询 SLAVE 状态|
+|` CHANGE MASTER TO MASTER_HOST='h', MASTER_PORT=3306, MASTER_USER='u', MASTER_PASSWORD='p', MASTER_LOG_FILE='f', MASTER_LOG_POS=n; ` </br> ` CHANGE REPLICATION SOURCE TO SOURCE_HOST='h', SOURCE_PORT=3306, SOURCE_USER='u', SOURCE_PASSWORD='p', SOURCE_LOG_FILE='f', SOURCE_LOG_POS=n; `|设置主从同步|
+|` START SLAVE; ` </br> ` START REPLICA; `|启动主从同步|
+|` STOP SLAVE; ` </br> ` STOP REPLICA; `|停止主从同步|
 
 ## 变量
 
