@@ -180,6 +180,15 @@ kubectl delete service hello-node
 kubectl delete deployment hello-node
 ```
 
+
+## 卸载
+
+1. 从 server 节点卸载 k3s
+```
+/usr/local/bin/k3s-uninstall.sh
+```
+
+
 ## 参考文章
 
 - [快速入门指南](https://docs.k3s.io/zh/quick-start)
