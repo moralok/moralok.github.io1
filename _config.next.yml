@@ -69,3 +69,6 @@ google_analytics:
   only_pageview: false
   # only needed if you are using `only_pageview` mode, https://developers.google.com/analytics/devguides/collection/protocol/ga4
   measure_protocol_api_secret:
+
+math.mathjax.enable: true
+math.katax.enable: false
