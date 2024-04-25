@@ -269,7 +269,7 @@ T2U_w\left(x\right) = \begin{cases}
     \end{cases}  \tag{2.5}
 $$
 
-这是通过比较公式 2.1 和公式 2.3 推导而来
+这是通过比较等式(2.1)和等式(2.3)推导而来
 
 $$
 B2U_w\left(T2B_w\left(x\right)\right) = T2U_w\left(x\right) = x + x_{w-1}2^w \tag{2.6}
@@ -290,7 +290,7 @@ U2T_w\left(u\right) = \begin{cases}
     \end{cases}  \tag{2.7}
 $$
 
-这是通过比较公式(2.1)和公式(2.3)推导而来
+这是通过比较等式(2.1)和等式(2.3)推导而来
 
 $$
 B2T_w\left(U2B_w\left(u\right)\right) = U2T_w\left(u\right) = u - u_{w-1}2^w \tag{2.8}
@@ -315,7 +315,7 @@ $$
 
 定义宽度为 $w$ 的位向量 $\vec{u}=\left[u_{w-1},u_{w-2},...,u_0\right]$ 和宽度为 $w'$ 的位向量 $\vec{u}'=\left[0,...,0,u_{w-1},u_{w-2},...,u_0\right]$，其中 $w'>w$。则 $B2T_w\left(\vec{u}\right)=B2T_{w'}\left(\vec{u}'\right)$
 
-按照公式(2.1)，该原理直接遵循无符号数编码的定义。
+按照等式(2.1)，该原理直接遵循无符号数编码的定义。
 
 将一个补码数字转换为一个更大的数据类型，可移植性**符号扩展**（sign extension），在表示的开头添加最高有效位的值。
 
@@ -323,7 +323,7 @@ $$
 
 定义宽度为 $w$ 的位向量 $\vec{x}=\left[x_{w-1},x_{w-2},...,x_0\right]$ 和宽度为 $w'$ 的位向量 $\vec{x}'=\left[x_{w-1},...,x_{w-1},x_{w-1},x_{w-2},...,x_0\right]$，其中 $x'>x$。则 $B2T_w\left(\vec{x}\right)=B2T_{x'}\left(\vec{x}'\right)$
 
-根据归纳法，结合公式(2.3)
+根据归纳法，结合等式(2.3)
 
 $$
 B2T_{w+1}\left(\left[x_{w-1},x_{w-1},x_{w-2},...,x_0\right]\right)=B2T_{w}\left(\left[x_{w-1},x_{w-2},...,x_0\right]\right)
@@ -337,20 +337,20 @@ $$
 
 **原理**：截断无符号数
 
-令 $\vec{x}$ 等于位向量 $\left[x_{w-1},x_{w-2},...,x_0\right]$，而 $\vec{x}'$ 是将其截断为 $k$ 位的结果：$\vec{x}'=\left[x_{k-1},x_{k-2},...,x_0\right]$。令 $x=B2U_w\left(\vec{x}\right)$，$x'=B2U_w\left(\vec{x'}\right)$。则 $x'=x \quad mod \quad 2^k$。
+令 $\vec{x}$ 等于位向量 $\left[x_{w-1},x_{w-2},...,x_0\right]$，而 $\vec{x}'$ 是将其截断为 $k$ 位的结果：$\vec{x}'=\left[x_{k-1},x_{k-2},...,x_0\right]$。令 $x=B2U_w\left(\vec{x}\right)$，$x'=B2U_w\left(\vec{x'}\right)$。则 $x'=x \  mod \  2^k$。
 
 通过对等式(2.1)应用取模运算可以得到
 
 $$
 \begin{align*}
-B2U_w\left(\left[x_{w-1},x_{w-2},...x_0\right]\right) \quad mod \quad 2^k &= \left[\sum_{i=0}^{w-1}x_i2^i\right] \quad mod \quad 2^k \\\\ 
+B2U_w\left(\left[x_{w-1},x_{w-2},...x_0\right]\right) \  mod \  2^k &= \left[\sum_{i=0}^{w-1}x_i2^i\right] \  mod \  2^k \\\\ 
 &= B2U_k\left(\left[x_{k-1},x_{k-2},...x_0\right]\right)
 \end{align*}
 $$
 
 **原理**：截断补码数值
 
-令 $\vec{x}$ 等于位向量 $\left[x_{w-1},x_{w-2},...,x_0\right]$，而 $\vec{x}'$ 是将其截断为 $k$ 位的结果：$\vec{x}'=\left[x_{k-1},x_{k-2},...,x_0\right]$。令 $x=B2U_w\left(\vec{x}\right)$，$x'=B2T_k\left(\vec{x'}\right)$。则 $x'=U2T_k\left(x \quad mod \quad 2^k\right)$。
+令 $\vec{x}$ 等于位向量 $\left[x_{w-1},x_{w-2},...,x_0\right]$，而 $\vec{x}'$ 是将其截断为 $k$ 位的结果：$\vec{x}'=\left[x_{k-1},x_{k-2},...,x_0\right]$。令 $x=B2U_w\left(\vec{x}\right)$，$x'=B2T_k\left(\vec{x'}\right)$。则 $x'=U2T_k\left(x \  mod \  2^k\right)$。
 
 > 到这一步有一点感觉，自己主动用数学工具描述原理的能力似乎退化了，尽管不难理解。
 
@@ -367,6 +367,205 @@ $$
 3. 当实现模运算和多精度运算的数学包时，数字是由字的数组来表示的
 
 > 第3种不太理解。
+
+
+## 整数运算
+
+**理解计算机运算的细微之处，从而理解计算机运算的有限性形成的一些属性，能够帮助程序员编写更可靠的代码**。
+
+### 无符号加法
+
+考虑两个非负整数 $x$ 和 $y$，满足 $0 \leq x,y < 2^w$，每个数都能表示为 $w$ 位无符号数字。
+计算它们的和，范围为 $0 \leq x+y \leq 2^{w+1} - 2$，表示这个和可能需要 $w+1$ 位表示。
+以此类推，持续的“字长膨胀” 意味着，要想完整地表示算术运算的结果，不能对字长做任何限制。
+- Lisp，支持**无限精度**的运算
+- 常见语言，支持**固定精度**的运算
+
+> 似乎“字长”确实具有表示整数所需的位数的含义。
+
+**原理**：无符号数加法
+
+对满足 $0 \leq x,y < 2^w$ 的 $x$ 和 $y$ 有：
+
+$$
+x +^u_w y = \begin{cases}
+    x+y & \text{if } x+y<2^w & 正常 \\\\
+    x+y-2^w & \text{if } 2^w \leq x+y \leq 2^{w+1}-2 & 溢出
+    \end{cases} \tag{2.11}
+$$
+
+> 运算 $+^u_w$ 被定义为把整数和 $x+y$ 截断 $w$ 位得到的结果，再视为一个无符号数。这也可以视为一种形式的**模运算**，模 $2^w$。
+
+**原理**：检测无符号数加法中的溢出（易证）
+
+对在范围 $0 \leq x,y \leq Umax_w$ 中的 $x$ 和 $y$，令 $s\dot{=}x+y$，则当且仅当 $s<x$ 或者 $s<y$ 时，发生了溢出。
+
+**原理**：无符号数求反
+
+对满足 $0 \leq x < 2^w$ 的任意 $x$，其 w 位的无符号逆元 $-^u_wx$ 由下式给出：
+
+$$
+-^u_wx=\begin{cases}
+x & \text{if } x=0 \\\\
+2^w-x & \text{if } x>0
+\end{cases} \tag{2.12}
+$$
+
+> $-^u_wx$ 第一眼看上去好奇怪。
+另外，模数加法，阿贝尔群，单位元，加法逆元，涉及这么多概念吗。。。
+
+### 补码加法
+
+对满足 $-2^{w-1} \leq x,y < 2^{w-1}$ 的 $x$ 和 $y$ 有：
+
+$$
+x+^t_wy=\begin{cases}
+    x+y-2^w, & 2^{w-1} \leq x+y & 正溢出 \\\\
+    x+y, & -2^{w-1} \leq x+y < 2^{w-1} & 正常 \\\\
+    x+y+2^w, & x+y < -2^{w-1} & 负溢出
+    \end{cases} \tag{2.13}
+$$
+
+> 运算 $+^t_w$ 被定义为把整数和 $x+y$ 截断 $w$ 位得到的结果，再视为一个补码数。
+
+两个数的 $w$ 位补码之和与无符号之和的位级表示相同，实际上，大多数计算机使用相同的机器指令来执行无符号或者有符号加法。
+
+> 设计是巧妙。可是为什么在这里直接认为两者的加法具有位级等价性呢？明明两者的乘法具有位级等价性还需要证明。
+
+推导如下：
+
+结合等式(2.6)
+
+$$
+\begin{align*}
+x+^t_wy &= U2T_w\left(T2U_w\left(x\right)+T2U_w\left(y\right)\right) \\\\
+    &= U2T_w\left[\left(x+x_{w-1}2^w+y+y_{w-1}2^w\right) \  mod \  2^w\right] \\\\
+    &= U2T_w\left[\left(x+y\right) \  mod \  2^w\right]
+\end{align*} \tag{2.14}
+$$
+
+结合等式(2.7)
+
+- 如果 $0 \leq x+y < 2^{w-1}$，则 $U2T_w\left[\left(x+y\right) \  mod \  2^w\right]=x+y$
+- 如果 $2^{w-1} \leq x+y \leq 2^w-2$，则 $U2T_w\left[\left(x+y\right) \  mod \  2^w\right]=x+y-2^w$
+- 如果 $-2^{w-1} \leq x+y < 0$，则 $\left(x+y\right) \  mod \  2^w=x+y+2^w$，则 $U2T_w\left(x+y+2^w\right)=x+y$
+- 如果 $-2^w \leq x+y < -2^{w-1}$，则 $\left(x+y\right) \  mod \  2^w=x+y+2^w$，则 $U2T_w\left(x+y+2^w\right)=x+y+2^w$
+
+> 虽然结论符合直觉，但是严谨的推导过程并不简单。补码加法的定义是“截断和解释”，溢出是衍生出的概念，在不溢出的情况下，还是可能出现需要截断的情况。
+
+**原理**：检测补码加法中的溢出
+
+对满足 $TMin_x \leq x,y \leq TMax_w$ 的 $x$ 和 $y$，令 $s\dot{=}x+^t_wy$。当且仅当 $x>0,y>0$，但 $s \leq 0$ 时，发生了正溢出；当且仅当 $x<0,y<0$，但 $s \geq 0$ 时，发生了负溢出。
+
+**原理**：补码求反
+
+> “补码的非”这个说法好奇怪啊，negation 翻译成这个好吗，在无符号数部分还翻译成求反呢。
+
+对满足 $TMin_w \leq x \leq TMax_w$ 的任意 $x$，其 w 位的补码逆元 $-^u_wx$ 由下式给出：
+
+$$
+-^t_wx=\begin{cases}
+TMin_w & \text{if } x=TMin_w \\\\
+-x & \text{if } x>TMin_w
+\end{cases} \tag{2.15}
+$$
+
+**求反的两种方法**：
+1. 按位取反（求补）后，再对结果加 1，即 $~x+1$。
+2. 保留最右侧的 1，对其左侧按位取反（求补）
+
+### 无符号乘法
+
+> 都是先将运算定义为截取低 $w$ 位，或者说被迫抛弃不能存储的部分高位。
+
+**原理**：无符号数乘法
+
+对满足 $0 \leq x,y \leq UMax_w$ 的 $x$ 和 $y$ 有： 
+
+$$
+x*^u_wy=\left(x·y\right) \  mod \  2^w \tag{2.16}
+$$
+
+### 补码乘法
+
+**原理**：补码乘法
+
+对满足 $TMin_w \leq x,y \leq TMax_w$ 的 $x$ 和 $y$ 有： 
+
+$$
+x*^t_wy=U2T_w\left(\left(x·y\right) \  mod \  2^w \right) \tag{2.17}
+$$
+
+**原理**：无符号和补码乘法的位级等价性
+
+给定长度为 $w$ 的位向量 $\vec{x}$ 和 $\vec{y}$，定义整数 $x=B2T_w\left(\vec{x}\right)$，$y=B2T_w\left(\vec{y}\right)$，定义非负整数 $x'=B2U_w\left(\vec{x}\right)$，$y'=B2U_w\left(\vec{y}\right)$，则
+
+$$
+T2B_w\left(x*^t_wy\right)=U2B_w\left(x'*^u_wy'\right)
+$$
+
+推导如下
+
+$$
+\begin{align*}
+x'\*^u_wy' &= \left(x'·y'\right)\ mod\ 2^w & 结合(2.16)\newline
+    &= \left[\left(x+x_{w-1}2^w\right)·\left(y+y_{w-1}2^w\right)\right]\ mod\ 2^w \newline
+    &= \left(x·y\right)\ mod\ 2^w \newline
+    &= T2U_w\left(x\*^t_wy\right) & 结合(2.17)\newline
+\end{align*}
+$$
+
+> 上面的 `*` 需要转义，是因为默认 markdown 渲染插件冲突吗
+
+对等式两边应用 $U2B_w$，可证得。
+
+### 乘以常数
+
+**在大多数机器上，整数乘法指令相当慢，需要 10 个或者更多的时钟周期，然而其他整数运算（例如加法、减法、位级运算和移位）只需要 1 个时钟周期**。
+
+**原理**：乘以 2 的幂
+
+$$
+\begin{align*}
+B2U_{w+k}\left(\left[x_{w-1},x_{w-2},...,x_0,0,...,0\right]\right) &= \sum_{i=0}^{w-1}x_i2^{i+k} \newline
+    &= \left[\sum_{i=0}^{w-1}x_i2^{i}\right]·2^k \newline
+    &= x2^k
+\end{align*}
+$$
+
+对固定字长左移 $k$ 位时，其高 $k$ 位被丢弃，得到
+
+$$
+\left[x_{w-k-1},x_{w-k-2},...,x_0,0,...,0\right]
+$$
+
+**原理**：与 2 的幂相乘的无符号乘法
+
+对于无符号整数 $x$ 和 $k$，且 $0\leq k<w$，则 $x*^u_w2^k=x<<k$
+
+**原理**：与 2 的幂相乘的补码乘法
+
+对于补码整数 $x$ 和无符号整数 $k$，且 $0\leq k<w$，则 $x*^t_w2^k=x<<k$
+
+> 溢出不影响移位结果
+
+由于整数乘法比移位和加法的代价要大得多，许多C语言编译器试图以移位、加法和减法的组合来消除很多整数乘以常数的情况。
+
+> 乘以非 2 的幂的常数，如果没有优化，底层通过循环加法实现，也有特定硬件可以实现乘法。
+
+### 除以 2 的幂
+
+**在大多数机器上，整数除法比整数乘法更慢——需要 30 个或者更多的时钟周期**。
+
+无符号和补码数分别使用逻辑移位和算术移位来达到目的。
+
+除以 2 的幂可以通过逻辑或者算术右移来实现。可惜，这个方法不能像乘法，推广到除以任意常数。
+
+### 关于整数运算的最后思考
+
+- 计算机执行的“整数”运算实际上是一种模运算形式。
+- 表示数字的有限字长限制了可能的值的取值范围，运算结果可能溢出。
+- **补码既能表示负数也能表示正数，同时使用与执行无符号算术相同的位级实现**。
 
 
 ## 参考文章
