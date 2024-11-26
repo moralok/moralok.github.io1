@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在刚开始工作时，使用到 Redis，在了解其底层数据结构时，接触到了跳表，但是在之后很长时间里，我其实并不了解它。我甚至因为看到跳表的原理图，仍然觉得难以理解，因此对它有点“望而生畏”。直到我读了跳表的代码实现，结合文字说明，我才真正体会到“跳表的实现相比平衡二叉树而言比较简单”这句话是真的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="跳表">
+<meta property="og:url" content="https://www.moralok.com/2024/11/25/skip-list/index.html">
+<meta property="og:site_name" content="Moralok">
+<meta property="og:description" content="在刚开始工作时，使用到 Redis，在了解其底层数据结构时，接触到了跳表，但是在之后很长时间里，我其实并不了解它。我甚至因为看到跳表的原理图，仍然觉得难以理解，因此对它有点“望而生畏”。直到我读了跳表的代码实现，结合文字说明，我才真正体会到“跳表的实现相比平衡二叉树而言比较简单”这句话是真的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2024/11/25/skip-list/Pasted%20image%2020241125235255.png">
+<meta property="og:image" content="https://www.moralok.com/2024/11/25/skip-list/Pasted%20image%2020241126003440.png">
+<meta property="og:image" content="https://www.moralok.com/2024/11/25/skip-list/Pasted%20image%2020241126021830.png">
+<meta property="article:published_time" content="2024-11-25T04:47:58.000Z">
+<meta property="article:modified_time" content="2024-11-26T12:49:20.564Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="redis">
+<meta property="article:tag" content="skip list">
+<meta property="article:tag" content="algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2024/11/25/skip-list/Pasted%20image%2020241125235255.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2024/11/25/skip-list/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2024/11/25/skip-list/","path":"2024/11/25/skip-list/","title":"跳表"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>跳表 | Moralok</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%B3%E8%A1%A8%E4%B8%8E%E9%93%BE%E8%A1%A8"><span class="nav-number">1.</span> <span class="nav-text">跳表与链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%B3%E8%A1%A8%E8%8A%82%E7%82%B9%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">跳表节点的结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5%E7%AD%89%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">增删改查等操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE"><span class="nav-number">3.1.</span> <span class="nav-text">查找</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0"><span class="nav-number">3.2.</span> <span class="nav-text">添加</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">3.3.</span> <span class="nav-text">删除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0"><span class="nav-number">3.4.</span> <span class="nav-text">更新</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A5%E5%85%85"><span class="nav-number">4.</span> <span class="nav-text">补充</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">假如生命只剩一天</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/11/25/skip-list/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok">
+      <meta itemprop="description" content="假如生命只剩一天">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="跳表 | Moralok">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          跳表
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-11-25 12:47:58" itemprop="dateCreated datePublished" datetime="2024-11-25T12:47:58+08:00">2024-11-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-11-26 20:49:20" itemprop="dateModified" datetime="2024-11-26T20:49:20+08:00">2024-11-26</time>
+    </span>
+
+  
+    <span id="/2024/11/25/skip-list/" class="post-meta-item leancloud_visitors" data-flag-title="跳表" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在刚开始工作时，使用到 Redis，在了解其底层数据结构时，接触到了<strong>跳表</strong>，但是在之后很长时间里，我其实并不了解它。我甚至因为看到跳表的原理图，仍然觉得难以理解，因此对它有点“望而生畏”。直到我读了跳表的代码实现，结合文字说明，我才真正体会到“跳表的实现相比平衡二叉树而言比较简单”这句话是真的。</p>
+<span id="more"></span>
+
+<p>跳表通过为链表增加多级索引层，使得查找效率从 O(n) 提升到 O(log n)，接近于平衡二叉树的性能，但实现简单且支持高效的动态调整。</p>
+<p>跳表具有以下特点：</p>
+<ul>
+<li>多级索引：每个节点随机分配一个层级（level），节点的层级越高，出现的概率越低。最高层是全局索引，底层是完整链表。</li>
+<li>跳跃查找：通过从上层开始逐级向下查找，快速跳过不需要遍历的节点。</li>
+<li>概率性平衡：节点层级由随机算法决定，平均情况下，跳表的性能和层级会保持良好的平衡。</li>
+</ul>
+<h3 id="跳表与链表"><a href="#跳表与链表" class="headerlink" title="跳表与链表"></a>跳表与链表</h3><p>对我个人而言，跳表是对有序链表的一种优化。</p>
+<p>对于有序链表而言，插入、删除、查询等操作的时间复杂度都是 O(n)。随着节点数量增多，性能逐渐变得不能接受。</p>
+<div style="width:80%;margin:auto"><img src="/2024/11/25/skip-list/Pasted%20image%2020241125235255.png" class="" title="有序链表示意图"></div>
+
+<p><strong>如何摆脱只能依次遍历节点进行查找的困境呢？</strong>跳表在原始链表基础上，建立<strong>多级索引</strong>，通过多级索引进行查找将增删改查等操作的时间复杂度优化为 O(log n) 。以下是一张典型的跳表示意图：</p>
+<div style="width:80%;margin:auto"><img src="/2024/11/25/skip-list/Pasted%20image%2020241126003440.png" class="" title="跳表示意图"></div>
+
+<p>设定如下：</p>
+<ul>
+<li>node 层，即原始链表，包含了所有节点</li>
+<li>level1 索引的节点数量是所有节点数量的 1&#x2F;2（只是在此处设定的一个概率，在 Redis 中实际为 0.25）</li>
+<li>上一层索引的节点数量总是下一层索引节点数量的 1&#x2F;2</li>
+</ul>
+<p>以查找 7 为例：</p>
+<ol>
+<li>从最顶层的索引，即 level2 索引开始查找，发现节点 4 的后继节点为 8，大于 7，因此在节点4向下一层 level1 索引移动</li>
+<li>在 level1 索引依次向前查找，直到节点 6，发现节点 6 的后继节点为 8，大于 7，因此在节点6向下一层 node 层移动</li>
+<li>在 node 层，即原始链表，依次向前查找，查找到节点 7</li>
+</ol>
+<p>尽管在此例子中，通过索引查找时移动和比较的次数之和与直接遍历相比相差无几，但是随着节点数量的增大，索引带来的优势显而易见，它能帮助我们快速跳过一个范围的节点，这就是所谓的“<strong>跳跃查找</strong>”</p>
+<p>然而，个人认为对于刚刚接触跳表的人而言，上面的原理示意图并不能很好的体现出具体实现中的数据结构，以致于会带来一些困惑。</p>
+<ul>
+<li>没有向前的指针，如何从顶层索引开始查找到节点 3？</li>
+<li>跳表的节点分布形状看起来和二叉树很像，如何构造它，会不会像构造平衡二叉树一样麻烦？</li>
+</ul>
+<h3 id="跳表节点的结构"><a href="#跳表节点的结构" class="headerlink" title="跳表节点的结构"></a>跳表节点的结构</h3><p>下图是一张拥有更多细节的跳表示意图。</p>
+<div style="width:80%;margin:auto"><img src="/2024/11/25/skip-list/Pasted%20image%2020241126021830.png" class="" title="更多细节的跳表示意图"></div>
+
+<p>跳表节点的代码如下，其中 Node 除了包含 value 外，还拥有当前节点的层级 level 和一个向前指针数组 forwards，数组大小等于 level，其中每个元素分别指向相应层级的后继节点。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> value;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> level;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Node[] forwards;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>在 Redis 中，节点还包含向后的指针 backwards 用于优化逆序查找。</p>
+</blockquote>
+<p>对我个人而言，结合上图和代码之后，跳表变得更容易理解了。</p>
+<ul>
+<li>每个位置实际上只有一个数据节点 Node，内部包含多层索引</li>
+<li>多层索引通过一个 Node 数组实现<ul>
+<li><code>forwards[i]</code> 代表在第 <code>i</code> 层</li>
+<li>在第 <code>i</code> 层向前移动就是 <code>cur =  cur.forwards[i]</code></li>
+<li>从第 <code>i</code> 层向下移动到第 <code>i-1</code> 层，就是 <code>cur.forwards[i]</code> 变为 <code>cur.forwards[i-1]</code></li>
+</ul>
+</li>
+<li>使用一个头节点，其多层索引指向每一层的第一个节点</li>
+</ul>
+<blockquote>
+<p>在代码中，我们会看到向前和向下的移动的实现是比较巧妙的。</p>
+</blockquote>
+<h3 id="增删改查等操作"><a href="#增删改查等操作" class="headerlink" title="增删改查等操作"></a>增删改查等操作</h3><h4 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h4><p>查找目标节点的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Node <span class="title function_">get</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="comment">// 从头节点开始</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> head;</span><br><span class="line">    <span class="comment">// 从最顶层开始查找</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        <span class="comment">// 遍历当前层，找到小于目标值的最大值所在的节点</span></span><br><span class="line">        <span class="keyword">while</span> (cur.forwards[i] != <span class="literal">null</span> &amp;&amp; cur.forwards[i].value &lt; value) &#123;</span><br><span class="line">            cur = cur.forwards[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 判断后继节点是否为目标</span></span><br><span class="line">        <span class="comment">// 如果不是，下一次循环时 i--，代表指针向下层移动</span></span><br><span class="line">        <span class="keyword">if</span> (cur.forwards[i] != <span class="literal">null</span> &amp;&amp; cur.forwards[i].value == value) &#123;</span><br><span class="line">            <span class="keyword">return</span> cur.forwards[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>和原理相比，实现越简单，越让人感觉巧妙啊。</p>
+</blockquote>
+<h4 id="添加"><a href="#添加" class="headerlink" title="添加"></a>添加</h4><p>构造跳表的过程，也就是依次添加节点的过程。主要需要处理几个问题：</p>
+<ol>
+<li>如何生成节点的索引层级</li>
+<li>查找和记录在每一层需要插入节点的位置</li>
+<li>插入节点</li>
+<li>更新跳表的层级</li>
+</ol>
+<p>添加节点的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="comment">// 随机生成节点的索引层级</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">level</span> <span class="operator">=</span> randomLevel();</span><br><span class="line">    <span class="comment">// 创建新节点</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">newNode</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Node</span>();</span><br><span class="line">    newNode.value = value;</span><br><span class="line">    newNode.level = level;</span><br><span class="line">    <span class="comment">// updates 用于记录每一层需要插入新节点的位置，初始化为头节点</span></span><br><span class="line">    Node[] updates = <span class="keyword">new</span> <span class="title class_">Node</span>[level];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        updates[i] = head;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 查找每一层需要插入新节点的位置</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> head;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        <span class="keyword">while</span> (cur.forwards[i] != <span class="literal">null</span> &amp;&amp; cur.forwards[i].value &lt; value) &#123;</span><br><span class="line">            cur = cur.forwards[i];</span><br><span class="line">        &#125;</span><br><span class="line">        updates[i] = cur;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 插入节点</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        newNode.forwards[i] =  updates[i].forwards[i];</span><br><span class="line">        updates[i].forwards[i] = newNode;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果跳表当前的层级小于新节点的索引层级，则更新</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.level &lt; level) &#123;</span><br><span class="line">        <span class="built_in">this</span>.level = level;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：在查找时可以通过判断提前返回，在添加时不可以。</p>
+</blockquote>
+<p>随机生成节点的层级的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">randomLevel</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">level</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (Math.random() &gt; PROBABILITY &amp;&amp; level &lt; MAX_LEVEL) &#123;</span><br><span class="line">        level++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> level;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 Redis 中，随机生成节点的层级的代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">zslRandomLevel</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="type">int</span> level = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> ((random() &amp; <span class="number">0xFFFF</span>) &lt; (ZSKIPLIST_P * <span class="number">0xFFFF</span>))</span><br><span class="line">        level += <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> (level &lt; ZSKIPLIST_MAXLEVEL) ? level : ZSKIPLIST_MAXLEVEL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设我们期望当前层的节点数量是下一层的节点数量的一半，概率就是 0.5。在 Redis 中，ZSKIPLIST_P &#x3D; 0.25。<br>假设我们期望顶层索引的数量为 2，最大节点数量为 1024，最大高度就是 10。在 Redis 中，ZSKIPLIST_MAXLEVEL &#x3D; 32，最大节点数量估计大部分情况下受限于内存容量。</p>
+<blockquote>
+<p>节点层级由随机算法决定，平均情况下，跳表的性能和层级会保持良好的平衡，这被称为<strong>概率性平衡</strong>。</p>
+</blockquote>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p>删除节点的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">delete</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="comment">// 定位待删除节点的位置</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> head;</span><br><span class="line">    Node[] updates = <span class="keyword">new</span> <span class="title class_">Node</span>[level];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        <span class="keyword">while</span> (cur.forwards[i] != <span class="literal">null</span> &amp;&amp; cur.forwards[i].value &lt; value) &#123;</span><br><span class="line">            cur = cur.forwards[i];</span><br><span class="line">        &#125;</span><br><span class="line">        updates[i] = cur;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 检查目标节点是否存在</span></span><br><span class="line">    <span class="keyword">if</span> (cur.forwards[<span class="number">0</span>] != <span class="literal">null</span> &amp;&amp; cur.forwards[<span class="number">0</span>].value == value) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="keyword">if</span> (updates[i].forwards[i] != <span class="literal">null</span> &amp;&amp; updates[i].forwards[i].value == value) &#123;</span><br><span class="line">                updates[i].forwards[i] = updates[i].forwards[i].forwards[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果删除的目标节点是唯一最高节层，则减少层级</span></span><br><span class="line">    <span class="keyword">while</span> (level &gt; <span class="number">1</span> &amp;&amp; head.forwards[level - <span class="number">1</span>] == <span class="literal">null</span>) &#123;</span><br><span class="line">        level--;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 Redis 中，删除节点时，还需要处理向后的指针，相关代码见下方：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x-&gt;level[<span class="number">0</span>].forward) &#123;</span><br><span class="line">    x-&gt;level[<span class="number">0</span>].forward-&gt;backward = x-&gt;backward;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    zsl-&gt;tail = x-&gt;backward;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 x 是待删除节点。</p>
+<h4 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h4><p>跳表既可以允许重复值，也可以不允许重复值。</p>
+<p>在 Redis 中，<code>zset</code> 将 <code>double</code> 类型的 <code>score</code> 和 <code>sds</code> 类型的 <code>ele</code> 作为整体对象进行处理，允许不同 <code>ele</code> 拥有相同的 <code>score</code>，也允许修改 <code>ele</code> 的 <code>score</code>。<br>根据注释，<code>zslInsert</code> 方法由调用者保证 <code>ele</code> 不存在，调用者通过 hash table 测试 <code>ele</code> 是否存在；<br>修改分数的操作实际上是通过“删除旧节点 + 插入新节点”实现，以确保跳表的有序性和高效查找能力。这种实现方法简单、清晰，同时能够在保证性能的前提下完成节点的修改。</p>
+<p>对于不同 <code>ele</code> 拥有相同的 <code>score</code>，应对的相关代码见下方：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">x = zsl-&gt;header;</span><br><span class="line"><span class="keyword">for</span> (i = zsl-&gt;level<span class="number">-1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">while</span> (x-&gt;level[i].forward &amp;&amp;</span><br><span class="line">            (x-&gt;level[i].forward-&gt;score &lt; score ||</span><br><span class="line">                (x-&gt;level[i].forward-&gt;score == score &amp;&amp;</span><br><span class="line">                    <span class="comment">// 应对同 score 但不同 ele 的情况</span></span><br><span class="line">                    sdscmp(x-&gt;level[i].forward-&gt;ele,ele) &lt; <span class="number">0</span>)))</span><br><span class="line">    &#123;</span><br><span class="line">        x = x-&gt;level[i].forward;</span><br><span class="line">    &#125;</span><br><span class="line">    update[i] = x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>更多细节见 Redis 的源代码 <code>src/t_zset.c</code>。</p>
+</blockquote>
+<h3 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h3><p>在 Redis 中，<code>zset</code> 有两种不同的实现，分别是 <code>ziplist</code> 和 <code>skiplist</code>。</p>
+<blockquote>
+<p>使用命令 <code>object encoding key</code> 可以查看目标的底层数据结构</p>
+</blockquote>
+<ul>
+<li>当同时满足以下两个条件时，使用 <code>ziplist</code>：<ul>
+<li>保存的键值对数量少于 <code>128</code> 个，<code>zset-max-ziplist-entries 128</code></li>
+<li>每个元素的大小小于 <code>64</code> 字节，<code>zset-max-ziplist-value 64</code></li>
+</ul>
+</li>
+<li>如果不同时满足上述两个条件，那么使用 <code>skiplist</code></li>
+</ul>
+<p>考虑到内存空间的稀缺性，在满足条件的情况下使用 <code>ziplist</code> 既可以节约内存，又可以保证效率。这不禁让人想到，在计算机底层，很多时候处理的就是连续的小块对象，为的就是平衡效率和空间。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/redis/" rel="tag"># redis</a>
+              <a href="/tags/skip-list/" rel="tag"># skip list</a>
+              <a href="/tags/algorithm/" rel="tag"># algorithm</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/03/11/representating-and-manipulating-information/" rel="prev" title="信息的表示和处理">
+                  <i class="fa fa-angle-left"></i> 信息的表示和处理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">134k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:28</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
