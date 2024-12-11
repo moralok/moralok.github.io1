@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在静态博客系统 Hexo 和它的第三方主题 NexT 被广泛使用多年的情况下，网上添加友链的相关教程并不少。然而由于管理、使用和部署 Hexo 博客的方式有所不同，用户可能并不想或不方便侵入式地在主题目录中修改或添加文件。本文介绍了如何在通过 Git submodule 管理和使用 NexT 主题的情况下，无侵入式地添加并定制友链页面。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在使用 Hexo NexT 主题时如何无侵入式地添加友链页面">
+<meta property="og:url" content="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/index.html">
+<meta property="og:site_name" content="Moralok&#39;s Blog">
+<meta property="og:description" content="在静态博客系统 Hexo 和它的第三方主题 NexT 被广泛使用多年的情况下，网上添加友链的相关教程并不少。然而由于管理、使用和部署 Hexo 博客的方式有所不同，用户可能并不想或不方便侵入式地在主题目录中修改或添加文件。本文介绍了如何在通过 Git submodule 管理和使用 NexT 主题的情况下，无侵入式地添加并定制友链页面。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/Snipaste_2024-12-11_22-32-25.png">
+<meta property="og:image" content="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/Snipaste_2024-12-11_23-25-42.png">
+<meta property="article:published_time" content="2024-12-10T10:04:53.000Z">
+<meta property="article:modified_time" content="2024-12-11T16:32:59.120Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="hexo">
+<meta property="article:tag" content="next theme">
+<meta property="article:tag" content="git submodule">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/Snipaste_2024-12-11_22-32-25.png">
+
+
+<link rel="canonical" href="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/","path":"2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/","title":"在使用 Hexo NexT 主题时如何无侵入式地添加友链页面"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在使用 Hexo NexT 主题时如何无侵入式地添加友链页面 | Moralok's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">你在幼年时当快乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E9%A6%96%E9%A1%B5%E6%B7%BB%E5%8A%A0%E5%8F%8B%E9%93%BE"><span class="nav-number">1.</span> <span class="nav-text">在首页添加友链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%8D%95%E7%8B%AC%E7%9A%84%E5%8F%8B%E9%93%BE%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.</span> <span class="nav-text">添加单独的友链页面</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%8F%8B%E9%93%BE%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.1.</span> <span class="nav-text">创建友链页面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9A%E5%88%B6%E5%8F%8B%E9%93%BE%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.2.</span> <span class="nav-text">定制友链页面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E5%AF%BC%E8%88%AA%E8%8F%9C%E5%8D%95"><span class="nav-number">2.3.</span> <span class="nav-text">更新导航菜单</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%8F%9C%E5%8D%95%E7%9A%84%E5%9B%BD%E9%99%85%E5%8C%96"><span class="nav-number">2.3.1.</span> <span class="nav-text">菜单的国际化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E5%92%8C%E6%84%9F%E6%83%B3"><span class="nav-number">3.</span> <span class="nav-text">总结和感想</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">却要知道，为这一切的事……</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">53</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok's Blog">
+      <meta itemprop="description" content="却要知道，为这一切的事……">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在使用 Hexo NexT 主题时如何无侵入式地添加友链页面 | Moralok's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在使用 Hexo NexT 主题时如何无侵入式地添加友链页面
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-12-10 18:04:53" itemprop="dateCreated datePublished" datetime="2024-12-10T18:04:53+08:00">2024-12-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-12-12 00:32:59" itemprop="dateModified" datetime="2024-12-12T00:32:59+08:00">2024-12-12</time>
+    </span>
+
+  
+    <span id="/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/" class="post-meta-item leancloud_visitors" data-flag-title="在使用 Hexo NexT 主题时如何无侵入式地添加友链页面" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在静态博客系统 <code>Hexo</code> 和它的第三方主题 <code>NexT</code> 被广泛使用多年的情况下，网上添加友链的相关教程并不少。然而由于管理、使用和部署 <code>Hexo</code> 博客的方式有所不同，用户可能并不想或不方便侵入式地在<strong>主题目录</strong>中修改或添加文件。本文介绍了如何在通过 <code>Git</code> <code>submodule</code> 管理和使用 <code>NexT</code> 主题的情况下，<strong>无侵入式地添加并定制友链页面</strong>。</p>
+<span id="more"></span>
+
+<p>前置补充说明：</p>
+<ul>
+<li><code>Hexo</code> 的版本为 <code>7.3.0</code></li>
+<li><code>NexT</code> 的版本为 <code>8.19.1</code></li>
+<li>使用 <code>Git</code> <code>submodule</code> 追踪和使用官方 <code>NexT</code> 主题，无侵入具体指不修改子模块（即主题目录）中的文件</li>
+</ul>
+<hr>
+<p>在使用 <code>NexT</code> 主题的 <code>Hexo</code> 博客中添加友链有两种方式：</p>
+<ol>
+<li>通过配置文件在<strong>首页</strong>侧边栏添加友链</li>
+<li>通过自定义页面的方式添加<strong>单独</strong>的友链页面</li>
+</ol>
+<h3 id="在首页添加友链"><a href="#在首页添加友链" class="headerlink" title="在首页添加友链"></a>在首页添加友链</h3><p>使用 <code>NexT</code> 主题的 <code>Hexo</code> 博客支持通过编辑配置文件的方式在首页添加友链，方法如下：</p>
+<ol>
+<li>在 <code>Hexo</code> 博客项目的<strong>根目录</strong>下添加 <code>NexT</code> 主题的用户配置文件 <code>_config.next.yml</code> 文件，用于覆盖主题的默认配置。这样可以避免直接修改主题目录中的默认配置文件。</li>
+<li>在 <code>_config.next.yml</code> 文件中添加配置：<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">links:</span></span><br><span class="line">  <span class="attr">LINUX DO:</span> <span class="string">https://linux.do</span></span><br><span class="line">  <span class="attr">Moralok:</span> <span class="string">https://www.moralok.com</span></span><br><span class="line">  <span class="attr">Google:</span> <span class="string">https://google.com</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>通过以上两个简单的步骤，就实现了在首页的侧边栏中显示友链，具体效果如下：</p>
+<div style="width:20%;margin:auto"><img src="/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/Snipaste_2024-12-11_22-32-25.png" class="" title="NexT主题侧边栏显示友链"></div>
+
+<p>这种方式的优点是简单快捷；缺点是随着友链数量的增加，首页版面的美观度可能有所下降，同时有一点缺少可定制性。</p>
+<h3 id="添加单独的友链页面"><a href="#添加单独的友链页面" class="headerlink" title="添加单独的友链页面"></a>添加单独的友链页面</h3><h4 id="创建友链页面"><a href="#创建友链页面" class="headerlink" title="创建友链页面"></a>创建友链页面</h4><p>尽管第三方主题 <code>NexT</code> 并没有原生支持生成友链页面，就像生成归档页面和标签页面那样。但我们仍然可以通过自定义 <code>Hexo</code> 页面的方式添加并定制一个友链页面。</p>
+<ol>
+<li>在 <code>Hexo</code> 博客项目的<strong>根目录</strong>下运行以下命令，创建一个新的页面（假设命名为 <code>links</code>）：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page <span class="string">&quot;links&quot;</span></span><br></pre></td></tr></table></figure></li>
+<li>上述命令会在 <code>source</code> 目录下创建一个 <code>links</code> 文件夹，并在其中创建一个 <code>index.md</code> 文件。（在不同版本的 <code>Hexo</code> 中，文件路径有所不同）</li>
+<li>通过编辑这个 <code>index.md</code> 文件，就可以定制 <code>url</code> <code>/links</code> 对应的友链页面，比如以无序列表的方式展示友链：<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> [<span class="string">LINUX DO</span>](<span class="link">https://linux.do</span>)：新的理想型社区</span><br><span class="line"><span class="bullet">-</span> [<span class="string">Moralok</span>](<span class="link">https://www.moralok.com</span>)：Moralok 的个人博客</span><br><span class="line"><span class="bullet">-</span> [<span class="string">Google</span>](<span class="link">https://google.com</span>)：谷歌搜索</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>相比于在首页添加友链，这种创建单独友链页面的方式，增加了可定制性，既可以展示更多的信息，也可以添加更多的样式。实际上，大多数使用这种方式的人或多或少都会进一步定制页面的样式，从而增加博客的美观程度。</p>
+<h4 id="定制友链页面"><a href="#定制友链页面" class="headerlink" title="定制友链页面"></a>定制友链页面</h4><p>因为 <code>Hexo</code> 面向的用户群体非常广大，且自身具备非常高的可定制性，各个领域的用户根据自身不同的认知可能采用不同的方式修改定制自己的博客，比如：</p>
+<ol>
+<li>直接修改主题目录中的源文件。</li>
+<li>通过用户配置文件覆盖主题级别的默认设置。</li>
+<li>通过博客配置文件修改博客级别的默认设置。</li>
+</ol>
+<p>需要注意的是，无论是 <code>Hexo</code> 还是 <code>NexT</code>，都允许并<strong>建议通过配置文件覆盖默认设置的方式定制博客</strong>。这样可以减少对源文件的“污染”，便于 <code>Hexo</code> 或 <code>NexT</code> 的更新升级。但是在现存大多数的教程中，涉及页面和样式的修改往往都需要在主题目录中修改或增加文件。<br>笔者认同在第三方主题的基础上进一步定制博客难免需要修改主题的源代码，但是在通过 <code>Git</code> <code>submodule</code> 管理和使用 <code>NexT</code> 主题的情况下，暂时完全不想因为添加友链这一事项专门 <code>fork</code> 并维护一个私有版本的主题。那么如何在不侵入子模块（即主题目录）的情况下，定制一个稍微美观的友链页面呢？</p>
+<p>注意到 <code>markdown</code> 不仅支持内嵌 <code>HTML</code>，还支持内嵌 <code>CSS</code>，修改 <code>index.md</code> 文件：</p>
+<blockquote>
+<p>其实笔者自认为缺乏对网站的审美能力，这次折腾的主要目的仅仅是为了在添加友链的同时展示对方网站的 icon，因此只要页面不要太丑就好。以下页面和样式均由 Chat GPT 提供。</p>
+</blockquote>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.links-container</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">display</span>: grid;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">grid-template-columns</span>: <span class="built_in">repeat</span>(auto-fill, <span class="built_in">minmax</span>(<span class="number">250px</span>, <span class="number">1</span>fr));</span></span><br><span class="line"><span class="language-css">  <span class="attribute">gap</span>: <span class="number">20px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">margin-top</span>: <span class="number">40px</span>;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-item</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">background-color</span>: <span class="number">#fff</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">border-radius</span>: <span class="number">8px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">box-shadow</span>: <span class="number">0</span> <span class="number">4px</span> <span class="number">8px</span> <span class="built_in">rgba</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0.1</span>);</span></span><br><span class="line"><span class="language-css">  <span class="attribute">transition</span>: transform <span class="number">0.3s</span> ease, box-shadow <span class="number">0.3s</span> ease;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-item</span><span class="selector-pseudo">:hover</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">transform</span>: <span class="built_in">translateY</span>(-<span class="number">5px</span>);</span></span><br><span class="line"><span class="language-css">  <span class="attribute">box-shadow</span>: <span class="number">0</span> <span class="number">8px</span> <span class="number">16px</span> <span class="built_in">rgba</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0.2</span>);</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-card</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">display</span>: flex;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">flex-direction</span>: column;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">justify-content</span>: center;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">align-items</span>: center;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">padding</span>: <span class="number">20px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">text-decoration</span>: none;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">color</span>: <span class="number">#333</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">border-radius</span>: <span class="number">8px</span>;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-card</span><span class="selector-pseudo">:hover</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">background-color</span>: <span class="number">#f5f5f5</span>;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-icon</span> <span class="selector-tag">img</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">width</span>: <span class="number">80px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">height</span>: <span class="number">80px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">margin-bottom</span>: <span class="number">15px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">border-radius</span>: <span class="number">50%</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">object-fit</span>: cover;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-info</span> <span class="selector-tag">h3</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">font-size</span>: <span class="number">18px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">font-weight</span>: bold;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">margin-bottom</span>: <span class="number">5px</span>;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.link-info</span> <span class="selector-tag">p</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">font-size</span>: <span class="number">14px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">color</span>: <span class="number">#666</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">text-align</span>: center;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">line-height</span>: <span class="number">1.5</span>;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="comment">/* 增加响应式设计 */</span></span></span><br><span class="line"><span class="language-css"><span class="keyword">@media</span> (<span class="attribute">max-width</span>: <span class="number">768px</span>) &#123;</span></span><br><span class="line"><span class="language-css">  <span class="selector-class">.links-container</span> &#123;</span></span><br><span class="line"><span class="language-css">    <span class="attribute">grid-template-columns</span>: <span class="number">1</span>fr;</span></span><br><span class="line"><span class="language-css">  &#125;</span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;links-container&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;link-item&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;https://linux.do/?source=moralok_com&quot;</span> <span class="attr">target</span>=<span class="string">&quot;_blank&quot;</span> <span class="attr">class</span>=<span class="string">&quot;link-card&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;link-icon&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/images/linux_do.png&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;LINUX DO&quot;</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;link-info&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">h3</span>&gt;</span>LINUX DO<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">p</span>&gt;</span>新的理想型社区<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>实现的具体效果如下：</p>
+<div style="width:70%;margin:auto"><img src="/2024/12/10/how-to-add-a-friends-links-page-non-invasively-when-using-Hexo-NexT-theme/Snipaste_2024-12-11_23-25-42.png" class="" title="单独的友链页面"></div>
+
+<h4 id="更新导航菜单"><a href="#更新导航菜单" class="headerlink" title="更新导航菜单"></a>更新导航菜单</h4><p>在添加单独的友链页面后，往往会在首页导航菜单部分，添加友链页面的入口。在 <code>_config.next.yml</code> 文件中的 <code>menu</code> 节点下，添加 <code>links</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 菜单</span></span><br><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="attr">home:</span> <span class="string">/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-home</span></span><br><span class="line">  <span class="attr">tags:</span> <span class="string">/tags/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-tags</span></span><br><span class="line">  <span class="attr">archives:</span> <span class="string">/archives/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-archive</span></span><br><span class="line">  <span class="attr">links:</span> <span class="string">/links/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-link</span></span><br></pre></td></tr></table></figure>
+
+<p>表示在侧边栏展示 links 按钮，点击时将跳转到 <code>url</code> <code>/links/</code>，按钮使用 Font Awesome 图标库的链接图标。</p>
+<blockquote>
+<p><code>fa-link</code>、<code>fa-home</code> 等类的标签是 Font Awesome 图标库中的图标类，分别代表“链接”、“首页”图标。Font Awesome 是一个广泛使用的图标库，提供了大量的矢量图标，适用于各种网页和应用开发。<code>NexT</code> 支持通过以上方式在侧边栏的菜单中使用 Font Awesome 图标库，具体可用的标签可在<a target="_blank" rel="noopener" href="https://fontawesome.com/">官网</a>中搜索。</p>
+</blockquote>
+<h5 id="菜单的国际化"><a href="#菜单的国际化" class="headerlink" title="菜单的国际化"></a>菜单的国际化</h5><p>笔者博客默认使用的语言为中文，注意到首页侧边栏的菜单中，友链的按钮显示为 links，有点格格不入。这是因为 <code>NexT</code> 的默认国际化配置文件中，没有 <code>links</code> 的翻译。查看 <code>theme/next/languages/zh-CN.yml</code> 文件，<code>menu</code> 节点的配置如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="attr">home:</span> <span class="string">首页</span></span><br><span class="line">  <span class="attr">archives:</span> <span class="string">归档</span></span><br><span class="line">  <span class="attr">categories:</span> <span class="string">分类</span></span><br><span class="line">  <span class="attr">tags:</span> <span class="string">标签</span></span><br><span class="line">  <span class="attr">about:</span> <span class="string">关于</span></span><br><span class="line">  <span class="attr">search:</span> <span class="string">搜索</span></span><br><span class="line">  <span class="attr">schedule:</span> <span class="string">日程表</span></span><br><span class="line">  <span class="attr">sitemap:</span> <span class="string">站点地图</span></span><br><span class="line">  <span class="attr">commonweal:</span> <span class="string">公益</span> <span class="number">404</span></span><br></pre></td></tr></table></figure>
+
+<p>网上大多数的教程都是建议直接修改该文件，但是和前面提到的页面定制相似，我们并不希望直接修改主题目录中的国际化配置文件。注意到同级目录中有一个 <code>theme/next/languages/README.md</code> 文件，里面提供了官方建议的无侵入式地覆盖默认翻译的方法：</p>
+<ol>
+<li>在 <code>Hexo</code> 博客项目的 <code>source/_data</code> 目录下创建一个 <code>languages.yml</code> 文件。</li>
+<li>添加如下配置覆盖默认翻译：<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># language</span></span><br><span class="line"><span class="attr">zh-CN:</span></span><br><span class="line">  <span class="comment"># items</span></span><br><span class="line">  <span class="attr">menu:</span></span><br><span class="line">    <span class="comment"># the translation you perfer</span></span><br><span class="line">    <span class="attr">links:</span> <span class="string">友链</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<p>事实上，如果不考虑国际化问题，直接在 <code>_config.next.yml</code> 文件中的 <code>menu</code> 节点下，用中文“友链”代替 links 也是可以的，但是正常情况下完全不建议这样子做。</p>
+</blockquote>
+<h3 id="总结和感想"><a href="#总结和感想" class="headerlink" title="总结和感想"></a>总结和感想</h3><p>本文主要介绍了在使用 <code>Git</code> <code>submodule</code> 管理和使用 <code>Hexo</code> <code>NexT</code> 主题的情况下，如何无侵入式地添加友链页面。在这个过程中，同样秉承着“无侵入”的原则，处理了侧边栏菜单的国际化问题。这个原则的核心思想其实是“配置与代码分离”，将应用程序的代码和配置项分离有很多好处，包括但不限于更好的可维护性、可扩展性、安全性和版本控制。在这次情况中，最直接明显的一个好处就是保证了主题更新升级的便捷性。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/hexo/" rel="tag"># hexo</a>
+              <a href="/tags/next-theme/" rel="tag"># next theme</a>
+              <a href="/tags/git-submodule/" rel="tag"># git submodule</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/04/memory-eviction-in-Redis/" rel="prev" title="Redis 的内存淘汰">
+                  <i class="fa fa-angle-left"></i> Redis 的内存淘汰
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">146k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:06</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
