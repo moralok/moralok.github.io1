@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.moralok.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="这部分内容在多个层面简单地介绍了一些有关于机器级代码的信息，包括机器级编程时的两种重要抽象、编译器的工作、机器级代码的特点和它对内存的视角。它好像没有涉及什么实质的知识，但是拥有很多可以发散联想的关键点。在遇到这些关键点时脑海里有所知，感觉很好。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读书随想：机器级代码">
+<meta property="og:url" content="https://www.moralok.com/2024/04/28/machine-level-code/index.html">
+<meta property="og:site_name" content="Moralok&#39;s Blog">
+<meta property="og:description" content="这部分内容在多个层面简单地介绍了一些有关于机器级代码的信息，包括机器级编程时的两种重要抽象、编译器的工作、机器级代码的特点和它对内存的视角。它好像没有涉及什么实质的知识，但是拥有很多可以发散联想的关键点。在遇到这些关键点时脑海里有所知，感觉很好。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-04-28T23:52:02.000Z">
+<meta property="article:modified_time" content="2024-12-27T13:21:07.189Z">
+<meta property="article:author" content="Moralok">
+<meta property="article:tag" content="csapp">
+<meta property="article:tag" content="machine level">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.moralok.com/2024/04/28/machine-level-code/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://www.moralok.com/2024/04/28/machine-level-code/","path":"2024/04/28/machine-level-code/","title":"读书随想：机器级代码"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>读书随想：机器级代码 | Moralok's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MBCXKHJL0"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-2MBCXKHJL0","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Moralok's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">你在幼年时当快乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E7%BA%A7%E4%BB%A3%E7%A0%81"><span class="nav-number">1.</span> <span class="nav-text">机器级代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E7%BA%A7%E7%BC%96%E7%A8%8B%E6%97%B6%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%8A%BD%E8%B1%A1"><span class="nav-number">1.1.</span> <span class="nav-text">机器级编程时的两种抽象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.2.</span> <span class="nav-text">编译器的工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E7%BA%A7%E4%BB%A3%E7%A0%81%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">机器级代码的特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E7%BA%A7%E4%BB%A3%E7%A0%81%E5%AF%B9%E5%86%85%E5%AD%98%E7%9A%84%E8%A7%86%E8%A7%92"><span class="nav-number">1.4.</span> <span class="nav-text">机器级代码对内存的视角</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">2.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Moralok</p>
+  <div class="site-description" itemprop="description">却要知道，为这一切的事……</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/moralok" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;moralok" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/04/28/machine-level-code/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok's Blog">
+      <meta itemprop="description" content="却要知道，为这一切的事……">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="读书随想：机器级代码 | Moralok's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          读书随想：机器级代码
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-04-29 07:52:02" itemprop="dateCreated datePublished" datetime="2024-04-29T07:52:02+08:00">2024-04-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
+    </span>
+
+  
+    <span id="/2024/04/28/machine-level-code/" class="post-meta-item leancloud_visitors" data-flag-title="读书随想：机器级代码" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>10 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>这部分内容在多个层面简单地介绍了一些有关于机器级代码的信息，包括<strong>机器级编程时的两种重要抽象</strong>、<strong>编译器的工作</strong>、<strong>机器级代码的特点</strong>和<strong>它对内存的视角</strong>。它好像没有涉及什么实质的知识，但是拥有很多可以发散联想的关键点。在遇到这些关键点时脑海里有所知，感觉很好。</p>
+<span id="more"></span>
+
+<h2 id="机器级代码"><a href="#机器级代码" class="headerlink" title="机器级代码"></a>机器级代码</h2><h3 id="机器级编程时的两种抽象"><a href="#机器级编程时的两种抽象" class="headerlink" title="机器级编程时的两种抽象"></a>机器级编程时的两种抽象</h3><p>计算机系统使用了多种不同形式的抽象，利用更简单的抽象模型来隐藏实现的细节。<strong>对于机器级编程来说，其中两种抽象尤为重要</strong>。</p>
+<blockquote>
+<p>关于抽象模型，平常遇到的所谓抽象模型和实现细节通常距离并不遥远，至少看上去两者可以直观地联系在一起，但这两种抽象模型却有些令人细思极恐，被隐藏的实现细节仿佛海面下的冰山。感觉对“高度抽象”这个词有了具体的感受。</p>
+</blockquote>
+<ol>
+<li>第一种是由指令集体系结构或指令集架构（Instruction Set Architecture，ISA）来定义<strong>机器级程序的格式和行为</strong>，它定义了<strong>处理器状态</strong>、<strong>指令的格式</strong>，以及<strong>每条指令对状态的影响</strong>。大多数 ISA，包括 x86-64，将程序的行为描述成好像每条指令都是按顺序执行的，一条指令结束后，下一条再开始。处理器的硬件远比描述的精细复杂，它们并发地执行许多指令，但是可以采取措施保证整体行为与 ISA 指定的顺序执行的行为完全一致。</li>
+<li>第二种是机器级程序使用的内存地址是<strong>虚拟地址</strong>，提供的内存模型看上去是<strong>一个非常大的字节数组</strong>。存储器系统的实际实现是将多个硬件存储器和操作系统软件组合起来。</li>
+</ol>
+<blockquote>
+<ol>
+<li>关于第一种抽象，文中用了“指令的顺序执行”作为对“定义程序的行为”的一个例子，那么何谓定义“处理器状态”、“指令的格式”和“每条指令对状态的影响”呢？<ul>
+<li>处理器状态是指在执行程序时，CPU 的各种寄存器和内存中数据的当前值。</li>
+<li>指令的格式是指机器指令的组成部分，即操作码（opcode）和操作数（operand）。每个指令会由不同的字段构成，每个字段可能代表不同的信息（例如操作的类型、操作的寄存器、操作数的地址等）。</li>
+<li>每条指令对状态的影响是指指令执行时应该如何改变处理器状态，即各种寄存器和内存中的数据。</li>
+</ul>
+</li>
+<li>关于第二种抽象，文中提及了存储器系统，虚拟地址到存储器系统的跳跃也太大了，中间还隔着物理地址呢。这部分背后的信息量很大啊，如果不是回头来看，应该不好理解吧？说实话，个人认为文中的说法有一点点容易让人多想，在物理地址的视角里就已经“将内存视为一个非常大的字节数组”，虚拟地址的设计关注的是其他方面。</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>操作码通常为 1 个字节，加上操作数的话指令长度从 1 到 15 个字节不等。从编码角度，操作码的个数似乎限制为 256，但在现代架构中，通过前缀字节，操作码可以扩展为多个字节。想起曾经对编码一知半解，不然也不会对 CPU 如何识别机器指令感到头疼吧。</p>
+</blockquote>
+<h3 id="编译器的工作"><a href="#编译器的工作" class="headerlink" title="编译器的工作"></a>编译器的工作</h3><p>在整个编译过程中，编译器会完成大部分的工作，将把用 C 语言提供的相对比较抽象的执行模型表示的程序转化成处理器执行的非常基本的指令。<br>一条机器指令只执行一个非常基本的操作，例如将存放在寄存器中的两个数字相加，在存储器和寄存器之间传送数据，或是条件分支转移到新的指令地址。编译器必须产生这些指令的序列，从而实现（像算术表达式求值、循环或过程调用和返回这样的）程序结构。</p>
+<blockquote>
+<p>这部分真是让人惊叹，编译器好像将一座摩天大楼的建造过程分解为一系列最基本的步骤，从汇编代码开始，你已经看不到关于局部变量名或数据类型的信息了；而处理器通过执行这一系列最基本的操作重现摩天大楼，实现最终复杂的程序。就好像积跬步以至千里。</p>
+</blockquote>
+<h3 id="机器级代码的特点"><a href="#机器级代码的特点" class="headerlink" title="机器级代码的特点"></a>机器级代码的特点</h3><p>汇编代码表示非常接近于机器代码。与机器代码的二进制格式相比，汇编代码的主要特点时它用可读性更好的文本格式表示。</p>
+<blockquote>
+<p>机器级代码可读性差，但通过理解相近的汇编代码就可以理解计算机是如何执行程序的。因此尽管如今我们几乎不需要手写汇编代码，但是理解它以及它与原始的 C 代码的联系仍然很关键。读汇编代码就如同在读机器代码。</p>
+</blockquote>
+<p>x86-64 的机器代码和原始的 C 代码差别非常大。一些<strong>通常对 C 语言程序员隐藏的处理器状态都是可见的</strong>：</p>
+<ul>
+<li>程序计数器（通常称为 PC，在 x86-64 中用 <code>%rip</code> 表示）给出将要执行的下一条指令在内存中的地址。</li>
+<li>整数寄存器文件包含 16 个命名的位置，分别存储 64 位的值，可以存储地址或整数数据。有的寄存器被用来记录某些重要的程序状态，而其他的寄存器用来保存临时数据，例如过程的参数和局部变量，以及函数的返回值。</li>
+<li>条件码寄存器保存着最近执行的算术或逻辑指令的状态信息，用来实现控制或数据流中的条件变化，比如说用来实现 <code>if</code> 和 <code>while</code> 语句。</li>
+<li>一组向量寄存器可以存放一个或多个整数或浮点数值。</li>
+</ul>
+<blockquote>
+<p>上述内容再次提到了处理器状态。</p>
+<ul>
+<li>关于程序计数器，我是从 Java 中的程序计数器开始认识这个概念的。两者概念相似，实现和应用环境却并不相同。前者是由硬件直接管理，与程序的运行紧密相关；后者是由 JVM 管理，指向字节码指令的地址，主要用于字节码执行和多线程的调度。说实话，感觉如今对前者的本质认识得很清楚了，但对后者的认识却还在表面。</li>
+<li>关于整数寄存器，保存临时数据很好理解，而“有的被用来记录某些重要的程序状态”，栈指针寄存器应该是一个例子。</li>
+<li>关于条件码寄存器，最初我并没有正确认识到一件事，CPU 在执行一些指令的<strong>同时</strong>，会根据结果设置这些寄存器。</li>
+</ul>
+</blockquote>
+<h3 id="机器级代码对内存的视角"><a href="#机器级代码对内存的视角" class="headerlink" title="机器级代码对内存的视角"></a>机器级代码对内存的视角</h3><p>C 语言提供了一种模型，可以在内存中声明和分配各种数据类型的对象，但是机器代码只是简单地将内存看成一个很大的、按字节寻址的数组。C 语言中的聚合数据类型，例如数组和结构，在机器代码中用一组连续的字节来表示。即使是对标量数据类型，汇编代码也不区分有符号或无符号整数，不区分各种类型的指针，甚至于不区分指针和整数。</p>
+<blockquote>
+<p>理解这种模型似乎并不困难，但定义并实现这种模型并非易事。如今“见多了猪跑”，回头看这个模型好像理所当然，当初自己可不是一点就通的。如果能方便地“透视”内存中的数据，很多东西学起来会容易很多吧。<br>不仅仅是“机器代码只是简单地将内存看成一个很大的、按字节寻址的数组”，而是“机器代码看内存只能看到一个很大的、按字节寻址的数组”，就好像内存只给机器代码留了一个至简的接口。这么看，存储器系统的实现真是太棒了啊。<br>机器代码对内存数据的使用很好地诠释了 <code>(0 &amp; 1) + interpretation = everything</code>。再次强调，在机器代码的视角中是没有数据类型相关的信息的。</p>
+</blockquote>
+<p>程序内存包含：程序的可执行机器代码，操作系统需要的一些信息，用来管理过程调用和返回的运行时栈，以及用户分配的内存块（比如用 <code>malloc</code> 库函数分配的）。</p>
+<blockquote>
+<p>准确的描述，每一部分都会让人想起一些知识点，就好像“我知道你想让我知道什么”的感觉，而后会突然意识到，每一部分的知识点，都好厚重啊。。。</p>
+<ul>
+<li>想起之前好像不能理解“可执行机器代码和数据都在内存里”这件事情，如今想来竟有种“轻舟已过万重山”的感觉，当时是因为不能理解 CPU 如何识别指令和数据吗？</li>
+<li>操作系统需要的一些信息，主要指的是操作系统内核所需要的信息吗？内核对我来说也曾遮了一副厚厚的面纱呢，现在也只是面纱变薄了一些。</li>
+<li>栈真是一个美妙的数据结构啊，我竟然曾经因为 Java 的 <code>Stack</code> 类，对它产生过“你已经 out 了”的错误印象，我真是该死啊 Orz。</li>
+<li>内存分配，任重而道远啊。</li>
+</ul>
+</blockquote>
+<p>程序内存用虚拟地址来寻址。</p>
+<blockquote>
+<p>曾经我以为地址就是物理地址，我很高兴我理解了“内存是一个非常大的字节数组”这个基本抽象。后来我理解了存储器系统，我感觉内存的奥秘向我展开了，设计太棒了吧。直到我注意到地址其实指的是虚拟地址，我脑子里飘过了一连串的问号，还需要抽象什么吗？这是为了啥呢？我咋不太能理解它带来的益处呢？最后，我理解了虚拟地址，真妙不可言。</p>
+</blockquote>
+<p>最终的可执行代码文件，不仅包含了相关过程的代码，还包含了用来启动和终止程序的代码，以及用来与操作系统交互的代码。</p>
+<blockquote>
+<p>这部分还是未知的。</p>
+</blockquote>
+<p>反汇编可执行代码文件之后会发现其中的代码片段和直接反汇编单独的目标代码文件中的代码片段几乎完全一样，但是指令 <code>callq</code> 调用函数的地址不同——链接器将函数代码的地址移到了一段不同的地址范围中，同时它也会为函数调用找到匹配的函数的可执行代码的位置。</p>
+<blockquote>
+<p>最初我非常不理解为什么编译器能确定可执行代码在内存中的位置，程序每次运行时难道都能在内存中占据固定位置吗？如果不理解第 9 章中的虚拟地址，在第 7 章的链接部分，难道不会感到奇怪吗？</p>
+</blockquote>
+<p>在可执行代码文件中，代码片段最后可能会插入 <code>nop</code> 指令。这些指令对程序没有影响，插入它们是为了使函数代码变成 16 字节（对齐），使得就存储器系统性能而言，能更好地放置下一个代码块。</p>
+<blockquote>
+<p>数据类型的对齐取决于表示各个数据类型所需的字节，而指令的对齐要求 16 字节对齐。编译器会根据硬件架构的对齐要求自动进行对齐优化（是编译器实现的哦）。</p>
+</blockquote>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li>《深入理解计算机系统》</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/csapp/" rel="tag"># csapp</a>
+              <a href="/tags/machine-level/" rel="tag"># machine level</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/04/27/C-program-compilation-process/" rel="prev" title="读书随想：C 程序的编译过程">
+                  <i class="fa fa-angle-left"></i> 读书随想：C 程序的编译过程
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/11/25/skip-list/" rel="next" title="跳表">
+                  跳表 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Moralok</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">150k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:20</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"3EC6DlIt15eVYStwSVsDsQ2P-MdYXbMMI","app_key":"KKBQicvLunsmAfgH3DJJXvng","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

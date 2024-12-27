@@ -156,13 +156,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-count">55</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-count">47</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -184,6 +184,111 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2024/01/06/talk-about-isolation-of-MySQL-transactions/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Moralok">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Moralok's Blog">
+      <meta itemprop="description" content="却要知道，为这一切的事……">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Moralok's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/01/06/talk-about-isolation-of-MySQL-transactions/" class="post-title-link" itemprop="url">谈谈 MySQL 事务的隔离性</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-06 13:51:12" itemprop="dateCreated datePublished" datetime="2024-01-06T13:51:12+08:00">2024-01-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
+    </span>
+
+  
+    <span id="/2024/01/06/talk-about-isolation-of-MySQL-transactions/" class="post-meta-item leancloud_visitors" data-flag-title="谈谈 MySQL 事务的隔离性" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>15 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>事务就是一组数据库操作，它具有原子性（<code>Atomicity</code>）、一致性（<code>Consistency</code>）、隔离性（<code>Isolation</code>）和持久性（<code>Durability</code>），简称为 <code>ACID</code>。本文将介绍 <code>MySQL</code> 事务的<strong>隔离性</strong>以及对其的思考。<br>尽管这是一个老生常谈的话题，网上也有很多相关的资料，但是要理解它并不容易。即使林晓斌老师在 <strong>《MySQL 实战 45 讲》</strong> 中用了两个章节进行介绍，但是你在评论区中会发现有些分享或讨论的观点彼此矛盾。原因可能有很多，比如为了易于理解使用简化概念进行分析，有些具体细节各人各执一词同时它们又不好通过测试进行验证，用词不严谨等等。本文尽可能为自己梳理出一个完善并且前后一致的认知体系，再针对一些容易引起误解的地方作进一步的说明。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/01/06/talk-about-isolation-of-MySQL-transactions/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -229,7 +334,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -334,7 +439,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -439,7 +544,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -544,7 +649,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -649,7 +754,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -754,7 +859,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -859,7 +964,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -964,7 +1069,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -1069,7 +1174,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
+      <time title="修改时间：2024-12-27 21:21:07" itemprop="dateModified" datetime="2024-12-27T21:21:07+08:00">2024-12-27</time>
     </span>
 
   
@@ -1130,111 +1235,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.moralok.com/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Moralok">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Moralok's Blog">
-      <meta itemprop="description" content="却要知道，为这一切的事……">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Moralok's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/" class="post-title-link" itemprop="url">Spring 中 @PropertySource 注解的使用和源码分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-12-07 11:55:49" itemprop="dateCreated datePublished" datetime="2023-12-07T11:55:49+08:00">2023-12-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-12-27 00:30:42" itemprop="dateModified" datetime="2024-12-27T00:30:42+08:00">2024-12-27</time>
-    </span>
-
-  
-    <span id="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/" class="post-meta-item leancloud_visitors" data-flag-title="Spring 中 @PropertySource 注解的使用和源码分析" title="阅读次数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">阅读次数：</span>
-      <span class="leancloud-visitors-count"></span>
-    </span>
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>4 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><code>@PropertySource</code> 注解提供了一种方便的声明性机制，用于将 <code>PropertySource</code> 添加到 <code>Spring</code> 容器的 <code>Environment</code> 环境中。该注解通常搭配 <code>@Configuration</code> 注解一起使用。本文将介绍如何使用 <code>@PropertySource</code> 注解，并通过分析源码解释外部配置文件是如何被解析进入 <code>Spring</code> 的 <code>Environment</code> 中。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/12/07/use-and-analysis-of-PropertySource-annotation-in-Spring/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -1258,13 +1258,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">147k</span>
+    <span title="站点总字数">150k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">8:10</span>
+    <span title="站点阅读时长">8:20</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
