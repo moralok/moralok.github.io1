@@ -1,7 +1,7 @@
 ---
 title: 信息的表示和处理
 date: 2024-03-12 07:48:32
-tags:
+tags: [csapp, encode]
 mathjax: true
 ---
 
